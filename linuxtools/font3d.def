@@ -1,0 +1,12 @@
+font-path=.
+font=ariblk.ttf
+bevel-type=ROUND
+cut=0.003
+sides=OFF
+back-bevel=OFF
+front-bevel=OFF
+back-face=OFF
+triangle-type=FLAT
+format=POV3
+ypos=BASELINE
+resolution=2

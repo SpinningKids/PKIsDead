@@ -1,0 +1,36 @@
+# Makefile for PKIsDead Linux/GCC port
+#                        -- Aragorn/SK
+
+XLIBS    = -L/usr/X11R6/lib
+GL_LIBS  = -lGLU -lGL
+SDL_LIBS = -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread
+LIBS     =
+LDFLAGS  = -Wl,-rpath,/usr/X11R6/lib
+INCLUDES = -I. -I/usr/include/SDL
+CFLAGS   = -O2 -D_REENTRANT
+CC       = g++ -g -D__LINUX__
+
+OBJECTS= \
+  Main.o \
+  GLFont.o \
+  GLTexture.o \
+  GenTex.o \
+  CoolPrint.o \
+  noise.o \
+  Frustum.o  \
+  Object.o \
+  ParticleSystem.o \
+  SphereEffect.o \
+  Timer.o \
+  utils.o \
+  glf.o
+
+pkisdead: $(OBJECTS)
+	$(CC) $(CFLAGS) $(LIBS) $(XLIBS) $(GL_LIBS) $(SDL_LIBS) $(LDFLAGS) -o $@ $(OBJECTS) ./linuxlib/libminifmod.a
+
+.cpp.o:
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+
+clean:
+	-rm -f *.o
+	-rm -f core
