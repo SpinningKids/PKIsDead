@@ -43,13 +43,13 @@ void CoolPrint1(GLFont const &font, int n, float t, float st, float on, float fd
   float doff = 0.5f*(en - fd)/l;
 
   float iadj = 100.0f/n;
-  float cadj = 4.25f/n;
+  float cadj = 17.25f/n;
 
   float width = 0;
   float height = 0;
   for(unsigned int i = 0; i < l; i++) {
     width += font.getWidth(text[i], tracking);
-#ifdef __WIN32__
+#ifdef WIN32
     height = max(height, font.getHeight(text[i]));
 #endif
 #ifdef __LINUX__

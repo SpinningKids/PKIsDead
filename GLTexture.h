@@ -9,15 +9,12 @@
 #ifndef _GLTEXTURE_H_
 #define _GLTEXTURE_H_
 
-#ifdef _MSC_VER
 #pragma once
-#pragma pack(push, _PACK_GLTEXTURE_H_)
-#endif //_MSC_VER
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
 #include <gl/gl.h>
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 #ifdef __LINUX__
 #include <GL/gl.h>
@@ -43,9 +40,5 @@ public:
   void use();
   int getID(){ return txt; }
 };
-
-#ifdef _MSC_VER
-#pragma pack(pop, _PACK_GLTEXTURE_H_)
-#endif //_MSC_VER
 
 #endif //_GLTEXTURE_H_

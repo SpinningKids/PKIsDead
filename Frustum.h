@@ -5,9 +5,9 @@
 #if !defined(AFX_FRUSTUM_H__67DA4703_2CA4_4DBB_B8E2_12817A8E10CF__INCLUDED_)
 #define AFX_FRUSTUM_H__67DA4703_2CA4_4DBB_B8E2_12817A8E10CF__INCLUDED_
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #include <GL/gl.h>
 #include "AsmMath4.h"
 

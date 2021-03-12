@@ -5,9 +5,7 @@
 #if !defined(AFX_OBJECT_H__68E542A1_17D0_11D6_A369_0000E8EF49A3__INCLUDED_)
 #define AFX_OBJECT_H__68E542A1_17D0_11D6_A369_0000E8EF49A3__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "AsmMath4.h"
 #include "utils.h"

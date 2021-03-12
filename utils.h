@@ -8,12 +8,12 @@
 #define USEMEMLOADRESOURCE
 #define USEFMOD TRUE
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
 #include <conio.h>
 #include "resources/resource.h"
 #include "minifmod/minifmod.h"
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <math.h>
@@ -86,10 +86,10 @@ struct UV_COORD {
 
 /* Timing vars */
 static float      timer_time;
-#ifdef __WIN32__
+#ifdef WIN32
 static __int64    timer_start;
 static __int64    timer_frq;
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
 static Uint32     timer_start;
 static Uint32     timer_frq;
@@ -101,10 +101,10 @@ static float      timer_fps;
 /* Timing Functions */
 inline void skInitTimer()
 {
-#ifdef __WIN32__
+#ifdef WIN32
 	QueryPerformanceCounter((LARGE_INTEGER *)&timer_start);
 	QueryPerformanceFrequency((LARGE_INTEGER *)&timer_frq);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
 	timer_start = SDL_GetTicks();
 #endif /* __LINUX__ */
@@ -113,9 +113,9 @@ inline void skInitTimer()
 
 inline float skGetTime()
 {
-#ifdef __WIN32__
+#ifdef WIN32
     return timer_time;
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
     return static_cast<float>(SDL_GetTicks() - (double)timer_start)/1000.f;;
 #endif /* __LINUX__ */
@@ -123,12 +123,12 @@ inline float skGetTime()
 
 inline float skTimerFrame()
 {
-#ifdef __WIN32__
+#ifdef WIN32
   __int64 a;
 	QueryPerformanceCounter((LARGE_INTEGER *)&a);
 	
 	timer_time = (float)(a - timer_start)/(float)(timer_frq);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
 	timer_time = (float)(skGetTime() - timer_start)/(float)(timer_frq);
 #endif /* __LINUX__ */

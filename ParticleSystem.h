@@ -9,9 +9,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #include <GL/gl.h>
 
 #include "Object.h"

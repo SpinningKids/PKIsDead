@@ -9,15 +9,12 @@
 #ifndef _GLFONT_H_
 #define _GLFONT_H_
 
-#ifdef _MSC_VER
 #pragma once
-#pragma pack(push, _PACK_GLFONT_H_)
-#endif //_MSC_VER
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
 #include <gl/gl.h>
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 #ifdef __LINUX__
 #include <GL/gl.h>
@@ -25,17 +22,17 @@
 #endif /* __LINUX__ */
 
 class GLFont {
-#ifdef __WIN32__
+#ifdef WIN32
   GLYPHMETRICSFLOAT gmf[256];
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
   GLYPHMETRICSFLOAT gmf[96];
 #endif /* __LINUX__ */
   GLuint base;
 public:
-#ifdef __WIN32__
+#ifdef WIN32
   GLFont(HDC hDC, const char *s);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
   GLFont(GLF_MEMFILE *font);
 #endif /* __LINUX__ */
@@ -51,9 +48,5 @@ public:
 
   ~GLFont();
 };
-
-#ifdef _MSC_VER
-#pragma pack(pop, _PACK_GLFONT_H_)
-#endif //_MSC_VER
 
 #endif //_GLFONT_H_

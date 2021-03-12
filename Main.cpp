@@ -6,9 +6,8 @@
 /* Standard includes										*/
 /*##########################################################*/
 //TEMP cleanme
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
-#include <gl\glaux.h>
 
 #include "asmmath4.h"
 #include "utils.h"
@@ -17,7 +16,7 @@
 #include "gentex.h"
 #include "particlesystem.h"
 
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 #include <math.h>
 #include <string.h>
@@ -126,12 +125,12 @@ float timebase[19] = {0.0f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f,
 /*##########################################################*/
 
 
-#ifdef __WIN32__
+#ifdef WIN32
 HWND		hWND;
 HDC			hDC;
 HGLRC		hRC;
 HINSTANCE	hInstance;
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 /*##########################################################*/
 /*Sound Player Implementation								*/
@@ -139,25 +138,25 @@ HINSTANCE	hInstance;
 FMUSIC_MODULE *fmodule;
 float g_delta;
 
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
 #include <mmsystem.h>
 
 extern "C" {
   HWAVEOUT FSOUND_WaveOutHandle;
 }
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 float panGetTime() 
 {
   if (isMusicEnabled)
   {
-#ifdef __WIN32__
+#ifdef WIN32
     MMTIME mmtime;
     mmtime.wType = TIME_SAMPLES;
     waveOutGetPosition(FSOUND_WaveOutHandle, &mmtime, sizeof(mmtime));
     return mmtime.u.ticks/44100.f;
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
     return skGetTime();
 #endif /* __LINUX__ */
@@ -180,7 +179,7 @@ unsigned int memopen(char *name)
 
 	memfile = new MEMFILE;
 
-#ifdef __WIN32__
+#ifdef WIN32
 	{	// hey look some load from resource code!
 		HRSRC		rec;
 		HGLOBAL		handle;
@@ -1853,6 +1852,11 @@ void drawCredits(float t)
 
   drawCreditsBack(t);
 
+  //scritte->use();
+  glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+  glDisable(GL_LIGHTING);
+  glEnable(GL_TEXTURE_2D);
+
   //if (avanti)
   //{
     CoolPrint1(*FontArial, 20, sync,  0.0f,  1.0f,  3.0f,  4.0f, 220, sync*30+45, 230, 0.6f, 0.2f, "rio");
@@ -2463,6 +2467,8 @@ void Scena(float t, int order) {
 	  glDisable(GL_CULL_FACE);
 #endif /* __LINUX__ */
 	  scritte->use();
+      glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+      glEnable(GL_BLEND);
 	      glEnable(GL_TEXTURE_GEN_S);
 	      glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -2592,9 +2598,9 @@ void Scena(float t, int order) {
     glColor4f(1.0f,1.0f,1.0f,0.6f);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 #endif /* __LINUX__ */
-#ifdef __WIN32__
+#ifdef WIN32
     glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
     glEnable(GL_BLEND);
     panViewOrtho();
     scritte->use();
@@ -2626,9 +2632,9 @@ void Scena(float t, int order) {
 	    glEnable(GL_TEXTURE_GEN_T);
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-#ifdef __WIN32__
+#ifdef WIN32
       CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 50-15*(1-1.f/(1.1f+sin(t*0.8))), 0.6f, 0, "from a close sight nobody is normal");
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
       CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 40-15*(1-1.f/(1.1f+sin(t*0.8))), 0.6f, 0, "from a close sight nobody is normal");
 #endif /* __LINUX__ */
@@ -2989,7 +2995,7 @@ void Scena(float t, int order) {
 
 }
 
-#ifdef __WIN32__
+#ifdef WIN32
 LRESULT CALLBACK skWinProc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp) 
 {
 
@@ -3004,15 +3010,15 @@ LRESULT CALLBACK skWinProc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp)
   } 
   return DefWindowProc(wnd, msg, wp, lp);
 } 
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 void skSwappuffers() 
 {
   glFinish();
   glFlush();
-#ifdef __WIN32__
+#ifdef WIN32
   SwapBuffers(hDC);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
   SDL_GL_SwapBuffers();
 #endif /* __LINUX__ */
@@ -3059,9 +3065,9 @@ void skDraw() {
       static float closetime = skGetTime();
       float curtime = skGetTime()-closetime;
       if (curtime>7){
-#ifdef __WIN32__
+#ifdef WIN32
         PostQuitMessage(0);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
 	done = 1;
 #endif /* __LINUX__ */
@@ -3219,9 +3225,9 @@ void skInitDemoStuff()
 
 // pan stuff
 
-#ifdef __WIN32__
+#ifdef WIN32
   FontArial = new GLFont(hDC, "Arial");
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
   glfInit();
   glfSetMemoryLoad();
@@ -3274,7 +3280,7 @@ void skInitDemoStuff()
 	mytek = perlin(4,16,0.4f, 0.5f, 3, true);
 	tex = perlin(3, 1, 0.4f, 0.5f, 2, true);
 	tex2 = perlin(8, 132, 0.3f, 0.7f, 2, true);
-	scritte = perlin(7, 100, 0.6f, 0.5f, 2.5, true);// usare per le scritte
+	scritte = perlin(7, 100, 0.6f, 0.5f, 1.3, true);// usare per le scritte
 
   //LOD, radius
   initSphereObject(40,2);
@@ -3363,7 +3369,7 @@ main(int argc, char *argv[]) {
     done = 0;
 #endif /* __LINUX__ */
 
-#ifdef __WIN32__
+#ifdef WIN32
 int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,int ncmdshow) {
 
   WNDCLASSEX		winclass;
@@ -3474,7 +3480,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   	} 
 
   	ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
     FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
     if (!FSOUND_Init(44100, 0)) 
@@ -3484,9 +3490,9 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
       isMusicEnabled = false;
     }
     if (isMusicEnabled)
-#ifdef __WIN32__
+#ifdef WIN32
   	  fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), NULL);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
     fmodule =   FMUSIC_LoadSong("cippa", NULL);
 #endif /* __LINUX__ */
@@ -3504,7 +3510,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
       FMUSIC_PlaySong(fmodule);  
     skInitTimer();
 
-#ifdef __WIN32__
+#ifdef WIN32
     while (true) {
   		MSG msg;
   		if (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) { 
@@ -3515,7 +3521,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   		} else
   			skDraw();
   	}
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
     while ( ! done ) {
 	skDraw();
@@ -3550,13 +3556,13 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   	  FSOUND_Close();
     }
 
-#ifdef __WIN32__
+#ifdef WIN32
   } 
   else
     MessageBox(GetDesktopWindow(), "Can't create window", "SKerror", MB_OK);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
-#ifdef __WIN32__
+#ifdef WIN32
 #ifdef FULLSCREEN
   static DEVMODE mode;
   mode.dmSize=sizeof(mode);
@@ -3568,7 +3574,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   ChangeDisplaySettings(&mode, 0);
 	ShowCursor(true);
 #endif
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 //  if (!isMusicEnabled) 
 //    MessageBox(GetDesktopWindow(), "Sound Device not found", "SKerror", MB_OK);
@@ -3576,9 +3582,9 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 
   skUnloadDemoStuff();
 
-#ifdef __WIN32__
+#ifdef WIN32
 	ExitProcess(0);
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #ifdef __LINUX__
 	SDL_Quit();
 #endif /* __LINUX__ */

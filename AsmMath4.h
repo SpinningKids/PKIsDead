@@ -16,8 +16,6 @@
 
 //#define USE_ASM_VER
 
-#pragma pack(push,1)
-
 struct uv_coord
 {
   float u,v;

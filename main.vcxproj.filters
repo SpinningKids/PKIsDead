@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="MiniFMod">
+      <UniqueIdentifier>{29f619aa-4e3e-4714-8934-374fa595031a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{f4227256-c27a-404e-894b-21deba547a98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rio">
+      <UniqueIdentifier>{414419fa-e68d-439b-8b87-5b4df08c0285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pan">
+      <UniqueIdentifier>{d4b55929-9465-428e-a9a0-90b8f111c123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pan\Geometry">
+      <UniqueIdentifier>{6ebcb334-d946-4794-87b0-ad493cac7bd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pan\GL">
+      <UniqueIdentifier>{08c5ee11-bd61-45da-8832-5ffc27dbe757}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="minifmod\Fmusic.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="minifmod\Fsound.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="minifmod\mixer_clipcopy.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="minifmod\mixer_fpu_ramp.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="minifmod\music_formatxm.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="minifmod\system_file.c">
+      <Filter>MiniFMod</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Rio</Filter>
+    </ClCompile>
+    <ClCompile Include="GenTex.cpp">
+      <Filter>Pan\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="GLFont.cpp">
+      <Filter>Pan\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTexture.cpp">
+      <Filter>Pan\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="CoolPrint.cpp">
+      <Filter>Pan</Filter>
+    </ClCompile>
+    <ClCompile Include="noise.cpp">
+      <Filter>Pan</Filter>
+    </ClCompile>
+    <ClCompile Include="Frustum.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
+    <ClCompile Include="SphereEffect.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="minifmod\minifmod.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\Mixer.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\mixer_clipcopy.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\mixer_fpu_ramp.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\Music.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\music_formatxm.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\Sound.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\system_file.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\system_memory.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="minifmod\xmeffects.h">
+      <Filter>MiniFMod</Filter>
+    </ClInclude>
+    <ClInclude Include="resources\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Rio</Filter>
+    </ClInclude>
+    <ClInclude Include="GenTex.h">
+      <Filter>Pan\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="GLFont.h">
+      <Filter>Pan\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTexture.h">
+      <Filter>Pan\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="CoolPrint.h">
+      <Filter>Pan</Filter>
+    </ClInclude>
+    <ClInclude Include="noise.h">
+      <Filter>Pan</Filter>
+    </ClInclude>
+    <ClInclude Include="Frustum.h" />
+    <ClInclude Include="Globals.h" />
+    <ClInclude Include="Math3.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="SphereEffect.h" />
+    <ClInclude Include="asmmath2.h" />
+    <ClInclude Include="AsmMath4.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\Script1.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\PK128x128.bmp" />
+    <Image Include="Resources\sk.bmp" />
+    <Image Include="Resources\SK.ICO" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="scarti.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Resources\Dxn_2.xm">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

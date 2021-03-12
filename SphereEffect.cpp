@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#ifdef __WIN32__
+#ifdef WIN32
 #include <windows.h>
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 #include <GL/gl.h>
 #include "SphereEffect.h"
 #include "AsmMath4.h"

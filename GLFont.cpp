@@ -17,7 +17,7 @@
 #include "glf.h"
 #endif // __LINUX__
 
-#ifdef __WIN32__
+#ifdef WIN32
 GLFont::GLFont(HDC hDC, const char *s) {
   HFONT	font = CreateFont(	12,							// Height Of Font
 		0,								// Width Of Font
@@ -49,7 +49,7 @@ GLFont::GLFont(HDC hDC, const char *s) {
   DeleteObject(font);
 
 }
-#endif /* __WIN32__ */
+#endif /* WIN32 */
 
 #ifdef __LINUX__
 GLFont::GLFont(GLF_MEMFILE *font) {
