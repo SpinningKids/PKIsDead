@@ -16,7 +16,7 @@ GLTexture *spot(float psize, float strenght)
 {
   GLTexture *spt = new GLTexture((int)psize);
   int size = spt->getSize();
-  GLfloat *tex = spt->getImage();
+  float *tex = spt->getImage();
 
   int fillsize = size;
 
@@ -40,7 +40,7 @@ GLTexture *spot(float psize, float strenght)
 GLTexture *perlin(int logsize, float freq, float amp, float base, float k, bool wrap) {
   GLTexture *prln = new GLTexture(logsize);
   int size = prln->getSize();
-  GLfloat *tex = prln->getImage();
+  float *tex = prln->getImage();
   int fillsize = size;
   if (wrap) {
     fillsize >>= 1;
@@ -53,9 +53,9 @@ GLTexture *perlin(int logsize, float freq, float amp, float base, float k, bool 
       ncoord[1] = m*j;
       float col = vnoise(2, ncoord)*amp+base;
       col = (col < 0) ? 0: (col > 1) ? 1: col;
-      tex[(((i<<logsize)+j)<<2)+0] = pow(col, 1.f/k);
+      tex[(((i<<logsize)+j)<<2)+0] = powf(col, 1.f/k);
       tex[(((i<<logsize)+j)<<2)+1] = col;
-      tex[(((i<<logsize)+j)<<2)+2] = pow(col, k);
+      tex[(((i<<logsize)+j)<<2)+2] = powf(col, k);
       tex[(((i<<logsize)+j)<<2)+3] = 1;
     }
   }

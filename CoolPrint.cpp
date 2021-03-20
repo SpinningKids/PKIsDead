@@ -34,8 +34,12 @@ void CoolPrint1(GLFont const &font, int n, float t, float st, float on, float fd
 	if (fmt == NULL)
 		return;
 	va_start(ap, fmt);
-	vsprintf(text, fmt, ap);
-	va_end(ap);
+#ifdef WIN32
+    vsprintf_s(text, fmt, ap);
+#else
+    vsnprintf(text, fmt, ap);
+#endif
+    va_end(ap);
 
   unsigned int l = strlen(text);
 

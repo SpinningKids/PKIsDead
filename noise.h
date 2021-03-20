@@ -1,12 +1,17 @@
 
-#ifndef _NOISE_H_
-#define _NOISE_H_
+/************************************
+  Code By: Pan/SpinningKids
+  Revised on 3/15/2001 10:12:30 PM
+  Comments: creation
+ ************************************/
+
+#ifndef NOISE_H_
+#define NOISE_H_
 
 extern float vnoise(int num, float x[]);
 extern float vlattice(int num, int x[]);
-extern float soundgennoise(float t, int shape);
-extern float vnoise(float x);
-extern float vlattice(int x);
+extern float vnoise(float t);
+extern float vlattice(int idx);
 
 inline float vnoise(float x, float y) {
   float a[] = {x, y};
@@ -39,4 +44,4 @@ inline float vlattice(int x, int y, int z, int w) {
 }
 
 
-#endif //_NOISE_H_
+#endif // NOISE_H_

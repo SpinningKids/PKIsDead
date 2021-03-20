@@ -6,36 +6,28 @@
   Comments: Creation
  ************************************/
 
-#ifndef _GLFONT_H_
-#define _GLFONT_H_
+#ifndef GLFONT_H_
+#define GLFONT_H_
 
 #pragma once
 
 #ifdef WIN32
-#include <windows.h>
-#include <gl/gl.h>
-#endif /* WIN32 */
-
-#ifdef __LINUX__
+#include <Windows.h>
+#include <GL/gl.h>
+#else
 #include <GL/gl.h>
 #include "glf.h"
 #endif /* __LINUX__ */
 
 class GLFont {
-#ifdef WIN32
-  GLYPHMETRICSFLOAT gmf[256];
-#endif /* WIN32 */
-#ifdef __LINUX__
   GLYPHMETRICSFLOAT gmf[96];
-#endif /* __LINUX__ */
   GLuint base;
 public:
 #ifdef WIN32
   GLFont(HDC hDC, const char *s);
-#endif /* WIN32 */
-#ifdef __LINUX__
+#else
   GLFont(GLF_MEMFILE *font);
-#endif /* __LINUX__ */
+#endif
 
   void printf(const char *fmt, ...) const;
   void printfx(float x, float y, float gs, float gr, float lsx, float lsy, float lr, float tracking, const char *fmt, ...) const;
@@ -49,4 +41,4 @@ public:
   ~GLFont();
 };
 
-#endif //_GLFONT_H_
+#endif // GLFONT_H_
