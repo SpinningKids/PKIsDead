@@ -3,40 +3,6 @@
 #include "noise.h"
 #include <math.h>
 
-float gaussian(float x, float y, float sigma)
-{
-#define SQRT2PI 2.506628274631000502415765284811045253006
-	//return exp(-0.5 * (x*x + y*y) / (sigma*sigma)) / (SQRT2PI * sigma);
-  float c = sigma / 2;
-  double diag = sqrt((sigma * sigma)*2) / 2;
-  return 1 - sqrt((x-c)*(x-c) + (y-c)*(y-c)) / diag;
-}
-
-GLTexture *spot(float psize, float strenght)
-{
-  GLTexture *spt = new GLTexture((int)psize);
-  int size = spt->getSize();
-  float *tex = spt->getImage();
-
-  int fillsize = size;
-
-  for(int x = 0; x < fillsize; x++) 
-  {
-    for(int y = 0; y < fillsize; y++) 
-    {
-      float col = gaussian(x,y,size) * strenght;
-      col = (col < 0) ? 0: (col > 1) ? 1: col;
-      tex[(y * size) + x +0] = col;
-      tex[(y * size) + x +1] = col;
-      tex[(y * size) + x +2] = col;
-      tex[(y * size) + x +3] = col;
-    }
-  }
- 
-  spt->update();
-  return spt;
-}
-
 GLTexture *perlin(int logsize, float freq, float amp, float base, float k, bool wrap) {
   GLTexture *prln = new GLTexture(logsize);
   int size = prln->getSize();

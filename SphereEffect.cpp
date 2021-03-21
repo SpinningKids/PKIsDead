@@ -19,7 +19,7 @@
 
 static int			g_subd;
 static int			g_numVertex = 0;
-static Vector3		* g_pVertex = NULL;
+static Vector3		* g_pVertex = nullptr;
 
 static float	g_toRad	= (2.0f*3.141592653589f/360.0f);
 
@@ -35,11 +35,9 @@ static Vector3		g_rot;
 int initSphereObject( int subd, float radius )
 {
 	int i = 0, j = 0, offset = 0;
-	float rad, angle = 360.0f/subd;
-	float inc_theta, inc_phi;
-	float phi, theta;
-		
-	assert(subd);
+	float angle = 360.0f/subd;
+
+    assert(subd);
 	
 	g_subd = subd;
 	g_numVertex = g_subd*g_subd;
@@ -50,23 +48,23 @@ int initSphereObject( int subd, float radius )
 	if( !g_pVertex )
 		return -1;
 	
-	inc_phi = 360.0f / g_subd;
-	inc_theta = 180.0f / g_subd;
+	float inc_phi = 360.0f / g_subd;
+	float inc_theta = 180.0f / g_subd;
 	
 	// modify the sphere shape
-	for( phi=0; phi<180; phi += inc_phi, i++ )
-	{
-		for( theta=0; theta<360; theta += inc_theta, j++ )
-		{
-			rad = ( radius + 0.5*sin( g_toRad*(i*angle+j*angle) )*cos( g_toRad*(3*(i+j)*angle) ) );
-			
-			g_pVertex[offset].x = rad*radius * sin( phi*g_toRad ) * cos( theta*g_toRad );
-			g_pVertex[offset].y = rad*radius * sin( phi*g_toRad ) * sin( theta*g_toRad );
-			g_pVertex[offset].z = rad*radius * cos( phi*g_toRad );
-			
-			++offset;
-		}
-	}
+    for (float phi = 0; phi < 180; phi += inc_phi, i++)
+    {
+        for (float theta = 0; theta < 360; theta += inc_theta, j++)
+        {
+            float rad = (radius + 0.5f * sinf(g_toRad * (i * angle + j * angle)) * cosf(g_toRad * (3 * (i + j) * angle)));
+
+            g_pVertex[offset].x = rad * radius * sinf(phi * g_toRad) * cosf(theta * g_toRad);
+            g_pVertex[offset].y = rad * radius * sinf(phi * g_toRad) * sinf(theta * g_toRad);
+            g_pVertex[offset].z = rad * radius * cosf(phi * g_toRad);
+
+            ++offset;
+        }
+    }
 	
 	g_pos.x = 0;
 	g_pos.y = 0;

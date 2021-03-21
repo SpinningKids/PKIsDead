@@ -57,7 +57,7 @@ void GLFont::printf(const char *fmt, ...) const {
 	char text[256];
 	va_list		ap;
 
-	if (fmt == NULL)
+	if (fmt == nullptr)
 		return;
 	va_start(ap, fmt);
 #ifdef WIN32
@@ -100,7 +100,7 @@ void GLFont::printfx(float x, float y, float gs, float gr, float lsx, float lsy,
 	char text[256];
 	va_list		ap;
 
-	if (fmt == NULL)
+	if (fmt == nullptr)
 		return;
 	va_start(ap, fmt);
 #ifdef WIN32

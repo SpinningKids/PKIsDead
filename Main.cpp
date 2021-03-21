@@ -7,31 +7,15 @@
 /*##########################################################*/
 //TEMP cleanme
 #ifdef WIN32
-#include <windows.h>
+#define NOMINMAX
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include "resources/resource.h"
 
-#include "asmmath4.h"
-#include "utils.h"
-#include "GLFont.h"
-#include "CoolPrint.h"
-#include "gentex.h"
-#include "particlesystem.h"
-
-#endif /* WIN32 */
-
-#include <math.h>
-#include <string.h>
-#include "Globals.h"
-#include "GLFont.h"
-#include "GLTexture.h"
-#include "GenTex.h"
-#include "noise.h"
-#include "CoolPrint.h"
-#include "ParticleSystem.h"
-#include "Frustum.h"
-#include "SphereEffect.h"
-#include "PKLogo.h"
-
-#ifdef __LINUX__
+#include "AsmMath4.h"
+#include "minifmod/minifmod.h"
+#else
 #include <stdlib.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -48,7 +32,21 @@
 #ifdef SCREENSHOOTER
 #include "SDL_syswm.h"
 #endif /* SCREENSHOOTER */
-#endif  /* __LINUX__ */
+#endif
+
+#include <math.h>
+#include <string.h>
+#include "Globals.h"
+#include "GLFont.h"
+#include "GLTexture.h"
+#include "GenTex.h"
+#include "noise.h"
+#include "CoolPrint.h"
+#include "ParticleSystem.h"
+#include "Frustum.h"
+#include "SphereEffect.h"
+#include "PKLogo.h"
+#include "utils.h"
 
 //#define caccaculo
 
@@ -114,7 +112,7 @@ Vector3 sizecubo(0.6f,0.6f,0.4f);
 //float timebase[18] = {0.0f, 10.705f, 11.632f, 14.54f, 17.448f, 23.273f, 29.098f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 119.240f, 132.0f};
 // pre-panbackwards float timebase[18] = {0.0f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 119.240f, 132.0f};
 //float timebase[19] = {0.0f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785, 119.240f}; // 121 fu 119.240};
-float timebase[19] = {0.0f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785, 119.240f}; // 121 fu 119.240};
+float timebase[19] = {0.0f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f}; // 121 fu 119.240};
 //                       0        1        2       3        4        5        6      7        8        9       10       11       12       13       14
 
 //test timeline
@@ -139,7 +137,6 @@ FMUSIC_MODULE *fmodule;
 float g_delta;
 
 #ifdef WIN32
-#include <windows.h>
 #include <mmsystem.h>
 
 extern "C" {
@@ -149,19 +146,15 @@ extern "C" {
 
 float panGetTime() 
 {
-  if (isMusicEnabled)
-  {
 #ifdef WIN32
-    MMTIME mmtime;
-    mmtime.wType = TIME_SAMPLES;
-    waveOutGetPosition(FSOUND_WaveOutHandle, &mmtime, sizeof(mmtime));
-    return mmtime.u.ticks/44100.f;
-#endif /* WIN32 */
-#ifdef __LINUX__
-    return skGetTime();
-#endif /* __LINUX__ */
-  }
-  else
+    if (isMusicEnabled)
+    {
+        MMTIME mmtime;
+        mmtime.wType = TIME_SAMPLES;
+        waveOutGetPosition(FSOUND_WaveOutHandle, &mmtime, sizeof(mmtime));
+        return mmtime.u.ticks / 44100.f;
+    }
+#endif
     return skGetTime();
 }
 
@@ -185,14 +178,12 @@ unsigned int memopen(char *name)
 		HGLOBAL		handle;
 
 		rec = FindResourceEx(GetModuleHandle(0),"RC_RTDATA", name, 0);
-		handle = LoadResource(NULL, rec);
+		handle = LoadResource(nullptr, rec);
 		memfile->data = LockResource(handle);
-		memfile->length = SizeofResource(NULL, rec);
+		memfile->length = SizeofResource(nullptr, rec);
 		memfile->pos = 0;
 	}
-#endif
-
-#ifdef __LINUX__
+#else
 	memfile->data   = dixiesmod;
 	memfile->length = sizeof(dixiesmod);
 	memfile->pos    = 0;
@@ -294,52 +285,47 @@ Vector3 EvalNut(float t,float a,float b,int sign)
 //size      : the cube size
 void dCube(const Vector3 &size)
 {
+    Vector3 min = -size / 2.0f;
+    Vector3 max = size / 2.0f;
 
-  Vector3 min,max;
+    glBegin(GL_QUADS);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+    glNormal3f(0.0, 0.0, -1.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(min.x, min.y, min.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(min.x, max.y, min.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(max.x, max.y, min.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(max.x, min.y, min.z);
 
-  min = size / 2.0f;
-  min = -min;
+    glNormal3f(0.0, 0.0, 1.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(min.x, min.y, max.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(max.x, min.y, max.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(max.x, max.y, max.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(min.x, max.y, max.z);
 
-  max = size / 2.0f;
+    glNormal3f(-1.0, 0.0, 0.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(min.x, min.y, max.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(min.x, max.y, max.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(min.x, max.y, min.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(min.x, min.y, min.z);
 
-      glBegin(GL_QUADS);
-      glColor4f(1.0f,1.0f,1.0f,0.6f);
-      glNormal3f(0.0,0.0,-1.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(min.x,min.y,min.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(min.x,max.y,min.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(max.x,max.y,min.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(max.x,min.y,min.z);
+    glNormal3f(1.0, 0.0, 0.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(max.x, min.y, max.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(max.x, min.y, min.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(max.x, max.y, min.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(max.x, max.y, max.z);
 
-      glNormal3f(0.0,0.0,1.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(min.x,min.y,max.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(max.x,min.y,max.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(max.x,max.y,max.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(min.x,max.y,max.z);
+    glNormal3f(0.0, -1.0, 0.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(min.x, min.y, max.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(min.x, min.y, min.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(max.x, min.y, min.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(max.x, min.y, max.z);
 
-      glNormal3f(-1.0,0.0,0.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(min.x,min.y,max.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(min.x,max.y,max.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(min.x,max.y,min.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(min.x,min.y,min.z);
-
-      glNormal3f(1.0,0.0,0.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(max.x,min.y,max.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(max.x,min.y,min.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(max.x,max.y,min.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(max.x,max.y,max.z);
-
-      glNormal3f(0.0,-1.0,0.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(min.x,min.y,max.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(min.x,min.y,min.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(max.x,min.y,min.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(max.x,min.y,max.z);
-
-      glNormal3f(0.0,1.0,0.0);
-      glTexCoord2f(0.0,0.0); glVertex3f(min.x,max.y,max.z);
-      glTexCoord2f(1.0,0.0); glVertex3f(max.x,max.y,max.z);
-      glTexCoord2f(1.0,1.0); glVertex3f(max.x,max.y,min.z);
-      glTexCoord2f(0.0,1.0); glVertex3f(min.x,max.y,min.z);
-      glEnd();
+    glNormal3f(0.0, 1.0, 0.0);
+    glTexCoord2f(0.0, 0.0); glVertex3f(min.x, max.y, max.z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(max.x, max.y, max.z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(max.x, max.y, min.z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(min.x, max.y, min.z);
+    glEnd();
 }
 
 
@@ -356,11 +342,7 @@ void dCube(const Vector3 &size)
 //
 void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a col)
 {
-//cassini oval
-  int i,j,k;
-  int np;
-  int thesign;
-  float theta1,theta2;
+    float theta1,theta2;
   float tstart,tstop,t1,t2;
   Vector3 p[4],q[2],n[4];
   Vector3 zperp(0,0,1);
@@ -386,16 +368,16 @@ void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a co
     if (a <= b)
       tstop = PI;
     else
-      tstop = 0.5 * asin(b*b/(a*a));
+      tstop = 0.5f * asinf(b*b/(a*a));
 
-    for (j=0;j<(int)M;j++)     
+    for (int j = 0;j<(int)M;j++)     
     {
       theta1 = (float)TWOPI * j / M;
       theta2 = (float)TWOPI * ((j+1)%(int)M) / M;
 
-      for (i=0;i<(int)N;i++) 
+      for (int i = 0;i<(int)N;i++) 
       { 
-         thesign = 1;
+         int thesign = 1;
          if (a <= b) 
          {
             t1 = tstart + (tstop - tstart) * i / N;
@@ -482,12 +464,12 @@ void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a co
           n[3] = t;
 
 
-         for (k=0;k<4;k++)
+         for (int k = 0;k<4;k++)
             n[k].Normalize();
 
          if (flattenonfloor)
          {
-           for (np = 0; np< 4; np++)
+           for (int np = 0; np< 4; np++)
            {
             if (p[np].y < flattenval)
               p[np].y = flattenval;
@@ -827,7 +809,7 @@ void dTorus(float time, const Vector3 &c, float r0, float r1, int n, float theta
 int i,j;
 float t1,t2,phi;
 Vector3 e0,e1,p0,p1;
-UV_COORD t;
+uv_coord t;
 float tmpr1;
 
 	
@@ -1064,7 +1046,6 @@ void drawTexture(GLTexture* tex, float sx, float sy,bool calc,float value, float
 //draws the Cassini Oval scene
 void drawNuts(int order,float t, float mytime)
 {
-  //static GLTexture* nuts = perlin(4, 4, 0.6f, 0.4f, true);//spot(4,1);
   env->use();
 
   glDepthMask(GL_TRUE);
@@ -1225,7 +1206,7 @@ void drawToroide(int order, float t, float mytime) // porcodio, se e' standard m
     if (order < 1)
       glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
     else //if (order == 2)
-      glColor4f(1.0f, 1.0f, 1.0f, 0.2f - 0.5*((panGetTime() - 11.2f) / 5.0f));
+      glColor4f(1.0f, 1.0f, 1.0f, 0.2f - 0.5f*((panGetTime() - 11.2f) / 5.0f));
 
     glDisable(GL_DEPTH_TEST);
     glTranslatef(0,0,-10);
@@ -1236,7 +1217,7 @@ void drawToroide(int order, float t, float mytime) // porcodio, se e' standard m
     if (order < 2)
       glColor4f(1.0f, 1.0f, 1.0f, 0.1f);
     else
-      glColor4f(1.0f, 1.0f, 1.0f, (0.5*(0.2f - t)));
+      glColor4f(1.0f, 1.0f, 1.0f, (0.5f*(0.2f - t)));
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     dTorus(mytime, Vector3(0,0,0),2.0f,0.6f,64,0,(float)TWOPI,0.0f,(float)TWOPI,t,true);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -1267,7 +1248,7 @@ void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor,
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	glFogfv(GL_FOG_COLOR, fogColor);
 	glFogf( GL_FOG_DENSITY, 0.01f ); 
-	glFogf(GL_FOG_START, -pos.z-3.0);
+	glFogf(GL_FOG_START, -pos.z-3.0f);
 	glFogf(GL_FOG_END, -pos.z);
 	glHint(GL_FOG_HINT, GL_FASTEST);
 	glEnable(GL_FOG);
@@ -1401,7 +1382,7 @@ void drawBlend(rgb_a col, int sx, int sy, int ex, int ey, GLenum modes, GLenum m
 
   glDisable(GL_LIGHTING);
   glDisable(GL_DEPTH_TEST);
-  if (tex != NULL)
+  if (tex != nullptr)
   {
     glEnable(GL_TEXTURE_2D);
     tex->use();
@@ -1459,7 +1440,7 @@ void drawBlendBis(float t, float power,rgb_a col, int sx, int sy, int ex, int ey
 
   glDisable(GL_LIGHTING);
   glDisable(GL_DEPTH_TEST);
-  if (tex != NULL)
+  if (tex != nullptr)
   {
     glEnable(GL_TEXTURE_2D);
     tex->use();
@@ -1486,8 +1467,8 @@ void drawBlendBis(float t, float power,rgb_a col, int sx, int sy, int ex, int ey
     for(j = 0; j <= seg; j++) {
       float a = vnoise(i*0.25f, j*0.25f, t);
       float b = vnoise(i*0.25f, j*0.25f, t+1000);
-      posx[i][j] = sx+dx*i+disp*pow(a, power)*((a>0)?1:-1);
-      posy[i][j] = sy+dy*j+disp*pow(b, power)*((b>0)?1:-1);
+      posx[i][j] = sx+dx*i+disp*powf(a, power)*((a>0)?1:-1);
+      posy[i][j] = sy+dy*j+disp*powf(b, power)*((b>0)?1:-1);
       module[i][j] = col.a*(2+a*a+b*b)/4;
     }
   for(i = 0; i < seg; i++) {
@@ -1548,10 +1529,10 @@ void drawLines(float t,float alpha, int n)
 //SUKA aggiunta questa funzione
 void drawBugs(float t,rgb_a barcolor,Vector3 pos,Vector3 rot,Vector3 size,float nutpos,Vector3 eye)
 {
-  glClearColor(0.3,0.2,0.1,0.5);
+  glClearColor(0.3f,0.2f,0.1f,0.5f);
   glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT);
 
-	float fogColor[4] = { 0.3, 0.2, 0.1, 0 };
+	float fogColor[4] = { 0.3f, 0.2f, 0.1f, 0.f };
 
   panViewPerspectiveFOV(45.0f);
   gluLookAt(eye.x,eye.y,eye.z,0,0,-1,0,1,0);
@@ -1609,210 +1590,210 @@ void drawBugs(float t,rgb_a barcolor,Vector3 pos,Vector3 rot,Vector3 size,float 
     glRotatef(rot.z,0,0,1);
 
     glPushMatrix();
-    glTranslatef(nutpos - 1.9,0,1.3);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,true,true,-0.3,rgb_a(1,1,1,0.9f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.5,-20.0,-0.5);
+    glTranslatef(nutpos - 1.9f,0,1.3f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,true,true,-0.3f,rgb_a(1,1,1,0.9f));  //just loads the vertexes once
+    glScalef(1.0f,-1.0f,1.0f);
+    glTranslatef(0.f,0.5f,0.f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0.f,-0.5f,0.f);
+    glScalef(1.0f,0.001f,1.0f);
+    glTranslatef(-0.5f,-20.0f,-0.5f);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0f, 0.0f, 0.0f, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(nutpos,0,0.3);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,true,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.5,-20.0,-0.5);
+    glTranslatef(nutpos,0,0.3f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,true,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0f,-1.0f,1.0f);
+    glTranslatef(0.f,0.5f,0.f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0.f,-0.5f,0.f);
+    glScalef(1.0f,0.001f,1.0f);
+    glTranslatef(-0.5f,-20.0f,-0.5f);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
 
     glPushMatrix();
-    glTranslatef(nutpos + 1.6,0,-1.6);
+    glTranslatef(nutpos + 1.6f,0.f,-1.6f);
+    glScalef(0.5f,0.5f,0.5f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0f,-1.0f,1.0f);
+    glTranslatef(0.f,0.5f,0.f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0.f,-0.5f,0.f);
+    glScalef(1.0f,0.001f,1.0f);
+    glTranslatef(-0.7f,-1.0f,-0.5f);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0f, 0.0f, 0.0f, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 2.6f,0.f,2.5f);
+    glScalef(0.5f,0.5f,0.5f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0f,-1.0f,1.0f);
+    glTranslatef(0.f,0.5f,0.f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0.f,-0.5f,0.f);
+    glScalef(1.0f,0.001f,1.0f);
+    glTranslatef(-0.7f,-1.0f,-0.5f);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 3.5f,0,0.5f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0,-1.0,1.0);
+    glTranslatef(0,0.5,0);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0,-0.5,0);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 4.5f,0,-1.5f);
+    glScalef(0.7f,0.7f,0.7f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0,-1.0,1.0);
+    glTranslatef(0,0.5,0);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0,-0.5,0);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 6.1f,0,-0.5f);
     glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
     glScalef(1.0,-1.0,1.0);
     glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
     glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(nutpos + 2.6,0,2.5);
+    glTranslatef(nutpos + 7.7f,0,-2.0);
     glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
     glScalef(1.0,-1.0,1.0);
     glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
     glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(nutpos + 3.5,0,0.5);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 4.5,0,-1.5);
-    glScalef(0.7,0.7,0.7);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 6.1,0,-0.5);
+    glTranslatef(nutpos + 8.1f,0,-0.3f);
     glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
     glScalef(1.0,-1.0,1.0);
     glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
     glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(nutpos + 7.7,0,-2.0);
+    glTranslatef(nutpos + 8.6f,0,2.3f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0,-1.0,1.0);
+    glTranslatef(0,0.5,0);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0,-0.5,0);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 9.1f,0,-2.3f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glScalef(1.0,-1.0,1.0);
+    glTranslatef(0,0.5,0);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    glTranslatef(0,-0.5,0);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(nutpos + 9.4f,0,0.5);
     glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
     glScalef(1.0,-1.0,1.0);
     glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
     glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(nutpos + 8.1,0,-0.3);
-    glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
+    glTranslatef(nutpos + 9.6f,0,1.5f);
+    glScalef(0.6f,0.6f,0.6f);
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
     glScalef(1.0,-1.0,1.0);
     glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
     glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
+    glScalef(1.0,0.001f,1.0);
+    glTranslatef(-0.7f,-1.0,-0.5);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 8.6,0,2.3);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.1,0,-2.3);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.4,0,0.5);
-    glScalef(0.5,0.5,0.5);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.6,0,1.5);
-    glScalef(0.6,0.6,0.6);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.8f));  //just loads the vertexes once
-    glScalef(1.0,-1.0,1.0);
-    glTranslatef(0,0.5,0);
-    dNuts(t,false,true,-0.3,rgb_a(1,1,1,0.1f));  //just loads the vertexes once
-    glTranslatef(0,-0.5,0);
-    glScalef(1.0,0.001,1.0);
-    glTranslatef(-0.7,-1.0,-0.5);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t,false,true,-0.3,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
+    dNuts(t,false,true,-0.3f,rgb_a(0.0, 0.0, 0.0, 0.05f));  //just loads the vertexes once
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
     glPopMatrix();
@@ -1837,16 +1818,16 @@ void drawParticles(float t, const Vector3 &pos, const Vector3 &velocity, const V
 }
 
 void drawCreditsBack(float t) {
-  drawBlendBis(t/1.454875*4    , 8, rgb_a(1,1,1,0.25), -100, -75, 740, 555, 20, 20, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
-  drawBlendBis(t/1.454875*4-0.2, 4, rgb_a(1,1,1,0.125), -100, -75, 740, 555, 20, 30, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
-  drawBlendBis(t/1.454875*4-0.4, 2, rgb_a(1,1,1,0.0625), -100, -75, 740, 555, 20, 40, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
-  drawBlendBis(t/1.454875*4-0.8, 1, rgb_a(1,1,1,0.003125), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
+    drawBlendBis(t / 1.454875f * 4, 8, rgb_a(1, 1, 1, 0.25f), -100, -75, 740, 555, 20, 20, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
+    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, rgb_a(1, 1, 1, 0.125f), -100, -75, 740, 555, 20, 30, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
+    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, rgb_a(1, 1, 1, 0.0625f), -100, -75, 740, 555, 20, 40, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
+    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, rgb_a(1, 1, 1, 0.003125f), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
 }
 
 void drawCredits(float t)
 {
-  float sync = t/1.454875*2-0.5;
-  float rsync = (sync>0)?floor(sync):-0.5;
+  float sync = t/1.454875f*2-0.5f;
+  float rsync = (sync>0)?floorf(sync):-0.5f;
 //  float e = exp(6*(rsync-sync));
   texture1->use();
 
@@ -1887,7 +1868,7 @@ void drawCredits(float t)
   glDisable(GL_LIGHTING);
   glEnable(GL_BLEND);
   glLoadIdentity();  
-    glRotatef(sin(t) * 45,0,0,1);
+    glRotatef(sinf(t) * 45,0,0,1);
     panViewPerspectiveFOV(45.0f);
 
     glEnable(GL_TEXTURE_2D);
@@ -1897,7 +1878,7 @@ void drawCredits(float t)
     glDisable(GL_DEPTH_TEST);
 
     Vector3 pos(2,-13,-30); //(sin(t) * 3,sin(cos(t * 3)),sin(t) * 3 - 30);
-    Vector3 vel(sin(t2) / 1.5,fabs(cos(t2)),0);
+    Vector3 vel(sinf(t2) / 1.5f,fabsf(cosf(t2)),0);
     Vector3 gravity(0.5,5,0);
     Vector3 rot(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     int tobecreated = 10;
@@ -1926,7 +1907,7 @@ void drawCredits(float t)
     parts1.Draw(t2);
 
     pos = Vector3(2,0,-30); //(sin(t) * 3,sin(cos(t * 3)),sin(t) * 3 - 30);
-    vel = Vector3(-sin(t2) / 1.5,-fabs(cos(t2)) * 3,0);
+    vel = Vector3(-sinf(t2) / 1.5f,-fabsf(cosf(t2)) * 3,0);
     gravity = Vector3(0.5,-5.0f,0);
     rot = Vector3(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     tobecreated = 10;
@@ -1964,7 +1945,7 @@ void drawCredits(float t)
   glBindTexture(GL_TEXTURE_2D,logo);
   glEnable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
-  drawBlendBis(t/1.45, 1, rgb_a(1,1,1,0.5),WIDTH / 2,80,WIDTH,HEIGHT - 80,10, 50, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
+  drawBlendBis(t / 1.45f, 1, rgb_a(1, 1, 1, 0.5), WIDTH / 2, 80, WIDTH, HEIGHT - 80, 10, 50, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
 
   glDisable(GL_STENCIL_TEST);
 
@@ -2017,7 +1998,7 @@ Es:
 
   glPushMatrix();
   glTranslatef(center, 0, center);
-  glColor4f(1,1,1,0.06);
+  glColor4f(1,1,1,0.06f);
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);
   float deltatex = 1/(PANLANDSIZE-1);
@@ -2055,7 +2036,7 @@ Es:
 //    z = videostep*(PANLANDSIZE-1);
   }
   glEnd();
-  glColor4f(1,1,1,0.2);
+  glColor4f(1,1,1,0.2f);
 
   glDisable(GL_TEXTURE_2D);
   glBegin(GL_LINES);
@@ -2102,14 +2083,14 @@ void drawPanLandscape(float t) {
   glTranslatef(0, -3, 0);
   //SUKA qui sarebbe da mettere frust.GetOGLFrust
   //e dentro la dPanLandscape sarebbero da controllare i tri/quads
-  dPanLandscape(t, 0.2, len/2, 1.5);
-  glTranslatef(0, -0.1, 0);
-  dPanLandscape(t+0.2, 0.2, len/2, 1.6);
+  dPanLandscape(t, 0.2f, len/2, 1.5f);
+  glTranslatef(0, -0.1f, 0);
+  dPanLandscape(t+0.2f, 0.2f, len/2, 1.6f);
   glDisable(GL_FOG);
 }
 
 void drawPanOverWiss(float t) {
-  float t1 = t/1.454875;
+  float t1 = t/1.454875f;
 
   int stock1 = (int)floor(t1);
   int stock2 = (int)floor(t1*8);
@@ -2120,11 +2101,11 @@ void drawPanOverWiss(float t) {
     randa[i] = wei[i]*vlattice(stock2,i)+(1-wei[i])*vlattice(stock1, i+50);
   }
   Vector3 pos(randa[0]*4,randa[1]*4,-18+randa[2]*4);
-  Vector3 rot(t * 30+randa[3]*6,sin(t2) * 30,0);
-  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(t2+randa[8]*3)) / 4.0f),true,true);
+  Vector3 rot(t * 30+randa[3]*6,sinf(t2) * 30,0);
+  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[8]*3)) / 4.0f),true,true);
   pos = Vector3(randa[4]*4,randa[5]*4,-12+randa[6]*4);
-  rot = Vector3(sin(t2) * 30, t * 30+randa[7]*6, 0);
-  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(t2+randa[9]*3)) / 4.0f),true,true);
+  rot = Vector3(sinf(t2) * 30, t * 30+randa[7]*6, 0);
+  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[9]*3)) / 4.0f),true,true);
 }
 
 /*##########################################################*/
@@ -2143,10 +2124,10 @@ float durata;
   //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   durata = (timebase[15 - orderr] - timebase[14 - orderr]);
-  tr = (panGetTime() - timebase[15] - (1.4548 * orderr)) / 1.4548 * durata;
-  float tr2 = (orderr+1)*1.4548*speed-mytime;
+  tr = (panGetTime() - timebase[15] - (1.4548f * orderr)) / 1.4548f * durata;
+  float tr2 = (orderr+1)*1.4548f*speed-mytime;
 
-  CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 320, 400, 50-15*(1-1.f/(1.1f+sin(tr*0.8))), 0.6f, 0, "from a close sight nobody is normal");
+  CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 320, 400, 50-15*(1-1.f/(1.1f+sinf(tr*0.8f))), 0.6f, 0, "from a close sight nobody is normal");
   
   panViewPerspectiveFOV(45);
   drawLines(tr,0.5,30);
@@ -2176,26 +2157,26 @@ float durata;
 
     //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
-    PrepareRenderToTexture((100.0f - (sin(mytime) * 45.0f)), 256);
-    drawHelix(mytime * 300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7,0,0),rgb_a(1,0.7,0,0.9));
-    drawHelix(mytime * 300,2.0f, 3.5f, (int) val, 30,GL_LINE,rgb_a(1,0.6,0,0),rgb_a(1,0.6,0,0.9));
+    PrepareRenderToTexture((100.0f - (sinf(mytime) * 45.0f)), 256);
+    drawHelix(mytime * 300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7f,0,0),rgb_a(1,0.7f,0,0.9f));
+    drawHelix(mytime * 300,2.0f, 3.5f, (int) val, 30,GL_LINE,rgb_a(1,0.6f,0,0),rgb_a(1,0.6f,0,0.9f));
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
 	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
-    drawLines(mytime,0.4,20);
+    drawLines(mytime,0.4f,20);
     panViewPerspective();
 
-    drawTexture(frame2,1,1,true,0.3,12,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.4,15,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.5,18,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.6,21,rgb_a(0.8,0.8,0.8,0.6),true);
-    drawTexture(frame2,1,1,true,0.7,24,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.8,27,rgb_a(0.7,0.6,0.6,0.6),true);
-    drawTexture(frame2,1,1,true,0.9,30,rgb_a(1,0.8,0.8,0.6),true);
-    drawTexture(frame2,1,1,true,1.0,33,rgb_a(0.5,0.4,0.3,0.6),true);
+    drawTexture(frame2,1,1,true,0.3f,12,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.4f,15,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.5f,18,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.6f,21,rgb_a(0.8f,0.8f,0.8f,0.6f),true);
+    drawTexture(frame2,1,1,true,0.7f,24,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.8f,27,rgb_a(0.7f,0.6f,0.6f,0.6f),true);
+    drawTexture(frame2,1,1,true,0.9f,30,rgb_a(1,0.8f,0.8f,0.6f),true);
+    drawTexture(frame2,1,1,true,1.0f,33,rgb_a(0.5f,0.4f,0.3f,0.6f),true);
 
-    drawTexture(frame2,1,1,true,1.0,133,rgb_a(0.5,0.4,0.3,0.6),true);
+    drawTexture(frame2,1,1,true,1.0f,133,rgb_a(0.5f,0.4f,0.3f,0.6f),true);
     panViewOrtho();
 
   }
@@ -2213,23 +2194,23 @@ float durata;
     glRotatef(-sinf(mytime / 10) * 45.0f, 0.0f, 1.0f, 0.0f);
     glRotatef(-sinf(mytime / 10) * 45.0f, 0.0f, 0.0f, 1.0f);
     frust.GetOGLFrustum();
-    dCylinder(0.2,24,12,5,sin(mytime),cos(mytime * 2) * 2,sin(cos(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0,1.0,1.0,0.7f),15);
+    dCylinder(0.2f,24,12,5,sinf(mytime),cosf(mytime * 2) * 2,sinf(cosf(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0f,1.0f,1.0f,0.7f),15);
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
 	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     panViewPerspective();
     //SUKA MODIFICATE LE SEGUENTI CHIAMATE
-    drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7,0.7,0.7,0.8),false);
+    drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7f,0.7f,0.7f,0.8f),false);
     
-    drawTexture(frame2,1,1,true,0.5,12,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.6,15,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.7,18,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.8,21,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.9,24,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,27,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,30,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,33,rgb_a(1,1,1,0.8),true);
+    drawTexture(frame2,1,1,true,0.5f,12,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.6f,15,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.7f,18,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.8f,21,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.9f,24,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,27,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,30,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,33,rgb_a(1,1,1,0.8f),true);
     //SUKA FINE MODIFICHE
 
   }
@@ -2254,7 +2235,7 @@ float durata;
   if (orderr == 4)
   {
     drawLines(tr,0.1f, 50);
-    float t1 = tr/1.454875;
+    float t1 = tr/1.454875f;
 
     int stock1 = (int) floor(t1);
     int stock2 = (int) floor(t1*8);
@@ -2274,9 +2255,9 @@ float durata;
     } else {
       float t2 = HALFPI*t1;
       Vector3 pos(0, 0,-18+(stock2-52));
-      Vector3 rot(tr * 30,sin(t2) * 30,0);
-      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(t2*5)) / 4.0f),true,true);
-      glColor4f(1,0.9,0.8,(stock2-52)*0.125);
+      Vector3 rot(tr * 30,sinf(t2) * 30,0);
+      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true,true);
+      glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);
       glVertex2f(0,0);
@@ -2333,7 +2314,7 @@ float durata;
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(9,tr,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
   }
 
   //tubo peloso
@@ -2349,7 +2330,7 @@ float durata;
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(11,tr,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
   }
 
   //sfondo vuoto + texture toroide
@@ -2357,7 +2338,7 @@ float durata;
   {
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
   }
 
   //flash + toroide
@@ -2367,7 +2348,7 @@ float durata;
     glDisable(GL_CULL_FACE);
     panViewPerspectiveFOV(190.0f - ((tr / durata) * 70.0f));
     drawToroide(orderr,tr,mytime);
-    float val = sinf(mytime)*2.5;
+    float val = sinf(mytime)*2.5f;
     glPushMatrix();
     glTranslatef(val, 0, 0);
     drawToroide(orderr,tr+50,mytime+1);
@@ -2383,7 +2364,7 @@ float durata;
     glDisable(GL_CULL_FACE);
     panViewPerspectiveFOV(110.0f - ((tr / durata) * 70.0f));
     drawToroide(orderr,tr,mytime);
-    float val = sinf(mytime)*2.5;
+    float val = sinf(mytime)*2.5f;
     glPushMatrix();
     glTranslatef(val, 0, 0);
     drawToroide(orderr,tr+50,mytime+1);
@@ -2418,7 +2399,7 @@ void Scena(float t, int order) {
     //drawSfondo(order,t);
 //      panViewPerspectiveFOV(180.0f - (panGetTime() * 15.0f));
       drawToroide(order,t,mytime);
-      float val = sinf(mytime)*2.5;
+      float val = sinf(mytime)*2.5f;
       glPushMatrix();
       glTranslatef(val, 0, 0);
       drawToroide(order,t+50,mytime+1);
@@ -2445,14 +2426,14 @@ void Scena(float t, int order) {
   if (order == 1)
   {
     glDisable(GL_TEXTURE_2D);
-    drawBlend(rgb_a(1,1,1,1.0f - (t / 2)),0,0,WIDTH,HEIGHT,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
+    drawBlend(rgb_a(1, 1, 1, 1.0f - (t / 2)), 0, 0, WIDTH, HEIGHT, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
   }
 
   if (order < 4)  //(order == 0) && 
   {
       panViewPerspectiveFOV(180.0f - (panGetTime() * 15.0f));
       drawToroide(order,t,mytime);
-      float val = sinf(mytime)*2.5;
+      float val = sinf(mytime)*2.5f;
       glPushMatrix();
       glTranslatef(val, 0, 0);
       drawToroide(order,t+50,mytime+1);
@@ -2463,9 +2444,7 @@ void Scena(float t, int order) {
       panViewOrtho();
       
       if (order == 0) {
-#ifdef __LINUX__
 	  glDisable(GL_CULL_FACE);
-#endif /* __LINUX__ */
 	  scritte->use();
       glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
       glEnable(GL_BLEND);
@@ -2492,7 +2471,7 @@ void Scena(float t, int order) {
       drawTexture(frame,1.1f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.2f))),true);
       drawTexture(frame,1.2f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.1f))),true);
       drawTexture(frame,1.3f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.0f))),true);
-      drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(mytime)) / 4.0f),false, true);
+      drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
 
       glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
       glEnable(GL_BLEND);
@@ -2502,8 +2481,8 @@ void Scena(float t, int order) {
 	    glEnable(GL_TEXTURE_GEN_T);
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-      CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.0f, 140, 80, 60, 0.6f, 0.5, "clean");
-      CoolPrint1(*FontArial, 50, t, 1.5f, 3.0f, 3.0f, 4.5f, 500, 400, 40, 0.8f, -0.1, "perceptions");
+      CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.0f, 140, 80, 60, 0.6f, 0.5f, "clean");
+      CoolPrint1(*FontArial, 50, t, 1.5f, 3.0f, 3.0f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "perceptions");
       glColor3f(1, 1, 1);
 	    glDisable(GL_TEXTURE_GEN_S);
 	    glDisable(GL_TEXTURE_GEN_T);
@@ -2516,7 +2495,7 @@ void Scena(float t, int order) {
     drawTexture(frame,1.0f,1.0f,true,t,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,t,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(order,t,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
 
     glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -2527,7 +2506,7 @@ void Scena(float t, int order) {
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     if (order == 3) {
-      CoolPrint1(*FontArial, 50, t, -1.5f, 0.0f, 1.0f, 2.5f, 500, 400, 40, 0.8f, -0.1, "perceptions");
+      CoolPrint1(*FontArial, 50, t, -1.5f, 0.0f, 1.0f, 2.5f, 500, 400, 40, 0.8f, -0.1f, "perceptions");
     } else {
       CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.0f, 140, 80, 60, 0.6f, 0.5, "clear");
       CoolPrint1(*FontArial, 50, t, 1.5f, 3.0f, 3.0f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "illusions");
@@ -2575,7 +2554,7 @@ void Scena(float t, int order) {
     if ((t * 1.6f) < 1.0f)
     {
       panViewPerspectiveFOV(45);
-      drawTubo(order,mytime,rgb_a(0.9f, 0.9f, 0.9f, 0.1f - (t * 2)),rgb_a(0.5 - (t * 2),0.25 - (t * 2),0.0625 - (t * 2),0.5f - (t * 4)));
+      drawTubo(order,mytime,rgb_a(0.9f, 0.9f, 0.9f, 0.1f - (t * 2)),rgb_a(0.5f - (t * 2),0.25f - (t * 2),0.0625f - (t * 2),0.5f - (t * 4)));
 
       drawBlend(rgb_a(1,1,1,1 - (t * 2.0f)),0,(int) -(t * 150.6f),WIDTH,(int) (HEIGHT + (t * 150.6f)),GL_SRC_ALPHA,GL_ONE,frame2);
       drawBlend(rgb_a(1,1,1,1 - (t * 2.0f)),0,(int) -(t * 150.6f),WIDTH,(int) (HEIGHT + (t * 150.6f)),GL_SRC_ALPHA,GL_ONE,frame2);
@@ -2594,13 +2573,8 @@ void Scena(float t, int order) {
     glDisable(GL_TEXTURE_GEN_S);
     glDisable(GL_TEXTURE_GEN_T);
 
-#ifdef __LINUX__
     glColor4f(1.0f,1.0f,1.0f,0.6f);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-#endif /* __LINUX__ */
-#ifdef WIN32
-    glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
-#endif /* WIN32 */
     glEnable(GL_BLEND);
     panViewOrtho();
     scritte->use();
@@ -2608,8 +2582,8 @@ void Scena(float t, int order) {
 	  glEnable(GL_TEXTURE_GEN_T);
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, WIDTH / 2, HEIGHT / 2 - 20, 200+50*sin(t), 0.5f, -0.25*sin(t), "GO");
-    CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, 500, 400, 50, 1.5f, -0.25*sin(t), "where?");
+    CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, WIDTH / 2, HEIGHT / 2 - 20, 200+50*sinf(t), 0.5f, -0.25f*sinf(t), "GO");
+    CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, 500, 400, 50, 1.5f, -0.25f*sinf(t), "where?");
     glColor3f(1, 1, 1);
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
@@ -2619,7 +2593,7 @@ void Scena(float t, int order) {
   if (order == 9)
   {
     drawLines(t,0.1f, 50);
-    float t1 = t/1.454875;
+    float t1 = t/1.454875f;
 
     int stock1 = (int) floor(t1);
     int stock2 = (int) floor(t1*8);
@@ -2632,21 +2606,16 @@ void Scena(float t, int order) {
 	    glEnable(GL_TEXTURE_GEN_T);
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-#ifdef WIN32
-      CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 50-15*(1-1.f/(1.1f+sin(t*0.8))), 0.6f, 0, "from a close sight nobody is normal");
-#endif /* WIN32 */
-#ifdef __LINUX__
-      CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 40-15*(1-1.f/(1.1f+sin(t*0.8))), 0.6f, 0, "from a close sight nobody is normal");
-#endif /* __LINUX__ */
+      CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 50 - 15 * (1 - 1.f / (1.1f + sinf(t * 0.8f))), 0.6f, 0, "from a close sight nobody is normal");
 	    glDisable(GL_TEXTURE_GEN_S);
 	    glDisable(GL_TEXTURE_GEN_T);
       glDisable(GL_TEXTURE_2D);
     } else {
       float t2 = HALFPI*t1;
       Vector3 pos(0, 0,-18+(stock2-52));
-      Vector3 rot(t * 30,sin(t2) * 30,0);
-      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabs(sin(t2*5)) / 4.0f),true,true);
-      glColor4f(1,0.9,0.8,(stock2-52)*0.125);
+      Vector3 rot(t * 30,sinf(t2) * 30,0);
+      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true,true);
+      glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);
       glVertex2f(0,0);
@@ -2674,8 +2643,8 @@ void Scena(float t, int order) {
 	  glEnable(GL_TEXTURE_GEN_T);
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    CoolPrint1(*FontArial, 50, t, 1.0, 2.0f, 5.8f, 7.0f, WIDTH / 2, 80, 100+25*sin(t), 0.7f, -0.25*sin(t), "look around");
-    CoolPrint1(*FontArial, 50, t, 5.8f, 7.0f, 10.6f, 11.6f, WIDTH / 2, 80, 100+25*sin(t), 0.7f, -0.25*sin(t), "look inside");
+    CoolPrint1(*FontArial, 50, t, 1.0, 2.0f, 5.8f, 7.0f, WIDTH / 2, 80, 100+25*sinf(t), 0.7f, -0.25f*sinf(t), "look around");
+    CoolPrint1(*FontArial, 50, t, 5.8f, 7.0f, 10.6f, 11.6f, WIDTH / 2, 80, 100+25*sinf(t), 0.7f, -0.25f*sinf(t), "look inside");
     glColor3f(1, 1, 1);
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
@@ -2694,24 +2663,24 @@ void Scena(float t, int order) {
     glRotatef(sinf(mytime / 10) * 45.0f, 0.0f, 1.0f, 0.0f);
     glRotatef(sinf(mytime / 10) * 45.0f, 0.0f, 0.0f, 1.0f);
     frust.GetOGLFrustum();
-    dCylinder(0.2,24,12,5,sin(mytime),cos(mytime * 2) * 2,sin(cos(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0,1.0,1.0,0.7f),15);
+    dCylinder(0.2f,24,12,5,sinf(mytime),cosf(mytime * 2) * 2,sinf(cosf(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0,1.0,1.0,0.7f),15);
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
 	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     panViewPerspective();
     //SUKA MODIFICATE LE SEGUENTI CHIAMATE
-    drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7,0.7,0.7,0.8),false);
+    drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7f,0.7f,0.7f,0.8f),false);
     
 
-    drawTexture(frame2,1,1,true,0.5,12,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.6,15,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.7,18,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.8,21,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,0.9,24,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,27,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,30,rgb_a(1,1,1,0.8),true);
-    drawTexture(frame2,1,1,true,1.0,33,rgb_a(1,1,1,0.8),true);
+    drawTexture(frame2,1,1,true,0.5f,12,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.6f,15,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.7f,18,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.8f,21,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,0.9f,24,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,27,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,30,rgb_a(1,1,1,0.8f),true);
+    drawTexture(frame2,1,1,true,1.0f,33,rgb_a(1,1,1,0.8f),true);
     //SUKA FINE MODIFICHE
 
     glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
@@ -2722,8 +2691,8 @@ void Scena(float t, int order) {
 	  glEnable(GL_TEXTURE_GEN_T);
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    CoolPrint1(*FontArial, 50, t, 0, 1.0f, 11.4f, 11.6f, 320, 60, 50+5*sin(t), 0.5f, 0, "do you have the");
-    CoolPrint1(*FontArial, 50, t, 1.0f, 2.0f, 11.4f, 11.6f, 320, 400, 120, 1.0f, -0.25*sin(t), "POWER");
+    CoolPrint1(*FontArial, 50, t, 0, 1.0f, 11.4f, 11.6f, 320, 60, 50+5*sinf(t), 0.5f, 0, "do you have the");
+    CoolPrint1(*FontArial, 50, t, 1.0f, 2.0f, 11.4f, 11.6f, 320, 400, 120, 1.0f, -0.25f*sinf(t), "POWER");
   }
 
   //flusso energetico lamadonna
@@ -2756,26 +2725,26 @@ void Scena(float t, int order) {
 */
     //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
-    PrepareRenderToTexture((100.0f - (sin(mytime) * 45.0f)), 256);
-    drawHelix(mytime * -300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7,0,0),rgb_a(1,0.7,0,0.9));
-    drawHelix(mytime * -300,2.0f, 3.5f, (int) val, 30,GL_LINE,rgb_a(1,0.6,0,0),rgb_a(1,0.6,0,0.9));
+    PrepareRenderToTexture((100.0f - (sinf(mytime) * 45.0f)), 256);
+    drawHelix(mytime * -300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7f,0,0),rgb_a(1,0.7f,0,0.9f));
+    drawHelix(mytime * -300,2.0f, 3.5f, (int) val, 30,GL_LINE,rgb_a(1,0.6f,0,0),rgb_a(1,0.6f,0,0.9f));
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
 	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
-    drawLines(mytime,0.4,20);
+    drawLines(mytime,0.4f,20);
     panViewPerspective();
 
-    drawTexture(frame2,1,1,true,0.3,12,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.4,15,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.5,18,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.6,21,rgb_a(0.8,0.8,0.8,0.6),true);
-    drawTexture(frame2,1,1,true,0.7,24,rgb_a(1,1,1,0.6),true);
-    drawTexture(frame2,1,1,true,0.8,27,rgb_a(0.7,0.6,0.6,0.6),true);
-    drawTexture(frame2,1,1,true,0.9,30,rgb_a(1,0.8,0.8,0.6),true);
-    drawTexture(frame2,1,1,true,1.0,33,rgb_a(0.5,0.4,0.3,0.6),true);
+    drawTexture(frame2,1,1,true,0.3f,12,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.4f,15,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.5f,18,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.6f,21,rgb_a(0.8f,0.8f,0.8f,0.6f),true);
+    drawTexture(frame2,1,1,true,0.7f,24,rgb_a(1,1,1,0.6f),true);
+    drawTexture(frame2,1,1,true,0.8f,27,rgb_a(0.7f,0.6f,0.6f,0.6f),true);
+    drawTexture(frame2,1,1,true,0.9f,30,rgb_a(1,0.8f,0.8f,0.6f),true);
+    drawTexture(frame2,1,1,true,1.0f,33,rgb_a(0.5f,0.4f,0.3f,0.6f),true);
 
-    drawTexture(frame2,1,1,true,1.0,133,rgb_a(0.5,0.4,0.3,0.6),true);
+    drawTexture(frame2,1,1,true,1.0f,133,rgb_a(0.5f,0.4f,0.3f,0.6f),true);
     panViewOrtho();
 
     scritte->use();
@@ -2783,9 +2752,9 @@ void Scena(float t, int order) {
 	  glEnable(GL_TEXTURE_GEN_T);
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    CoolPrint1(*FontArial, 50, t, 0, 1.0f, 5.6f, 5.8f, 320, 100, 50+5*sin(t), 0.5f, 0, "to make your  d r e a m s ");
-    CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 320, 100, 50+5*sin(t), 0.5f, 0, "to make your nightmares");
-    CoolPrint1(*FontArial, 50, t, 1.0f, 2.0f, 11.4f, 11.6f, 320, 300, 120, 1.0f, -0.25*sin(t), "REAL?");
+    CoolPrint1(*FontArial, 50, t, 0, 1.0f, 5.6f, 5.8f, 320, 100, 50+5*sinf(t), 0.5f, 0, "to make your  d r e a m s ");
+    CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 320, 100, 50+5*sinf(t), 0.5f, 0, "to make your nightmares");
+    CoolPrint1(*FontArial, 50, t, 1.0f, 2.0f, 11.4f, 11.6f, 320, 300, 120, 1.0f, -0.25f*sinf(t), "REAL?");
     glColor3f(1, 1, 1);
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
@@ -2799,17 +2768,16 @@ void Scena(float t, int order) {
   if (order == 14)
   {
     Vector3 occhio;
-    float ang;
-    if (t < (1.4548 * 4))
+    if (t < (1.4548f * 4))
       occhio = Vector3(0,0,0);
-    else if ( (t >= (1.4548 * 4)) && (t < (1.4548 * 5)) )
+    else if ( (t >= (1.4548f * 4)) && (t < (1.4548f * 5)) )
     {
-      ang = ((t - (1.4548 * 4)) / 1.4548) * PI ;
-      occhio = Vector3(-sin(ang) * 15 ,(t - (1.4548 * 4)) * 4, -(t - (1.4548 * 4))*15 );
+      float ang = ((t - (1.4548f * 4)) / 1.4548f) * PI;
+      occhio = Vector3(-sinf(ang) * 15 ,(t - (1.4548f * 4)) * 4, -(t - (1.4548f * 4))*15 );
     }
     else if (t >= (1.4548 * 5))
     {
-      occhio = Vector3(0 , 1.4548 * 4 , -1.4548*15 );
+      occhio = Vector3(0 , 1.4548f * 4 , -1.4548f*15 );
     }
 
     glEnable(GL_LIGHT0);
@@ -2828,21 +2796,21 @@ void Scena(float t, int order) {
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-    CoolPrint1(*FontArial, 50, t, 0, 1, 10.5, 11.5, 370, 120, 70, 0.7f, 0, "Join us!");
+    CoolPrint1(*FontArial, 50, t, 0, 1, 10.5f, 11.5f, 370, 120, 70, 0.7f, 0, "Join us!");
     glColor3f(1, 1, 1);
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
     glDisable(GL_TEXTURE_2D);
   
-    drawLines(t,0.3,20);
+    drawLines(t,0.3f,20);
   }
 
   if (order == 15)
 #endif
   {
     glClearColor(0.0f,0.0f,0.0f,0.5f);
-    float sync = t/1.454875*2-0.5;
-    float rsync = (sync>0)?floor(sync):-0.5;
+    float sync = t/1.454875f*2-0.5f;
+    float rsync = (sync>0)?floorf(sync):-0.5f;
 //    float e = exp(6*(rsync-sync));
     ScenaRewind((int)rsync);
     //flash
@@ -2859,7 +2827,7 @@ void Scena(float t, int order) {
     static char * nomi[12] = {"haujobb", "", "mfx", "farbrausch","mewlers","vantage","foobug","purple","kolor","hirmu","calodox"};
 // quello vuoto e' vuoto perche' non si vede
     for(int i = 0; i < 12; i++) {
-      CoolPrint1(*FontArial, 50, sync, i-0.1, i, i+1, i+1.1, 420-160*(i%2), i*30+100, 110, 0.7f, 0, nomi[i]);
+      CoolPrint1(*FontArial, 50, sync, i-0.1f, i, i+1, i+1.1f, 420-160*(i%2), i*30+100, 110, 0.7f, 0, nomi[i]);
     }
 
 
@@ -2876,20 +2844,20 @@ void Scena(float t, int order) {
   if ((order == 9) || (order == 10) || (order == 15) || (order == 12) || (order == 13)) 
   {
     //flash
-    float sync = t/1.454875*2-0.5;
-    float rsync = (sync>0)?floor(sync):-0.5;
-    float e = exp(6*(rsync-sync));
+    float sync = t/1.454875f*2-0.5f;
+    float rsync = (sync>0)?floorf(sync):-0.5f;
+    float e = expf(6*(rsync-sync));
 
     if ((order != 15) || (rsync <= 13)) {
       glClearColor(0,0,0,0.5);
       texture2->use();
-      drawBlendBis(rsync, 1, rgb_a(4.8,4.5,4.5,1.33*e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
-      drawBlendBis(rsync, 1, rgb_a(4.5,4.8,4.5,1.33*e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
-      drawBlendBis(rsync, 1, rgb_a(4.5,4.5,4.8,1.33*e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,NULL);
+      drawBlendBis(rsync, 1, rgb_a(4.8f, 4.5f, 4.5f, 1.33f * e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
+      drawBlendBis(rsync, 1, rgb_a(4.5f, 4.8f, 4.5f, 1.33f * e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
+      drawBlendBis(rsync, 1, rgb_a(4.5f, 4.5f, 4.8f, 1.33f * e), -100, -75, 740, 555, 20, 50, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
     }
     if (order == 9) { // solo sui wisscosi!
       if (sync > 13) { // total in sync 14.4, in time 10.471
-        glColor4f(0,0,0, (t-12.5)/1.9); // 10.471
+        glColor4f(0,0,0, (t-12.5f)/1.9f); // 10.471
         glBegin(GL_QUADS);
         glVertex2f(0,0);
         glVertex2f(640,0);
@@ -2917,7 +2885,7 @@ void Scena(float t, int order) {
     CoolPrint1(*FontArial, 50, t, -0.06f, 0.00f, 5.6f, 5.8f, 270, 120, 120, 0.7f, 0, "P");
     CoolPrint1(*FontArial, 50, t,  0.20f, 0.26f, 5.6f, 5.8f, 370, 120, 120, 0.7f, 0, "K");
     CoolPrint1(*FontArial, 50, t,  0.47f, 0.53f, 11.4f, 11.6f, 320, 240, 120, 0.7f, 0, "IS");
-    CoolPrint1(*FontArial, 50, t,  0.73f, 0.79f, 11.4f, 11.6f, 320, 360, 120+40*sin((t-0.73)*3), 0.7f, 0, "DEAD");
+    CoolPrint1(*FontArial, 50, t,  0.73f, 0.79f, 11.4f, 11.6f, 320, 360, 120+40*sinf((t-0.73f)*3), 0.7f, 0, "DEAD");
     glColor3f(1, 1, 1);
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
@@ -3018,10 +2986,9 @@ void skSwappuffers()
   glFlush();
 #ifdef WIN32
   SwapBuffers(hDC);
-#endif /* WIN32 */
-#ifdef __LINUX__
+#else
   SDL_GL_SwapBuffers();
-#endif /* __LINUX__ */
+#endif
 }
 
 #ifdef __LINUX__
@@ -3066,17 +3033,14 @@ void skDraw() {
       float curtime = skGetTime()-closetime;
       if (curtime>7){
 #ifdef WIN32
-        PostQuitMessage(0);
-#endif /* WIN32 */
-#ifdef __LINUX__
-	done = 1;
-#endif /* __LINUX__ */
-        return;
+          PostQuitMessage(0);
+#else
+          done = 1;
+#endif
+          return;
       }
       glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-#ifdef __LINUX__
       glColor4f(1.0f,1.0f,1.0f,0.6f);
-#endif /* __LINUX__ */
       glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
       glEnable(GL_BLEND);
 //    panViewOrtho();
@@ -3085,11 +3049,11 @@ void skDraw() {
 	    glEnable(GL_TEXTURE_GEN_T);
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-      CoolPrint1(*FontArial, 50, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320,  50, 50, 0.6f, 0.1, "MekkaSymposium 2002");
-      CoolPrint1(*FontArial, 10, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 300, 20, 0.8f, 0.0, "this spurious reality hasn't been manufactured by");
-      CoolPrint1(*FontArial, 30, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 325, 30, 0.8f, 0.1, "Runciter Associates");
-      CoolPrint1(*FontArial, 10, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 350, 20, 0.8f, 0.0, "and in any case not in collaboration with");
-      CoolPrint1(*FontArial, 100, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 385, 80, 0.8f, 0.1, "SpinningKids");
+      CoolPrint1(*FontArial, 50, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320,  50, 50, 0.6f, 0.1f, "MekkaSymposium 2002");
+      CoolPrint1(*FontArial, 10, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 300, 20, 0.8f, 0.0f, "this spurious reality hasn't been manufactured by");
+      CoolPrint1(*FontArial, 30, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 325, 30, 0.8f, 0.1f, "Runciter Associates");
+      CoolPrint1(*FontArial, 10, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 350, 20, 0.8f, 0.0f, "and in any case not in collaboration with");
+      CoolPrint1(*FontArial, 100, curtime, 0.0f, 1.0f, 6.0f, 7.0f, 320, 385, 80, 0.8f, 0.1f, "SpinningKids");
       glColor3f(1, 1, 1);
 	    glDisable(GL_TEXTURE_GEN_S);
 	    glDisable(GL_TEXTURE_GEN_T);
@@ -3227,14 +3191,13 @@ void skInitDemoStuff()
 
 #ifdef WIN32
   FontArial = new GLFont(hDC, "Arial");
-#endif /* WIN32 */
-#ifdef __LINUX__
+#else
   glfInit();
   glfSetMemoryLoad();
   static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE(arial_black_glf);
   //static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE(arial1_glf);
   FontArial   = new GLFont(&glf_memfile);
-#endif /* __LINUX__ */
+#endif
 
 
 	glClearColor (0.0f, 0.0f, 0.0f, 0.5f);						// Black Background
@@ -3256,9 +3219,6 @@ void skInitDemoStuff()
   //inizializzo i valori di defautl del particle system
   //e le relative textures
 
-  //GLTexture* gauss = spot(6,1);
-  //gauss->use();
-
 	skSwappuffers();
 
 
@@ -3271,16 +3231,16 @@ void skInitDemoStuff()
   frame = perlin(8, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
   frame2 = perlin(8, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
   //int a = frame2->getSize();
-  gauss = perlin(3, 1, 0.3f, 0.7f, 2, true); //spot(4,0.5); - NON VIENE USATA ?!?
+  gauss = perlin(3, 1, 0.3f, 0.7f, 2, true);
 
-  toro = perlin(4, 5, 0.4f, 0.5f, 1.5, true);//spot(4,1); // 2, 5 non ha senso! Leggi i fottuti parametri!
-	cubo = perlin(5, 16, 0.2f, 0.3f, 2.2, true);//spot(4,1);
-	texture1 = perlin(8,3000,0.3,0.5, 1.8, false);
-	texture2 = perlin(8,300,0.1,0.97, 3, false);
+  toro = perlin(4, 5, 0.4f, 0.5f, 1.5, true);
+	cubo = perlin(5, 16, 0.2f, 0.3f, 2.2f, true);
+	texture1 = perlin(8,3000,0.3f,0.5, 1.8f, false);
+	texture2 = perlin(8,300,0.1f,0.97f, 3, false);
 	mytek = perlin(4,16,0.4f, 0.5f, 3, true);
 	tex = perlin(3, 1, 0.4f, 0.5f, 2, true);
 	tex2 = perlin(8, 132, 0.3f, 0.7f, 2, true);
-	scritte = perlin(7, 100, 0.6f, 0.5f, 1.3, true);// usare per le scritte
+	scritte = perlin(7, 100, 0.6f, 0.5f, 1.3f, true);// usare per le scritte
 
   //LOD, radius
   initSphereObject(40,2);
@@ -3313,7 +3273,7 @@ int flag_w = 0;
 int flag_hidden = 0;
 int flag_d_value = 0;
 
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     int c;
 
     while ((c = getopt (argc, argv, "?PKwd:")) != -1)
@@ -3331,8 +3291,8 @@ main(int argc, char *argv[]) {
 	case 'd':
 	    {
 		char *tail;
-		if (optarg != NULL) flag_d_value = strtol(optarg,&tail,0);
-		if (optarg == NULL || tail == optarg || *tail != '\0') {
+		if (optarg != nullptr) flag_d_value = strtol(optarg,&tail,0);
+		if (optarg == nullptr || tail == optarg || *tail != '\0') {
 		    fprintf(stderr, "Invalid display depth (bits per pixel)\n");
 		    exit(1);
 		}
@@ -3357,13 +3317,13 @@ main(int argc, char *argv[]) {
 	exit(1);
     }
 
-    if ( SDL_SetVideoMode(WIDTH, HEIGHT, flag_d_value, SDL_OPENGL | (!flag_w * SDL_FULLSCREEN)) == NULL ) {
+    if ( SDL_SetVideoMode(WIDTH, HEIGHT, flag_d_value, SDL_OPENGL | (!flag_w * SDL_FULLSCREEN)) == nullptr) {
 	fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
 	SDL_Quit();
 	exit(2);
     }
 
-    SDL_WM_SetCaption("PK is dead", NULL);
+    SDL_WM_SetCaption("PK is dead", nullptr);
     SDL_ShowCursor(0);
 
     done = 0;
@@ -3389,11 +3349,11 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 	winclass.cbClsExtra		= 0;
 	winclass.cbWndExtra		= 0;
 	winclass.hInstance		= hinstance;
-	winclass.hIcon			= LoadIcon(NULL, IDI_APPLICATION);
-	winclass.hIconSm		= LoadIcon(NULL, IDI_APPLICATION);
-	winclass.hCursor		= LoadCursor(NULL, IDC_ARROW);
+	winclass.hIcon			= LoadIcon(nullptr, IDI_APPLICATION);
+	winclass.hIconSm		= LoadIcon(nullptr, IDI_APPLICATION);
+	winclass.hCursor		= LoadCursor(nullptr, IDC_ARROW);
 	winclass.hbrBackground	= (HBRUSH)(COLOR_APPWORKSPACE);
-	winclass.lpszMenuName	= NULL;
+	winclass.lpszMenuName	= nullptr;
 	winclass.lpszClassName	= "WINDOW_CLASS";
 
 	if (!RegisterClassEx(&winclass)) 
@@ -3456,7 +3416,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 #endif
 	if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
 								   WINDOW_CLASS_NAME,	// Class Name
-								   SK_WINDOW_TITLE,					// Window Title
+								   WINDOWTITLE,					// Window Title
 								   windowStyle,							// Window Style
 								   0, 0,								// Window X,Y Position
 								   windowRect.right - windowRect.left,	// Window Width
@@ -3464,7 +3424,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 								   HWND_DESKTOP,						// Desktop Is Window's Parent
 								   0,									// No Menu
 								   hInstance, // Pass The Window Instance
-                   NULL)) {
+        nullptr)) {
   	hDC = GetDC (hWND);
 
   	iPixelFormat = ChoosePixelFormat(hDC, &pfd);
@@ -3490,12 +3450,13 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
       isMusicEnabled = false;
     }
     if (isMusicEnabled)
+    {
 #ifdef WIN32
-  	  fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), NULL);
-#endif /* WIN32 */
-#ifdef __LINUX__
-    fmodule =   FMUSIC_LoadSong("cippa", NULL);
-#endif /* __LINUX__ */
+        fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
+#else
+        fmodule = FMUSIC_LoadSong("cippa", nullptr);
+#endif
+    }
 
     if (!fmodule) 
     {
@@ -3513,7 +3474,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 #ifdef WIN32
     while (true) {
   		MSG msg;
-  		if (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) { 
+  		if (PeekMessage(&msg, nullptr,0,0,PM_REMOVE)) {
   			if (msg.message == WM_QUIT) 
           break;
   			TranslateMessage(&msg);
@@ -3521,8 +3482,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   		} else
   			skDraw();
   	}
-#endif /* WIN32 */
-#ifdef __LINUX__
+#else
     while ( ! done ) {
 	skDraw();
         {
@@ -3548,7 +3508,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
             }
         }
     }
-#endif /* __LINUX__ */
+#endif
 
     if (isMusicEnabled)
     {
@@ -3584,10 +3544,9 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 
 #ifdef WIN32
 	ExitProcess(0);
-#endif /* WIN32 */
-#ifdef __LINUX__
+#else
 	SDL_Quit();
-#endif /* __LINUX__ */
+#endif
   return 0;
 }
 

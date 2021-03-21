@@ -13,6 +13,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <algorithm>
 
 #define PI				    3.1415926535897932384626433832795f
 #define PIOVER180		  0.0174532925199432957692369076848861f
@@ -31,7 +32,7 @@ void CoolPrint1(GLFont const &font, int n, float t, float st, float on, float fd
   char text[256];
 	va_list		ap;
 
-	if (fmt == NULL)
+	if (fmt == nullptr)
 		return;
 	va_start(ap, fmt);
 #ifdef WIN32
@@ -53,12 +54,7 @@ void CoolPrint1(GLFont const &font, int n, float t, float st, float on, float fd
   float height = 0;
   for(unsigned int i = 0; i < l; i++) {
     width += font.getWidth(text[i], tracking);
-#ifdef WIN32
-    height = max(height, font.getHeight(text[i]));
-#endif
-#ifdef __LINUX__
-    height = height > font.getHeight(text[i]) ? height : font.getHeight(text[i]);
-#endif
+    height = std::max(height, font.getHeight(text[i]));
   }
 
   x -= gs*width/2;

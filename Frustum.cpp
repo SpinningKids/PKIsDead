@@ -4,6 +4,12 @@
 
 #include "Frustum.h"
 
+#ifdef WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
+#include <gl/GL.h>
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -25,7 +31,6 @@ void CFrustum::GetOGLFrustum()
   //float   proj[16];
   //float   modl[16];
   float   clip[16];
-  float   t;
 
   // Get the current PROJECTION matrix
   glGetFloatv( GL_PROJECTION_MATRIX, proj.Get() );

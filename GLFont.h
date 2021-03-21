@@ -9,15 +9,14 @@
 #ifndef GLFONT_H_
 #define GLFONT_H_
 
-#pragma once
-
 #ifdef WIN32
+#define NOMINMAX
 #include <Windows.h>
 #include <GL/gl.h>
 #else
 #include <GL/gl.h>
 #include "glf.h"
-#endif /* __LINUX__ */
+#endif
 
 class GLFont {
   GLYPHMETRICSFLOAT gmf[96];
