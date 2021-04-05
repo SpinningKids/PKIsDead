@@ -5,13 +5,9 @@
 #ifndef PARTICLESYSTEM_H_
 #define PARTICLESYSTEM_H_
 
-#include "Object.h"
+#include "AsmMath4.h"
 
 #define MAX_PARTICLES 4000
-
-#define ONLY_CREATE		  0
-#define ONLY_UPDATE		  1
-#define UPDATE_AND_CREATE 2
 
 #define DEATH_AGE  0.0f
 
@@ -70,27 +66,34 @@ private:
     CParticleSystem* m_pParent{ nullptr };
 };
 
-class CParticleSystem : public CObject
-{
+class CParticleSystem {
 public:
-    void SetUpdateFlag(int flag);
+    void SetPosition(const Vector3* v) {
+        m_v3Position = *v;
+    }
+
+    void SetPosition(float x, float y, float z) {
+        m_v3Position.x = x;
+        m_v3Position.y = y;
+        m_v3Position.z = z;
+    }
+
+    const Vector3& GetPosition() const {
+        return m_v3Position;
+    }
+
     bool StepOver(float time, float num_to_create);
     void Draw(float time);
     void SetVelocity(Vector3 vel);
-    void SetSystemFlag(int flag, bool state);
     void SetSpread(float min, float max, float value);
     void SetSpeed(float value);
     void SetSize(float start, float end);
     void SetParticlesPerSec(unsigned int number);
     void SetLife(float seconds);
     void SetGravity(float x, float y, float z);
-    void SetAttraction(unsigned int Attraction_Percent);
     void SetAngle(float half_angle);
     CParticleSystem();
     virtual ~CParticleSystem();
-
-    bool IsAttracting(void) { return m_bAttracting; }
-    bool IsStopped(void) { return m_bStopped; }
 
     CParticle particle[MAX_PARTICLES];//All of our particles
 
@@ -115,22 +118,15 @@ public:
     float m_fSpread_factor;		//Used to divide spread
 
     Vector3 gravity;			//Gravity for the X, Y, and Z axis
-    float m_fAttraction_percent;
 
 private:
-    bool m_bAttracting;			//Is the system attracting particle towards itself?
-    bool m_bStopped;				//Have the particles stopped emitting?
-
+    Vector3   m_v3Position{ 0.0f, 0.0f, 0.0f };
     unsigned int m_uiParticles_per_sec;	//Particles emitted per second
     unsigned int m_uiParticles_numb_alive;//The number of particles currently alive
 
     float m_fAge;					//The system's current age (in seconds)
 
     float m_fLast_update;			//The last time the system was updated
-
-    float m_fEmission_residue;		//Helps emit very precise amounts of particles
-
-    int m_iUpdateFlag;
 };
 
 #endif // PARTICLESYSTEM_H_

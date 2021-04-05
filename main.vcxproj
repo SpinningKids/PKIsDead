@@ -114,7 +114,6 @@
     <ClCompile Include="minifmod\music_formatxm.c" />
     <ClCompile Include="minifmod\system_file.c" />
     <ClCompile Include="noise.cpp" />
-    <ClCompile Include="Object.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SphereEffect.cpp" />
     <ClCompile Include="utils.cpp" />
@@ -139,7 +138,6 @@
     <ClInclude Include="minifmod\system_memory.h" />
     <ClInclude Include="minifmod\xmeffects.h" />
     <ClInclude Include="noise.h" />
-    <ClInclude Include="Object.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="resources\resource.h" />
     <ClInclude Include="SphereEffect.h" />

@@ -188,14 +188,12 @@ unsigned int memopen(char *name)
 	return (unsigned int)memfile;
 }
 
-void memclose(unsigned int handle)
-{
+void memclose(unsigned int handle) {
 	MEMFILE *memfile = (MEMFILE *)handle;
 	delete memfile;
 }
 
-int memread(void *buffer, int size, unsigned int handle)
-{
+int memread(void *buffer, int size, unsigned int handle) {
 	MEMFILE *memfile = (MEMFILE *)handle;
 
 	if (memfile->pos + size >= memfile->length)
@@ -207,8 +205,7 @@ int memread(void *buffer, int size, unsigned int handle)
 	return size;
 }
 
-void memseek(unsigned int handle, int pos, signed char mode)
-{
+void memseek(unsigned int handle, int pos, signed char mode) {
 	MEMFILE *memfile = (MEMFILE *)handle;
 
 	if (mode == SEEK_SET) 
@@ -222,64 +219,53 @@ void memseek(unsigned int handle, int pos, signed char mode)
 		memfile->pos = memfile->length;
 }
 
-int memtell(unsigned int handle)
-{
+int memtell(unsigned int handle) {
 	MEMFILE *memfile = (MEMFILE *)handle;
 	return memfile->pos;
 }
 
 
 //This just sets the states/matrices needed to render in a texture
-void PrepareRenderToTexture(float FOV,int size)
-{
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void PrepareRenderToTexture(float FOV,int size) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(FOV,((float)size)/size,0.1f,600.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(FOV, ((float)size) / size, 0.1f, 600.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
-	glViewport(0,0,size,size);
-	glLoadIdentity();
+    glViewport(0, 0, size, size);
+    glLoadIdentity();
 }
 
 
-void DoRenderToTexture(int size,GLTexture* tex)
-{
-  glFlush();
-	glBindTexture(GL_TEXTURE_2D,tex->getID());
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, size, size, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0,0,WIDTH,HEIGHT);
-  donerendertotexture = true;
+void DoRenderToTexture(int size, GLTexture* tex) {
+    glFlush();
+    glBindTexture(GL_TEXTURE_2D, tex->getID());
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, size, size, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, WIDTH, HEIGHT);
+    donerendertotexture = true;
 }
 
 //function that evaluates the pos vor a vertex on a cassini oval
 Vector3 EvalNut(float t,float a,float b,int sign)
 {
-   Vector3 p;
    float a2 = a * a;
    float b2 = b * b;
    float a2s = a2 * sinf(2 * t);
    float c1 = b2 * b2 - a2s * a2s;
    float c2 = sqrtf(a2 * cosf(2 * t) + (c1 <= 0 ? 0 : sign * sqrtf(c1)));
-   p.x = cosf(t) * c2;
-   p.y = sinf(t) * c2;
-   p.z = 0.0;
-
-   if (a > b)
-      p.x -= a;
-
-   return(p);
+   
+   return{ cosf(t) * c2 - ((a > b) ? a : 0), sinf(t) * c2, 0.0 };
 }
 
 //SUKA MODIFICATA QUESTA ROUTINE COPIARE TUTTA
 //Just draws a cube in the origin
 //Parameters:
 //size      : the cube size
-void dCube(const Vector3 &size)
-{
+void dCube(const Vector3 &size) {
     Vector3 min = -size / 2.0f;
     Vector3 max = size / 2.0f;
 
@@ -335,213 +321,207 @@ void dCube(const Vector3 &size)
 //flatten : if enabled flatten the ovals UNDER the fval 
 //fval : if flatten is enabled the ovals are flatten under this value
 //
-void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a col)
-{
-    float theta1,theta2;
-  float tstart,tstop,t1,t2;
-  Vector3 p[4],q[2],n[4];
-  Vector3 zperp(0,0,1);
-  float a,b;  
+void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_a col) {
+    float tstart, tstop, t1, t2;
+    Vector3 p[4], n[4];
+    Vector3 zperp(0, 0, 1);
+    float a, b;
 
-//lod (h/r)
-  float N = NUTSH;
-  float M = NUTSV;
+    //lod (h/r)
+    float N = NUTSH;
+    float M = NUTSV;
 
-  //the calc mess is just to speed up things (sorry)
-  //just call this func with calc = true once per frame
+    //the calc mess is just to speed up things (sorry)
+    //just call this func with calc = true once per frame
 
-  if (recalc)
-  {
-
-    //index for arrays
-    vind = 0;
-
-    a = fabsf( sinf(value) );
-    b = 1.0f;
-
-    tstart = 0;
-    if (a <= b)
-      tstop = PI;
-    else
-      tstop = 0.5f * asinf(b*b/(a*a));
-
-    for (int j = 0;j<(int)M;j++)     
+    if (recalc)
     {
-      theta1 = TWOPI * j / M;
-      theta2 = TWOPI * ((j+1)%(int)M) / M;
 
-      for (int i = 0;i<(int)N;i++) 
-      { 
-         int thesign = 1;
-         if (a <= b) 
-         {
-            t1 = tstart + (tstop - tstart) * i / N;
-            t2 = tstart + (tstop - tstart) * (i+1) / N;
-         } 
-         else 
-         {
-            if (i < N/2) 
+        //index for arrays
+        vind = 0;
+
+        a = fabsf(sinf(value));
+        b = 1.0f;
+
+        tstart = 0;
+        if (a <= b)
+            tstop = PI;
+        else
+            tstop = 0.5f * asinf(b * b / (a * a));
+
+        for (int j = 0; j < (int)M; j++)
+        {
+            float theta1 = TWOPI * j / M;
+            float theta2 = TWOPI * ((j + 1) % (int)M) / M;
+
+            for (int i = 0; i < (int)N; i++)
             {
-               t1 = tstart + 2 * (tstop - tstart) * i / N;
-               t2 = tstart + 2 * (tstop - tstart) * (i+1) / N;
-            } 
-            else 
-            {
-               t1 = tstart + 2 * (tstop - tstart) * (i-N/2) / N;
-               t2 = tstart + 2 * (tstop - tstart) * (i+1-N/2) / N;
-               thesign = -1;
+                int thesign = 1;
+                if (a <= b)
+                {
+                    t1 = tstart + (tstop - tstart) * i / N;
+                    t2 = tstart + (tstop - tstart) * (i + 1) / N;
+                }
+                else
+                {
+                    if (i < N / 2)
+                    {
+                        t1 = tstart + 2 * (tstop - tstart) * i / N;
+                        t2 = tstart + 2 * (tstop - tstart) * (i + 1) / N;
+                    }
+                    else
+                    {
+                        t1 = tstart + 2 * (tstop - tstart) * (i - N / 2) / N;
+                        t2 = tstart + 2 * (tstop - tstart) * (i + 1 - N / 2) / N;
+                        thesign = -1;
+                    }
+                }
+
+                // faccia dell'ovale
+                p[0] = EvalNut(t1, a, b, thesign);
+                n[0] = (p[0] - EvalNut(t1 + 0.1f / N, a, b, thesign)) ^ zperp; //normale 
+
+                p[1] = EvalNut(t2, a, b, thesign);
+                n[1] = (EvalNut(t2 - 0.1f / N, a, b, thesign) - p[1]) ^ zperp; //normale
+
+                p[2] = p[1];
+                n[2] = n[1];
+
+                p[3] = p[0];
+                n[3] = n[0];
+
+                //the following part rotates around the oval axis
+                float ct = cosf(theta1);
+                float st = sinf(theta1);
+                Vector3 t = p[0];
+
+                t.x = p[0].x;
+                t.y = p[0].y * ct + p[0].z * st;
+                t.z = -p[0].y * st + p[0].z * ct;
+                p[0] = t;
+
+                t.x = n[0].x;
+                t.y = n[0].y * ct + n[0].z * st;
+                t.z = -n[0].y * st + n[0].z * ct;
+                n[0] = t;
+
+                t.x = p[1].x;
+                t.y = p[1].y * ct + p[1].z * st;
+                t.z = -p[1].y * st + p[1].z * ct;
+                p[1] = t;
+
+                t.x = n[1].x;
+                t.y = n[1].y * ct + n[1].z * st;
+                t.z = -n[1].y * st + n[1].z * ct;
+                n[1] = t;
+
+                ct = cosf(theta2);
+                st = sinf(theta2);
+
+                t.x = p[2].x;
+                t.y = p[2].y * ct + p[2].z * st;
+                t.z = -p[2].y * st + p[2].z * ct;
+                p[2] = t;
+
+                t.x = n[2].x;
+                t.y = n[2].y * ct + n[2].z * st;
+                t.z = -n[2].y * st + n[2].z * ct;
+                n[2] = t;
+
+                t.x = p[3].x;
+                t.y = p[3].y * ct + p[3].z * st;
+                t.z = -p[3].y * st + p[3].z * ct;
+                p[3] = t;
+
+                t.x = n[3].x;
+                t.y = n[3].y * ct + n[3].z * st;
+                t.z = -n[3].y * st + n[3].z * ct;
+                n[3] = t;
+
+
+                for (int k = 0; k < 4; k++)
+                    n[k].Normalize();
+
+                if (flattenonfloor)
+                {
+                    for (int np = 0; np < 4; np++)
+                    {
+                        if (p[np].y < flattenval)
+                            p[np].y = flattenval;
+                        n[np].y = -1;
+                    }
+                }
+
+                if (!(p[0] == p[1]) && !(p[1] == p[2]) && !(p[2] == p[0]))
+                {
+                    vnuts[vind] = p[0];
+                    nnuts[vind] = n[0];
+                    inuts[vind] = vind;
+                    vind++;
+
+                    vnuts[vind] = p[1];
+                    nnuts[vind] = n[1];
+                    inuts[vind] = vind;
+                    vind++;
+
+                    vnuts[vind] = p[2];
+                    nnuts[vind] = n[2];
+                    inuts[vind] = vind;
+                    vind++;
+                    /*
+                               glNormal3fv((float*) &n[0]);
+                               glVertex3fv((float*) &p[0]);
+
+                               glNormal3fv((float*) &n[1]);
+                               glVertex3fv((float*) &p[1]);
+
+                               glNormal3fv((float*) &n[2]);
+                               glVertex3fv((float*) &p[2]);
+                    */
+                }
+                if (!(p[0] == p[2]) && !(p[2] == p[3]) && !(p[3] == p[0]))
+                {
+                    vnuts[vind] = p[0];
+                    nnuts[vind] = n[0];
+                    inuts[vind] = vind;
+                    vind++;
+
+                    vnuts[vind] = p[2];
+                    nnuts[vind] = n[2];
+                    inuts[vind] = vind;
+                    vind++;
+
+                    vnuts[vind] = p[3];
+                    nnuts[vind] = n[3];
+                    inuts[vind] = vind;
+                    vind++;
+                    /*
+                               glNormal3fv((float*) &n[0]);
+                               glVertex3fv((float*) &p[0]);
+
+                               glNormal3fv((float*) &n[2]);
+                               glVertex3fv((float*) &p[2]);
+
+                               glNormal3fv((float*) &n[3]);
+                               glVertex3fv((float*) &p[3]);
+                    */
+                }
             }
-         }
-
-         // faccia dell'ovale
-         p[0] = EvalNut(t1,a,b,thesign);
-         q[0] = EvalNut(t1 + 0.1f/N, a, b, thesign);
-         q[0] = p[0] - q[0];
-         n[0] = q[0] ^ zperp; //normale 
-
-         p[1] = EvalNut(t2,a,b,thesign);
-         q[1] = EvalNut(t2 - 0.1f/N, a, b, thesign);
-         q[1] = q[1] - p[1]; 
-         n[1] = q[1] ^ zperp; //normale
-
-         p[2] = p[1];
-         n[2] = n[1];
-
-         p[3] = p[0];
-         n[3] = n[0];
-
-        //the following part rotates around the oval axis
-         float ct = cosf(theta1);
-         float st = sinf(theta1);
-         Vector3 t = p[0];
-
-          t.x = p[0].x;
-          t.y = p[0].y * ct + p[0].z * st;
-          t.z = -p[0].y * st + p[0].z * ct;
-          p[0] = t;
-
-          t.x = n[0].x;
-          t.y = n[0].y * ct + n[0].z * st;
-          t.z = -n[0].y * st + n[0].z * ct;
-          n[0] = t;
-
-          t.x = p[1].x;
-          t.y = p[1].y * ct + p[1].z * st;
-          t.z = -p[1].y * st + p[1].z * ct;
-          p[1] = t;
-
-          t.x = n[1].x;
-          t.y = n[1].y * ct + n[1].z * st;
-          t.z = -n[1].y * st + n[1].z * ct;
-          n[1] = t;
-
-          ct = cosf(theta2);
-          st = sinf(theta2);
-
-          t.x = p[2].x;
-          t.y = p[2].y * ct + p[2].z * st;
-          t.z = -p[2].y * st + p[2].z * ct;
-          p[2] = t;
-
-          t.x = n[2].x;
-          t.y = n[2].y * ct + n[2].z * st;
-          t.z = -n[2].y * st + n[2].z * ct;
-          n[2] = t;
-
-          t.x = p[3].x;
-          t.y = p[3].y * ct + p[3].z * st;
-          t.z = -p[3].y * st + p[3].z * ct;
-          p[3] = t;
-
-          t.x = n[3].x;
-          t.y = n[3].y * ct + n[3].z * st;
-          t.z = -n[3].y * st + n[3].z * ct;
-          n[3] = t;
-
-
-         for (int k = 0;k<4;k++)
-            n[k].Normalize();
-
-         if (flattenonfloor)
-         {
-           for (int np = 0; np< 4; np++)
-           {
-            if (p[np].y < flattenval)
-              p[np].y = flattenval;
-              n[np].y = -1;
-           }
-         }
-
-         if (!(p[0] == p[1]) && !(p[1] == p[2]) && !(p[2] == p[0])) 
-         {
-           vnuts[vind] = p[0];
-           nnuts[vind] = n[0];
-           inuts[vind] = vind;
-           vind++;
-
-           vnuts[vind] = p[1];
-           nnuts[vind] = n[1];
-           inuts[vind] = vind;
-           vind++;
-
-           vnuts[vind] = p[2];
-           nnuts[vind] = n[2];
-           inuts[vind] = vind;
-           vind++;
-/*    
-           glNormal3fv((float*) &n[0]);
-           glVertex3fv((float*) &p[0]);
-
-           glNormal3fv((float*) &n[1]);
-           glVertex3fv((float*) &p[1]);
-
-           glNormal3fv((float*) &n[2]);
-           glVertex3fv((float*) &p[2]);
-*/    
-         }
-         if (!(p[0] == p[2]) && !(p[2] == p[3]) && !(p[3] == p[0])) 
-         {
-           vnuts[vind] = p[0];
-           nnuts[vind] = n[0];
-           inuts[vind] = vind;
-           vind++;
-
-           vnuts[vind] = p[2];
-           nnuts[vind] = n[2];
-           inuts[vind] = vind;
-           vind++;
-
-           vnuts[vind] = p[3];
-           nnuts[vind] = n[3];
-           inuts[vind] = vind;
-           vind++;
-/*    
-           glNormal3fv((float*) &n[0]);
-           glVertex3fv((float*) &p[0]);
-
-           glNormal3fv((float*) &n[2]);
-           glVertex3fv((float*) &p[2]);
-
-           glNormal3fv((float*) &n[3]);
-           glVertex3fv((float*) &p[3]);
-*/    
-         }
-      }
+        }
     }
-  }
 
-  glColor4f(col.r,col.g,col.b,col.a);
+    glColor4f(col.r, col.g, col.b, col.a);
 
-  glVertexPointer(3,GL_FLOAT,0,&vnuts);
-  glNormalPointer(GL_FLOAT,0,&nnuts);
+    glVertexPointer(3, GL_FLOAT, 0, &vnuts);
+    glNormalPointer(GL_FLOAT, 0, &nnuts);
 
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
 
-  glDrawElements(GL_TRIANGLES,vind,GL_UNSIGNED_INT,&inuts);
+    glDrawElements(GL_TRIANGLES, vind, GL_UNSIGNED_INT, &inuts);
 
-  glDisableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
 }
 
@@ -1831,41 +1811,35 @@ void drawCredits(float t)
     parts1.SetParticlesPerSec(200);
     parts1.SetSize(0.05f, 0.0f);
     parts1.SetAngle(100.0f);
-    parts1.SetAttraction(0);
     parts1.SetLife(3.0f);
     parts1.SetSpeed(3.0f);
     parts1.SetSpread(8.0f,8.0f,2);
-    parts1.SetUpdateFlag(UPDATE_AND_CREATE);
     parts1.SetPosition(&pos);
     parts1.SetVelocity(vel);
     parts1.SetGravity(gravity.x,gravity.y,gravity.z);
     parts1.SetSize(0.2f,0.1f);
-    parts1.SetRotation(rot.x,rot.y,rot.z);
     parts1.StepOver(t2,tobecreated);
     parts1.Draw(t2);
 
     pos = Vector3(2,0,-30); //(sin(t) * 3,sin(cos(t * 3)),sin(t) * 3 - 30);
     vel = Vector3(-sinf(t2) / 1.5f,-fabsf(cosf(t2)) * 3,0);
     gravity = Vector3(0.5,-5.0f,0);
-    rot = Vector3(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     tobecreated = 10;
     parts2.SetParticlesPerSec(200);
     parts2.SetSize(0.05f, 0.0f);
     parts2.SetAngle(100.0f);
-    parts2.SetAttraction(0);
     parts2.SetLife(3.0f);
     parts2.SetSpeed(3.0f);
     parts2.SetSpread(8.0f,8.0f,2);
-    parts2.SetUpdateFlag(UPDATE_AND_CREATE);
     parts2.SetPosition(&pos);
     parts2.SetVelocity(vel);
     parts2.SetGravity(gravity.x,gravity.y,gravity.z);
     parts2.SetSize(0.2f,0.1f);
-    parts2.SetRotation(rot.x,rot.y,rot.z);
     parts2.StepOver(t2,tobecreated);
     parts2.Draw(t2);
   glPopMatrix();
 
+  glDepthMask(GL_TRUE);
   glEnable(GL_CULL_FACE);
   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
   glEnable(GL_STENCIL_TEST);

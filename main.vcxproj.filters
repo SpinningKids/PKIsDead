@@ -58,7 +58,6 @@
       <Filter>Pan</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Object.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SphereEffect.cpp" />
   </ItemGroup>
@@ -116,7 +115,6 @@
     </ClInclude>
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Math3.h" />
-    <ClInclude Include="Object.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="SphereEffect.h" />
     <ClInclude Include="asmmath2.h" />
