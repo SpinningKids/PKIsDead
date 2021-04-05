@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////
 //		includes
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #ifdef WIN32
 #define NOMINMAX
@@ -30,8 +28,7 @@ static Vector3		g_pos;
 //
 
 // subd = 40, radius = 2
-int initSphereObject(int subd, float radius)
-{
+int initSphereObject(int subd, float radius) {
     int i = 0, j = 0, offset = 0;
     float angle = 360.0f / subd;
 
@@ -72,23 +69,12 @@ int initSphereObject(int subd, float radius)
 
 
 void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base) {
-
     assert(g_numVertex && g_subd && g_pVertex);
 
     glPushMatrix();
 
-    // state
-    //glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT | GL_HINT_BIT | GL_POINT_BIT | GL_LINE_BIT );
-
-
     glDisable(GL_TEXTURE_2D);
-    glEnable(GL_POINT_SMOOTH);
     glEnable(GL_BLEND);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-    //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    //glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-
-    // rendering
     glBegin(GL_LINE_STRIP);
 
     glColor4f(pcolor.r, pcolor.g, pcolor.b, pcolor.a);
@@ -101,6 +87,7 @@ void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base) {
     glEnd();
 
     if (base) {
+
         int offset = 0;
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -126,8 +113,6 @@ void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base) {
             glEnd();
         }
     }
-    //glPopAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT | GL_HINT_BIT | GL_POINT_BIT | GL_LINE_BIT );
-
     glPopMatrix();
 }
 
