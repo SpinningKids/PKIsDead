@@ -560,7 +560,6 @@ void dHelix(float outr,float inr, int twists,int angle_steps,rgb_a startcol, rgb
 
   Vector3 vertexes[4];
   Vector3 normal;
-  Vector3 tmp;
   rgb_a col;
 	
   glBegin(GL_QUADS);
@@ -1232,7 +1231,7 @@ void drawToroide(int order, float t, float mytime) // porcodio, se e' standard m
 }
 
 
-void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor, const rgb_a &vcolor, bool base, bool lines)
+void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor, const rgb_a &vcolor, bool base)
 {
 	float fogColor[4] = { 0, 0, 0, 0 };
 
@@ -1263,7 +1262,7 @@ void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor,
   glRotatef(rot.x ,1,0,0);
   glRotatef(rot.y ,0,1,0);
   glRotatef(rot.z ,0,0,1);
-  dSphereEffect(pcolor,vcolor,base,lines);
+  dSphereEffect(pcolor,vcolor,base);
   glPopMatrix();
 
   glPushMatrix();
@@ -1273,7 +1272,7 @@ void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor,
   glRotatef(rot.y ,0,1,0);
   glRotatef(rot.z ,0,0,1);
   glRotatef(90,0,1,0);
-  dSphereEffect(pcolor,vcolor,base,lines);
+  dSphereEffect(pcolor,vcolor,base);
   glPopMatrix();
 
   glPushMatrix();
@@ -1283,7 +1282,7 @@ void drawWissEffect(const Vector3 &pos, const Vector3 &rot, const rgb_a &pcolor,
   glRotatef(rot.y ,0,1,0);
   glRotatef(rot.z ,0,0,1);
   glRotatef(90,1,0,0);
-  dSphereEffect(pcolor,vcolor,base,lines);
+  dSphereEffect(pcolor,vcolor,base);
   glPopMatrix();
 
 	glDisable(GL_FOG);
@@ -2102,10 +2101,10 @@ void drawPanOverWiss(float t) {
   }
   Vector3 pos(randa[0]*4,randa[1]*4,-18+randa[2]*4);
   Vector3 rot(t * 30+randa[3]*6,sinf(t2) * 30,0);
-  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[8]*3)) / 4.0f),true,true);
+  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[8]*3)) / 4.0f),true);
   pos = Vector3(randa[4]*4,randa[5]*4,-12+randa[6]*4);
   rot = Vector3(sinf(t2) * 30, t * 30+randa[7]*6, 0);
-  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[9]*3)) / 4.0f),true,true);
+  drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2+randa[9]*3)) / 4.0f),true);
 }
 
 /*##########################################################*/
@@ -2256,7 +2255,7 @@ float durata;
       float t2 = HALFPI*t1;
       Vector3 pos(0, 0,-18+(stock2-52));
       Vector3 rot(tr * 30,sinf(t2) * 30,0);
-      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true,true);
+      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true);
       glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);
@@ -2314,7 +2313,7 @@ float durata;
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(9,tr,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
   }
 
   //tubo peloso
@@ -2330,7 +2329,7 @@ float durata;
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(11,tr,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
   }
 
   //sfondo vuoto + texture toroide
@@ -2338,7 +2337,7 @@ float durata;
   {
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
   }
 
   //flash + toroide
@@ -2471,7 +2470,7 @@ void Scena(float t, int order) {
       drawTexture(frame,1.1f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.2f))),true);
       drawTexture(frame,1.2f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.1f))),true);
       drawTexture(frame,1.3f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.0f))),true);
-      drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
+      drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
 
       glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
       glEnable(GL_BLEND);
@@ -2495,7 +2494,7 @@ void Scena(float t, int order) {
     drawTexture(frame,1.0f,1.0f,true,t,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,t,80,rgb_a(1,1,1,0.6f),true);
     drawNuts(order,t,mytime);
-    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false, true);
+    drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
 
     glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -2614,7 +2613,7 @@ void Scena(float t, int order) {
       float t2 = HALFPI*t1;
       Vector3 pos(0, 0,-18+(stock2-52));
       Vector3 rot(t * 30,sinf(t2) * 30,0);
-      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true,true);
+      drawWissEffect(pos,rot,rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(t2*5)) / 4.0f),true);
       glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);

@@ -4,6 +4,7 @@
 
 #include "ParticleSystem.h"
 #include "utils.h"
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -62,7 +63,7 @@ void CParticle::Create(CParticleSystem *parent, float time_counter)
 	//Calculate the particle's alpha from the system's.
 	this->m_fAlpha = (parent->m_fStart_alpha)+(RANDOM_FLOAT*(parent->m_fAlpha_counter));
 	//Make sure the result of the above line is legal
-	CHECK_RANGE(this->m_fAlpha, MIN_ALPHA, MAX_ALPHA);
+	this->m_fAlpha = std::clamp(this->m_fAlpha, MIN_ALPHA, MAX_ALPHA);
 	//Calculate the particle's alpha counter so that by the
 	//time the particle is ready to die, it will have reached 
 	//the system's end alpha
@@ -70,7 +71,7 @@ void CParticle::Create(CParticleSystem *parent, float time_counter)
 
 	//Now, same routine as above, except with size
 	m_fSize = (parent->m_fStart_size)+(RANDOM_FLOAT*(parent->m_fSize_counter));
-	CHECK_RANGE(m_fSize, MIN_SIZE, MAX_SIZE);
+	m_fSize = std::clamp(m_fSize, MIN_SIZE, MAX_SIZE);
 	m_fSize_counter = ((parent->m_fEnd_size) - m_fSize) / m_fDying_age;
 
 	//Now, we calculate the velocity that the particle would 
@@ -111,8 +112,8 @@ void CParticle::Create(CParticleSystem *parent, float time_counter)
 	//Velocity at this point is just a direction (normalized
 	//vector) and needs to be multiplied by the speed 
 	//component to be legit.
-	new_speed= ((parent->m_fSpeed)+(RANDOM_FLOAT*(parent->m_fSpeed_counter)));
-	CHECK_RANGE(new_speed, MIN_SPEED, MAX_SPEED);
+	new_speed = ((parent->m_fSpeed)+(RANDOM_FLOAT*(parent->m_fSpeed_counter)));
+	new_speed = std::clamp(new_speed, MIN_SPEED, MAX_SPEED);
 	m_v3Velocity.x*= new_speed;
 	m_v3Velocity.y*= new_speed;
 	m_v3Velocity.z*= new_speed;
