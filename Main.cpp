@@ -9,9 +9,9 @@
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include "resources/resource.h"
+#include <gl/GL.h>
+#include <gl/GLU.h>
+#include "Resources/resource.h"
 
 #include "AsmMath4.h"
 #include "minifmod/minifmod.h"
