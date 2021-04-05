@@ -174,7 +174,7 @@ unsigned int memopen(char *name)
 		HRSRC		rec;
 		HGLOBAL		handle;
 
-		rec = FindResourceEx(GetModuleHandle(0),"RC_RTDATA", name, 0);
+		rec = FindResourceEx(GetModuleHandle(nullptr),"RC_RTDATA", name, 0);
 		handle = LoadResource(nullptr, rec);
 		memfile->data = LockResource(handle);
 		memfile->length = SizeofResource(nullptr, rec);
@@ -259,15 +259,13 @@ void DoRenderToTexture(int size,GLTexture* tex)
 Vector3 EvalNut(float t,float a,float b,int sign)
 {
    Vector3 p;
-   float c1,c2;
-
-   c1 = b*b*b*b - a*a*a*a*sinf(2*t)*sinf(2*t);
-   if (c1 <= 0)
-      c2 = a * a * cosf(2*t);
-   else
-      c2 = a * a * cosf(2*t) + sign * (float)sqrt(c1);
-   p.x = cosf(t) * (float)sqrt(c2);
-   p.y = sinf(t) * (float)sqrt(c2);
+   float a2 = a * a;
+   float b2 = b * b;
+   float a2s = a2 * sinf(2 * t);
+   float c1 = b2 * b2 - a2s * a2s;
+   float c2 = sqrtf(a2 * cosf(2 * t) + (c1 <= 0 ? 0 : sign * sqrtf(c1)));
+   p.x = cosf(t) * c2;
+   p.y = sinf(t) * c2;
    p.z = 0.0;
 
    if (a > b)
@@ -358,7 +356,7 @@ void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a co
     //index for arrays
     vind = 0;
 
-    a = (float)fabs( sin(value) );
+    a = fabsf( sinf(value) );
     b = 1.0f;
 
     tstart = 0;
@@ -369,8 +367,8 @@ void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a co
 
     for (int j = 0;j<(int)M;j++)     
     {
-      theta1 = (float)TWOPI * j / M;
-      theta2 = (float)TWOPI * ((j+1)%(int)M) / M;
+      theta1 = TWOPI * j / M;
+      theta2 = TWOPI * ((j+1)%(int)M) / M;
 
       for (int i = 0;i<(int)N;i++) 
       { 
@@ -549,60 +547,56 @@ void dNuts(float value,bool recalc,bool flattenonfloor,float flattenval,rgb_a co
 
 void dHelix(float outr,float inr, int twists,int angle_steps,rgb_a startcol, rgb_a endcol)
 {
-	GLfloat x,y,z;
-	float phi;
-	float theta;
-	float v,u;
-  static GLuint springlist = 0;
+    static GLuint springlist = 0;
 
   Vector3 vertexes[4];
   Vector3 normal;
   rgb_a col;
 	
   glBegin(GL_QUADS);
-	for(phi=0; phi <= 360; phi+=angle_steps)
+	for(float phi = 0; phi <= 360; phi+=angle_steps)
 	{
-		for(theta=0; theta<=360*twists; theta+=angle_steps)
+		for(float theta = 0; theta<=360*twists; theta+=angle_steps)
 		{
-			v=(phi/180.0f*3.142f);
-			u=(theta/180.0f*3.142f);
+			float v = phi / 180.0f * 3.142f;
+			float u = theta / 180.0f * 3.142f;
 
-			x=float(cos(u)*(inr + cos(v) ))* outr;
-			y=float(sin(u)*(inr + cos(v) ))* outr;
-			z=float((( u-(2.0f*3.142f)) + sin(v) ) * outr);
+			float x = cosf(u) * (inr + cosf(v)) * outr;
+			float y = sinf(u) * (inr + cosf(v)) * outr;
+			float z = (u - 2.0f * 3.142f + sinf(v)) * outr;
 
 			vertexes[0].x = x;
 			vertexes[0].y = y;
 			vertexes[0].z = z;
 
-			v=(phi/180.0f*3.142f);
-			u=((theta+angle_steps)/180.0f*3.142f);
+            v = phi / 180.0f * 3.142f;
+            u = (theta + angle_steps) / 180.0f * 3.142f;
 
-			x=float(cos(u)*(inr + cos(v) ))* outr;
-			y=float(sin(u)*(inr + cos(v) ))* outr;
-			z=float((( u-(2.0f*3.142f)) + sin(v) ) * outr);
+            x = cosf(u) * (inr + cosf(v)) * outr;
+            y = sinf(u) * (inr + cosf(v)) * outr;
+            z = (u - 2.0f * 3.142f + sinf(v)) * outr;
 
 			vertexes[1].x = x;
 			vertexes[1].y = y;
 			vertexes[1].z = z;
 
-			v=((phi+angle_steps)/180.0f*3.142f);
-			u=((theta+angle_steps)/180.0f*3.142f);
+            v = (phi + angle_steps) / 180.0f * 3.142f;
+            u = (theta + angle_steps) / 180.0f * 3.142f;
 
-			x=float(cos(u)*(inr + cos(v) ))* outr;
-			y=float(sin(u)*(inr + cos(v) ))* outr;
-			z=float((( u-(2.0f*3.142f)) + sin(v) ) * outr);
+            x = cosf(u) * (inr + cosf(v)) * outr;
+            y = sinf(u) * (inr + cosf(v)) * outr;
+            z = (u - 2.0f * 3.142f + sinf(v)) * outr;
 
 			vertexes[2].x = x;
 			vertexes[2].y = y;
 			vertexes[2].z = z;
 
-			v=((phi+angle_steps)/180.0f*3.142f);
-			u=((theta)/180.0f*3.142f);
+            v = (phi + angle_steps) / 180.0f * 3.142f;
+            u = theta / 180.0f * 3.142f;
 
-			x=float(cos(u)*(inr + cos(v) ))* outr;
-			y=float(sin(u)*(inr + cos(v) ))* outr;
-			z=float((( u-(2.0f*3.142f)) + sin(v) ) * outr);
+            x = cosf(u) * (inr + cosf(v)) * outr;
+            y = sinf(u) * (inr + cosf(v)) * outr;
+            z = (u - (2.0f * 3.142f) + sinf(v)) * outr;
 
 			vertexes[3].x = x;
 			vertexes[3].y = y;
@@ -612,7 +606,7 @@ void dHelix(float outr,float inr, int twists,int angle_steps,rgb_a startcol, rgb
       
 			glNormal3fv((float*)&normal);
 
-      col = GetFade(startcol,endcol,(float)(theta + 1.0f) / (360.0f * (float)twists));
+      col = GetFade(startcol,endcol,(theta + 1.0f) / (360.0f * (float)twists));
 
       glColor4fv((float*)&col);
 			glVertex3fv((float*)&vertexes[0]);
@@ -764,19 +758,16 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
 //SUKA AGGIUNTA TUTTA QUESTA ROUTINE
 uv_coord TwirlTexCoords(int x, int y,float value, float divisor)
 {
-	double r,a,r2,a2;
-	float tx,ty;
+    float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
+    float DIVS_Y = QUADH; //m_iLod;
 
-  float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
-  float DIVS_Y = QUADH; //m_iLod;
-
-	r=sqrt((x-DIVS_X/2)*(x-DIVS_X/2)+(y-DIVS_Y/2)*(y-DIVS_Y/2));
-	a=atan2((x-DIVS_X/2),(y-DIVS_Y/2));
-	r2=r+5*(1+sin(value*3));
-	a2=value+a+0.5*sin(r/8+value*1.5)+0.55*cos(r/4+value*1.9);	
-	tx=(float)(0.75f*r2*sin(a2)/DIVS_X);
-	ty=(float)(0.75f*r2*cos(a2)/DIVS_Y);
-	return uv_coord(tx-0.5f,ty-0.5f);
+    float r = sqrtf((x - DIVS_X / 2) * (x - DIVS_X / 2) + (y - DIVS_Y / 2) * (y - DIVS_Y / 2));
+    float a = atan2f((x - DIVS_X / 2), (y - DIVS_Y / 2));
+    float r2 = r + 5 * (1 + sinf(value * 3));
+    float a2 = value + a + 0.5f * sinf(r / 8 + value * 1.5f) + 0.55f * cosf(r / 4 + value * 1.9f);
+    float tx = 0.75f * r2 * sinf(a2) / DIVS_X;
+    float ty = 0.75f * r2 * cosf(a2) / DIVS_Y;
+    return uv_coord(tx - 0.5f, ty - 0.5f);
 
 }
 //SUKA FINE AGGIUNTA
@@ -794,77 +785,74 @@ uv_coord TwirlTexCoords(int x, int y,float value, float divisor)
 //phi2 : ending of segments angle
 //wobbleval : value for deformation
 //deform : enables the deformation
-void dTorus(float time, const Vector3 &c, float r0, float r1, int n, float theta1, float theta2, float phi1, float phi2, float wobbleval, bool deform)
+void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta1, float theta2, float phi1, float phi2, bool deform)
 {
-
-int i,j;
-float t1,t2,phi;
-Vector3 e0,e1,p0,p1;
-uv_coord t;
-float tmpr1;
-
-	
-	if (r1 < 0)
-		r1 = -r1;
-	if (r0 < 0)
-		r0 = -r0;
-	if (n < 0)
-		n = -n;
-
-	for (j=0;j<n;j++) 
-	{
-		t1 = j * (theta2 - theta1) / n;
-		t2 = (j + 1) * (theta2 - theta1) / n;
-
-		glBegin(GL_QUAD_STRIP);
-
-		for (i=0;i<=n;i++) 
-		{
-
-			phi = phi1 + i * (phi2 - phi1) / n;
-
-      if (deform)
-        tmpr1 = r1 + sinf((float)i)/5 + sinf(t2)*(1+sinf(j/8.f+time*3));
-      //tmpr1 = r1 + sin(i)/8;
-      else
-        tmpr1 = r1;
-
-			e0.x = cosf(t1) * tmpr1 * cosf(phi);
-			e0.y = sinf(phi) * tmpr1;
-			e0.z = sinf(t1) * tmpr1 * cosf(phi);
-			e0.Normalize();
-			
-			p0.x = c.x + cosf(t1) * (r0 + tmpr1 * cosf(phi));
-			p0.y = c.y + sinf(phi) * tmpr1;
-			p0.z = c.z + sinf(t1) * (r0 + tmpr1 * cosf(phi));
-
-			t.u = i/(float)n;
-			t.v = j/(float)n;
+    Vector3 e0, e1, p0, p1;
+    uv_coord t;
+    float tmpr1;
 
 
-			e1.x = cosf(t2) * tmpr1 * cosf(phi);
-			e1.y = sinf(phi) * tmpr1;
-			e1.z = sinf(t2) * tmpr1 * cosf(phi);
-			e1.Normalize();
+    if (r1 < 0)
+        r1 = -r1;
+    if (r0 < 0)
+        r0 = -r0;
+    if (n < 0)
+        n = -n;
 
-			p1.x = cosf(t2) * (r0 + tmpr1 * cosf(phi));
-			p1.y = sinf(phi) * tmpr1;
-			p1.z = sinf(t2) * (r0 + tmpr1 * cosf(phi));
+    for (int j = 0; j < n; j++)
+    {
+        float t1 = j * (theta2 - theta1) / n;
+        float t2 = (j + 1) * (theta2 - theta1) / n;
 
-			t.u = i/(float)n;
-			t.v = (j+1)/(float)n;
+        glBegin(GL_QUAD_STRIP);
 
-			glNormal3f(e0.x,e0.y,e0.z);
-			glTexCoord2f(t.u,t.v);
-			glVertex3f(p0.x,p0.y,p0.z + sinf(p0.x) * cosf(time) * 2.0f);
+        for (int i = 0; i <= n; i++)
+        {
 
-			glNormal3f(e1.x,e1.y,e1.z);
-			glTexCoord2f(t.u,t.v);
-			glVertex3f(p1.x,p1.y,p1.z + sinf(p1.x) * cosf(time) * 2.0f);
+            float phi = phi1 + i * (phi2 - phi1) / n;
 
-		}
-		glEnd();
-	}
+            if (deform)
+                tmpr1 = r1 + sinf((float)i) / 5 + sinf(t2) * (1 + sinf(j / 8.f + time * 3));
+            //tmpr1 = r1 + sin(i)/8;
+            else
+                tmpr1 = r1;
+
+            e0.x = cosf(t1) * tmpr1 * cosf(phi);
+            e0.y = sinf(phi) * tmpr1;
+            e0.z = sinf(t1) * tmpr1 * cosf(phi);
+            e0.Normalize();
+
+            p0.x = c.x + cosf(t1) * (r0 + tmpr1 * cosf(phi));
+            p0.y = c.y + sinf(phi) * tmpr1;
+            p0.z = c.z + sinf(t1) * (r0 + tmpr1 * cosf(phi));
+
+            t.u = i / (float)n;
+            t.v = j / (float)n;
+
+
+            e1.x = cosf(t2) * tmpr1 * cosf(phi);
+            e1.y = sinf(phi) * tmpr1;
+            e1.z = sinf(t2) * tmpr1 * cosf(phi);
+            e1.Normalize();
+
+            p1.x = cosf(t2) * (r0 + tmpr1 * cosf(phi));
+            p1.y = sinf(phi) * tmpr1;
+            p1.z = sinf(t2) * (r0 + tmpr1 * cosf(phi));
+
+            t.u = i / (float)n;
+            t.v = (j + 1) / (float)n; // BUG: This should be moved after glTexCoord2f
+
+            glNormal3f(e0.x, e0.y, e0.z);
+            glTexCoord2f(t.u, t.v);
+            glVertex3f(p0.x, p0.y, p0.z + sinf(p0.x) * cosf(time) * 2.0f);
+
+            glNormal3f(e1.x, e1.y, e1.z);
+            glTexCoord2f(t.u, t.v);
+            glVertex3f(p1.x, p1.y, p1.z + sinf(p1.x) * cosf(time) * 2.0f);
+
+        }
+        glEnd();
+    }
 }
 
 
@@ -874,59 +862,59 @@ float tmpr1;
 // divisor : the resulting wave sin/cos displacement is divided by this value
 uv_coord WaterTexCoords(int x, int y, float value, float divisor)
 {
-	float tx,ty;
+    float tx, ty;
 
-  float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
-  float DIVS_Y = QUADH; //m_iLod;
+    float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
+    float DIVS_Y = QUADH; //m_iLod;
 
-  tx = (x / DIVS_X) + sinf(x * value) / divisor;
-  ty = (y / DIVS_Y) + cosf(y * value) / divisor;
+    tx = (x / DIVS_X) + sinf(x * value) / divisor;
+    ty = (y / DIVS_Y) + cosf(y * value) / divisor;
 
-  if (tx > 1)
-    tx = 1;
+    if (tx > 1)
+        tx = 1;
 
-  if (ty > 1)
-    ty = 1;
+    if (ty > 1)
+        ty = 1;
 
-  return uv_coord(tx,ty);
-	//glTexCoord2f(tx,ty);
+    return uv_coord(tx, ty);
+    //glTexCoord2f(tx,ty);
 
 }
 
-void drawHelix(float angle, float inr, float outr, int twirls, int angstep,GLenum mode,rgb_a startcol, rgb_a endcol)
+void drawHelix(float angle, float inr, float outr, int twirls, int angstep, GLenum mode, rgb_a startcol, rgb_a endcol)
 {
-  
-  glEnable(GL_COLOR_MATERIAL);
-  glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-  glDisable(GL_TEXTURE_2D);
-  glCullFace(GL_BACK);
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_LIGHTING);
 
-  if (mode == GL_LINE)
-    glLineWidth(2);
+    glEnable(GL_COLOR_MATERIAL);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glDisable(GL_TEXTURE_2D);
+    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
 
-  glPolygonMode(GL_FRONT_AND_BACK,mode);
+    if (mode == GL_LINE)
+        glLineWidth(2);
 
-  glPushMatrix();												// Push The Modelview Matrix
-	glLoadIdentity();											// Reset The Modelview Matrix
-	//glRotatef(180,1,0,0);
-	//glTranslatef(0,0,10);
-  glTranslatef(0,0,-50);
-  glRotatef(angle,0,0,1);
-  //I've created the list in the init function
-	dHelix(inr,outr,twirls,angstep,startcol,endcol);
-  glPopMatrix();
+    glPolygonMode(GL_FRONT_AND_BACK, mode);
 
-  if (mode == GL_LINE)
-  {
-    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-    glLineWidth(1);
-  }
+    glPushMatrix();												// Push The Modelview Matrix
+    glLoadIdentity();											// Reset The Modelview Matrix
+    //glRotatef(180,1,0,0);
+    //glTranslatef(0,0,10);
+    glTranslatef(0, 0, -50);
+    glRotatef(angle, 0, 0, 1);
+    //I've created the list in the init function
+    dHelix(inr, outr, twirls, angstep, startcol, endcol);
+    glPopMatrix();
+
+    if (mode == GL_LINE)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glLineWidth(1);
+    }
 }
 
 //SUKA MODIFICATA LA SEGUENTE ROUTINE TUTTA !
@@ -940,160 +928,144 @@ void drawHelix(float angle, float inr, float outr, int twirls, int angstep,GLenu
 // calc : does the vertex array needs to be reloaded ? (once per frame)
 // value : the value used to wave the texture
 // divisor : the wave size divisor
-void drawTexture(GLTexture* tex, float sx, float sy,bool calc,float value, float divisor,rgb_a color,bool water)
+void drawTexture(GLTexture* tex, float sx, float sy, bool calc, float value, float divisor, rgb_a color, bool water)
 {
-  if (color.a <= 0)
-      return;
+    if (color.a <= 0)
+        return;
 
-  glDepthMask(GL_FALSE);
-  glDisable(GL_LIGHTING);
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-  glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_COLOR_MATERIAL);
-  //glBindTexture(GL_TEXTURE_2D, this->m_iTexture1ID);
-  tex->use();
+    glDepthMask(GL_FALSE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_COLOR_MATERIAL);
+    //glBindTexture(GL_TEXTURE_2D, this->m_iTexture1ID);
+    tex->use();
 
-  glPushMatrix();
-  glLoadIdentity();
-  panViewOrtho();
-  glScalef(sx,sy,1);
-  glColor4f(color.r,color.g,color.b,color.a);
+    glPushMatrix();
+    glLoadIdentity();
+    panViewOrtho();
+    glScalef(sx, sy, 1);
+    glColor4f(color.r, color.g, color.b, color.a);
 
-  //the calc mess is just used to speed up quadwavedtexture rendering...    
-  //if calc=true then it laods the array, else just draws the array
-  if (calc)
-  {
-    qind = 0;
-    float DIVS_X = QUADH; //m_iLod - (m_iLod/2);
-    float DIVS_Y = QUADV; //m_iLod;
+    //the calc mess is just used to speed up quadwavedtexture rendering...    
+    //if calc=true then it laods the array, else just draws the array
+    if (calc)
+    {
+        qind = 0;
+        float DIVS_X = QUADH; //m_iLod - (m_iLod/2);
+        float DIVS_Y = QUADV; //m_iLod;
 
-    int x,y;
+        for (int y = 0; y < DIVS_Y; y++) {
+            for (int x = 0; x < DIVS_X; x++) {
+                if (water)
+                    tquad[qind] = WaterTexCoords(x, -y, value, divisor);
+                else
+                    tquad[qind] = TwirlTexCoords(x, -y, value, divisor);
 
-    for(y=0;y<DIVS_Y;y++)
-	  {
-		  for(x=0;x<DIVS_X;x++)
-		  {
-			  if (water)
-          tquad[qind] = WaterTexCoords(x,-y,value,divisor);
-        else
-          tquad[qind] = TwirlTexCoords(x,-y,value,divisor);
+                vquad[qind] = Vector3((float)x / DIVS_X * (float)WIDTH, (float)y / DIVS_Y * (float)HEIGHT, 0);
+                iquad[qind] = qind;
+                qind++;
 
-        vquad[qind] = Vector3((float)x/DIVS_X * (float)WIDTH,(float)y/DIVS_Y * (float)HEIGHT,0);
-        iquad[qind] = qind;
-        qind++;
+                if (water)
+                    tquad[qind] = WaterTexCoords(x + 1, -y, value, divisor);
+                else
+                    tquad[qind] = TwirlTexCoords(x + 1, -y, value, divisor);
 
-			  if (water)
-			    tquad[qind] = WaterTexCoords(x+1,-y,value,divisor);
-        else
-			    tquad[qind] = TwirlTexCoords(x+1,-y,value,divisor);
+                vquad[qind] = Vector3((float)(x + 1) / DIVS_X * (float)WIDTH, (float)y / DIVS_Y * (float)HEIGHT, 0);
+                iquad[qind] = qind;
+                qind++;
 
-        vquad[qind] = Vector3((float)(x+1)/DIVS_X  * (float)WIDTH,(float)y/DIVS_Y * (float)HEIGHT,0);
-        iquad[qind] = qind;
-        qind++;
+                if (water)
+                    tquad[qind] = WaterTexCoords(x + 1, -(y + 1), value, divisor);
+                else
+                    tquad[qind] = TwirlTexCoords(x + 1, -(y + 1), value, divisor);
 
-			  if (water)
-			    tquad[qind] = WaterTexCoords(x+1,-(y+1),value,divisor);
-        else
-			    tquad[qind] = TwirlTexCoords(x+1,-(y+1),value,divisor);
+                vquad[qind] = Vector3((float)(x + 1) / DIVS_X * (float)WIDTH, (float)(y + 1) / DIVS_Y * (float)HEIGHT, 0);
+                iquad[qind] = qind;
+                qind++;
 
-        vquad[qind] = Vector3((float)(x+1)/DIVS_X * (float)WIDTH,(float)(y+1)/DIVS_Y * (float)HEIGHT,0);
-        iquad[qind] = qind;
-        qind++;
+                if (water)
+                    tquad[qind] = WaterTexCoords(x, -(y + 1), value, divisor);
+                else
+                    tquad[qind] = TwirlTexCoords(x, -(y + 1), value, divisor);
 
-			  if (water)
-          tquad[qind] = WaterTexCoords(x,-(y+1),value,divisor);
-        else
-          tquad[qind] = TwirlTexCoords(x,-(y+1),value,divisor);
+                vquad[qind] = Vector3((float)x / DIVS_X * (float)WIDTH, (float)(y + 1) / DIVS_Y * (float)HEIGHT, 0);
+                iquad[qind] = qind;
+                qind++;
+            }
+        }
+    }
 
-        vquad[qind] = Vector3((float)x/DIVS_X * (float)WIDTH,(float)(y+1)/DIVS_Y * (float)HEIGHT,0);
-        iquad[qind] = qind;
-        qind++;
-		  }
-	  }
-  }
+    glVertexPointer(3, GL_FLOAT, 0, &vquad);
+    glTexCoordPointer(2, GL_FLOAT, 0, &tquad);
 
-  glVertexPointer(3,GL_FLOAT,0,&vquad);
-  glTexCoordPointer(2,GL_FLOAT,0,&tquad);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDrawElements(GL_QUADS, qind - 1, GL_UNSIGNED_INT, &iquad);
 
-  glDrawElements(GL_QUADS,qind - 1,GL_UNSIGNED_INT,&iquad);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-  glDisableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glPopMatrix();
 
-  glPopMatrix();
-
-  glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_COLOR_MATERIAL);
 
 }
 
 //draws the Cassini Oval scene
-void drawNuts(int order,float t, float mytime)
+void drawNuts(float t)
 {
-  env->use();
+    env->use();
 
-  glDepthMask(GL_TRUE);
-  glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-  glEnable(GL_BLEND);
-  glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_GEN_S);
-	glEnable(GL_TEXTURE_GEN_T);
-  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-  glEnable(GL_CULL_FACE); 
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_TEXTURE_2D);  //##############
-  glEnable(GL_LIGHT0);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_COLOR_MATERIAL);
-  glPushMatrix();
+    glDepthMask(GL_TRUE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glEnable(GL_BLEND);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);  //##############
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glPushMatrix();
     panViewPerspective();
 
     glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
     //set a amtrix to render them slighty rotated and 
     //translated going far away (IMHO looks good)
-    glTranslatef(-2.2f,-0.3f,0.0f); // pan modifica - se sta sempre dentro lo schermo fa da cagare...
-    glRotatef(-30,0,1,0);
+    glTranslatef(-2.2f, -0.3f, 0.0f); // pan modifica - se sta sempre dentro lo schermo fa da cagare...
+    glRotatef(-30, 0, 1, 0);
     glRotatef(sinf(t * 2) * 30.0f, 0.0f, 0.0f, 1.0f);
-    glTranslatef(0,0,-3);
-    dNuts(t,true,false,0,rgb_a(1,1,1,0.4f));  //just loads the vertexes once
+    glTranslatef(0, 0, -3);
+    dNuts(t, true, false, 0, rgb_a(1, 1, 1, 0.4f));  //just loads the vertexes once
 
-  
+
     //glTranslatef(0,0,-5);
     glPushMatrix();
-    glScalef(0.9f,0.9f,0.9f);
-    dNuts(t,false,false,0,rgb_a(1,1,1,0.4f));
+    glScalef(0.9f, 0.9f, 0.9f);
+    dNuts(t, false, false, 0, rgb_a(1, 1, 1, 0.4f));
     glPopMatrix();
 
     glPushMatrix();
-    glScalef(0.8f,0.8f,0.8f);
-    dNuts(t,false,false,0,rgb_a(1,1,1,0.4f));
+    glScalef(0.8f, 0.8f, 0.8f);
+    dNuts(t, false, false, 0, rgb_a(1, 1, 1, 0.4f));
     glPopMatrix();
-/*
-    glTranslatef(0,0,-7);
-    dNuts(order,t,mytime,false);
 
-    glTranslatef(0,0,-9);
-    dNuts(order,t,mytime,false);
+    glPopMatrix();
 
-    glTranslatef(0,0,-11);
-    dNuts(order,t,mytime,false);
-
-    glTranslatef(0,0,-13);
-    dNuts(order,t,mytime,false);
-*/
-  glPopMatrix();
-
-  glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-  glDisable(GL_BLEND);
-  glDisable(GL_LIGHTING);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glDisable(GL_BLEND);
+    glDisable(GL_LIGHTING);
 
 }
 
@@ -1116,28 +1088,15 @@ void drawTubo(int order,float t,rgb_a coltubo,rgb_a colpeli)
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
 
-  float r,length,wobblepar,deltaw,freq;
-  int segsh,segsv,txtoff;
 
-//just a try with Dixie
-/*  r = 2.0f;
-  segsh = 16.0f;
-  segsv = 80.0f;
-  length = 80.0f;
-  txtoff = 0.0f;
-  wobblepar = 0.5f;
-  deltaw = t * 4.0f;
-  freq = 10.0f;
-*/
+  constexpr float r = 2.0f;
+  constexpr int segsh = 16;
+  constexpr int segsv = 80;
+  constexpr float length = 80.0f;
+  constexpr float wobblepar = 0.5f;
+  constexpr float freq = 10.0f;
 
-  r = 2.0f;
-  segsh = 16;
-  segsv = 80;
-  length = 80.0f;
-  txtoff = 0;
-  wobblepar = 0.5f;
-  deltaw = t * 6.0f;
-  freq = 10.0f;
+  float deltaw = t * 6.0f;
 
 
   glEnable(GL_COLOR_MATERIAL);
@@ -1203,14 +1162,14 @@ void drawToroide(int order, float t, float mytime) // porcodio, se e' standard m
     glTranslatef(0,0,-10);
     glRotatef(sinf(t * 1.2f) * 140.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(sinf(t * 1.7f) * 60.0f, 0.0f, 0.0f, 1.0f);
-    dTorus(mytime,Vector3(0.0f,0.0f,0.0f),2.0f,0.6f,64,0,(float)TWOPI,0.0f,(float)TWOPI,t,true);
+    dTorus(mytime,Vector3(0.0f,0.0f,0.0f),2.0f,0.6f,64,0,(float)TWOPI,0.0f,(float)TWOPI,true);
     glTranslatef(0.0f, 0.0f, 0.01f);
     if (order < 2)
       glColor4f(1.0f, 1.0f, 1.0f, 0.1f);
     else
       glColor4f(1.0f, 1.0f, 1.0f, (0.5f*(0.2f - t)));
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    dTorus(mytime, Vector3(0,0,0),2.0f,0.6f,64,0,(float)TWOPI,0.0f,(float)TWOPI,t,true);
+    dTorus(mytime, Vector3(0,0,0),2.0f,0.6f,64,0,(float)TWOPI,0.0f,(float)TWOPI,true);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
   glPopMatrix();
@@ -1818,7 +1777,6 @@ void drawCreditsBack(float t) {
 void drawCredits(float t)
 {
   float sync = t/1.454875f*2-0.5f;
-  float rsync = (sync>0)?floorf(sync):-0.5f;
 //  float e = exp(6*(rsync-sync));
   texture1->use();
 
@@ -1852,19 +1810,19 @@ void drawCredits(float t)
   glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
-  //particles
+    //particles
   glDepthMask(GL_FALSE);
   glPushMatrix();
   glDisable(GL_CULL_FACE);
   glDisable(GL_LIGHTING);
   glEnable(GL_BLEND);
-  glLoadIdentity();  
+  glLoadIdentity();
     glRotatef(sinf(t) * 45,0,0,1);
     panViewPerspectiveFOV(45.0f);
 
     glEnable(GL_TEXTURE_2D);
-	  glDisable(GL_TEXTURE_GEN_S);
-	  glDisable(GL_TEXTURE_GEN_T);
+      glDisable(GL_TEXTURE_GEN_S);
+      glDisable(GL_TEXTURE_GEN_T);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
 
@@ -1927,6 +1885,7 @@ void drawCredits(float t)
     parts2.Draw(t2);
   glPopMatrix();
 
+  glEnable(GL_CULL_FACE);
   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
   glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_NOTEQUAL, 0, 0xffffffff);
@@ -1952,10 +1911,9 @@ void dPanLandscape(float t, float nstep, float len, float H) {
   float videostep = len/PANLANDSIZE;
   float heights[PANLANDSIZE][PANLANDSIZE];
   float center = -videostep*(PANLANDSIZE-1)/2.0f;
-  int i, j;
-  for(i = 0; i < PANLANDSIZE; i++) {
+  for(int i = 0; i < PANLANDSIZE; i++) {
     float x = nstep*i;
-    for(j = 0; j < PANLANDSIZE; j++) {
+    for(int j = 0; j < PANLANDSIZE; j++) {
       float y = nstep*j;
       heights[i][j] = vnoise(x, y, t);
     }
@@ -1967,11 +1925,11 @@ void dPanLandscape(float t, float nstep, float len, float H) {
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);
   float deltatex = 1/(PANLANDSIZE-1);
-  for(i = 0; i < PANLANDSIZE-1; i+=2) {
+  for(int i = 0; i < PANLANDSIZE-1; i+=2) {
     float x = videostep*i;
     float x1 = i*deltatex;
     float z, z1;
-    for(j = 0; j < PANLANDSIZE-1; j+=2) {
+    for(int j = 0; j < PANLANDSIZE-1; j+=2) {
       z = videostep*j;
       z1 = j*deltatex;
 /*
@@ -2005,10 +1963,10 @@ void dPanLandscape(float t, float nstep, float len, float H) {
 
   glDisable(GL_TEXTURE_2D);
   glBegin(GL_LINES);
-  for(i = 0; i < PANLANDSIZE-1; i++) {
+  for(int i = 0; i < PANLANDSIZE-1; i++) {
     float x = videostep*i;
     float z;
-    for(j = 0; j < PANLANDSIZE-1; j++) {
+    for(int j = 0; j < PANLANDSIZE-1; j++) {
       z = videostep*j;
       
       glVertex3f(x, heights[i][j]*H, z);
@@ -2055,8 +2013,8 @@ void drawPanLandscape(float t) {
 void drawPanOverWiss(float t) {
   float t1 = t/1.454875f;
 
-  int stock1 = (int)floor(t1);
-  int stock2 = (int)floor(t1*8);
+  int stock1 = (int)floorf(t1);
+  int stock2 = (int)floorf(t1*8);
   float randa[10];
   float t2 = HALFPI*t1;
   static const float wei[10] = {0, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.0}; // da vicino nessuno e' normale! 
@@ -2101,21 +2059,21 @@ float durata;
   {
 
     float val = 1;
-    if ( tr < 1.4548)
+    if ( tr < 1.4548f)
       val = 7;
-    else if ( tr < (1.4548 * 2))
+    else if ( tr < (1.4548f * 2))
       val = 1;
-    else if ( tr < (1.4548 * 3))
+    else if ( tr < (1.4548f * 3))
       val = 6;
-    else if ( tr < (1.4548 * 4))
+    else if ( tr < (1.4548f * 4))
       val = 2;
-    else if ( tr < (1.4548 * 5))
+    else if ( tr < (1.4548f * 5))
       val = 8;
-    else if ( tr < (1.4548 * 6))
+    else if ( tr < (1.4548f * 6))
       val = 1;
-    else if ( tr < (1.4548 * 7)) // domanda: a che (cazzo) serve ?
+    else if ( tr < (1.4548f * 7)) // domanda: a che (cazzo) serve ?
       val = 7;                   // a farci belli agli occhi di dio
-    else if ( tr < (1.4548 * 8)) // ...e io ti piscio in culo...
+    else if ( tr < (1.4548f * 8)) // ...e io ti piscio in culo...
       val = 1;
 
     //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
@@ -2199,8 +2157,7 @@ float durata;
     drawLines(tr,0.1f, 50);
     float t1 = tr/1.454875f;
 
-    int stock1 = (int) floor(t1);
-    int stock2 = (int) floor(t1*8);
+    int stock2 = (int) floorf(t1*8);
 
     if (stock2 < 52) {
       drawPanOverWiss(tr);
@@ -2222,10 +2179,10 @@ float durata;
       glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);
-      glVertex2f(0,0);
-      glVertex2f(640,0);
-      glVertex2f(640,480);
-      glVertex2f(0,480);
+      glVertex2f(0, 0);
+      glVertex2f(WIDTH, 0);
+      glVertex2f(WIDTH, HEIGHT);
+      glVertex2f(0, HEIGHT);
       glEnd();
     }
   }
@@ -2275,7 +2232,7 @@ float durata;
   {
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
-    drawNuts(9,tr,mytime);
+    drawNuts(tr);
     drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
   }
 
@@ -2291,7 +2248,7 @@ float durata;
   {
     drawTexture(frame,1.0f,1.0f,true,tr,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,tr,80,rgb_a(1,1,1,0.6f),true);
-    drawNuts(11,tr,mytime);
+    drawNuts(tr);
     drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
   }
 
@@ -2429,10 +2386,10 @@ void Scena(float t, int order) {
   {
       panViewPerspectiveFOV(180.0f - (mytime * 15.0f));
       drawToroide(order,t, mytime);
-      drawTexture(frame,1.0f,1.0f,true,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.3f))),true);
-      drawTexture(frame,1.1f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.2f))),true);
-      drawTexture(frame,1.2f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.1f))),true);
-      drawTexture(frame,1.3f,1.0f,false,t,80,rgb_a(1,1,1,(float)fabs(sinf(t * 1.0f))),true);
+      drawTexture(frame,1.0f,1.0f,true,t,80,rgb_a(1,1,1,fabsf(sinf(t * 1.3f))),true);
+      drawTexture(frame,1.1f,1.0f,false,t,80,rgb_a(1,1,1,fabsf(sinf(t * 1.2f))),true);
+      drawTexture(frame,1.2f,1.0f,false,t,80,rgb_a(1,1,1,fabsf(sinf(t * 1.1f))),true);
+      drawTexture(frame,1.3f,1.0f,false,t,80,rgb_a(1,1,1,fabsf(sinf(t * 1.0f))),true);
       drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
 
       glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
@@ -2456,7 +2413,7 @@ void Scena(float t, int order) {
   {
     drawTexture(frame,1.0f,1.0f,true,t,80,rgb_a(1,1,1,0.6f),true);
     drawTexture(frame,1.0f,1.0f,false,t,80,rgb_a(1,1,1,0.6f),true);
-    drawNuts(order,t,mytime);
+    drawNuts(t);
     drawWissEffect(Vector3(3, 3, -4),Vector3(mytime, mytime, 0),rgb_a(1.0f, 1.0f, 1.0f, 0.8f),rgb_a(0.3f, 0.2f, 0.1f, fabsf(sinf(mytime)) / 4.0f),false);
 
     glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
@@ -2557,8 +2514,7 @@ void Scena(float t, int order) {
     drawLines(t,0.1f, 50);
     float t1 = t/1.454875f;
 
-    int stock1 = (int) floor(t1);
-    int stock2 = (int) floor(t1*8);
+    int stock2 = (int) floorf(t1*8);
 
     if (stock2 < 52) {
       drawPanOverWiss(t);
@@ -2580,10 +2536,10 @@ void Scena(float t, int order) {
       glColor4f(1,0.9f,0.8f,(stock2-52)*0.125f);
       panViewOrtho();
       glBegin(GL_QUADS);
-      glVertex2f(0,0);
-      glVertex2f(640,0);
-      glVertex2f(640,480);
-      glVertex2f(0,480);
+      glVertex2f(0, 0);
+      glVertex2f(WIDTH, 0);
+      glVertex2f(WIDTH, HEIGHT);
+      glVertex2f(0, HEIGHT);
       glEnd();
     }
 
@@ -2660,21 +2616,21 @@ void Scena(float t, int order) {
   if (order == 13)
   {
     float val = 1;
-    if ( t < 1.4548)
+    if ( t < 1.4548f)
       val = 7;
-    else if ( t < (1.4548 * 2))
+    else if ( t < (1.4548f * 2))
       val = 1;
-    else if ( t < (1.4548 * 3))
+    else if ( t < (1.4548f * 3))
       val = 6;
-    else if ( t < (1.4548 * 4))
+    else if ( t < (1.4548f * 4))
       val = 2;
-    else if ( t < (1.4548 * 5))
+    else if ( t < (1.4548f * 5))
       val = 8;
-    else if ( t < (1.4548 * 6))
+    else if ( t < (1.4548f * 6))
       val = 1;
-    else if ( t < (1.4548 * 7)) 
+    else if ( t < (1.4548f * 7)) 
       val = 7;
-    else if ( t < (1.4548 * 8))
+    else if ( t < (1.4548f * 8))
       val = 1;
 /*      
 	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
@@ -2736,7 +2692,7 @@ void Scena(float t, int order) {
       float ang = ((t - (1.4548f * 4)) / 1.4548f) * PI;
       occhio = Vector3(-sinf(ang) * 15 ,(t - (1.4548f * 4)) * 4, -(t - (1.4548f * 4))*15 );
     }
-    else if (t >= (1.4548 * 5))
+    else if (t >= (1.4548f * 5))
     {
       occhio = Vector3(0 , 1.4548f * 4 , -1.4548f*15 );
     }
@@ -2785,7 +2741,7 @@ void Scena(float t, int order) {
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-    static char * nomi[12] = {"haujobb", "", "mfx", "farbrausch","mewlers","vantage","foobug","purple","kolor","hirmu","calodox"};
+    static const char * nomi[12] = {"haujobb", "", "mfx", "farbrausch","mewlers","vantage","foobug","purple","kolor","hirmu","calodox"};
 // quello vuoto e' vuoto perche' non si vede
     for(int i = 0; i < 12; i++) {
       CoolPrint1(*FontArial, 50, sync, i-0.1f, i, i+1, i+1.1f, 420-160*(i%2), i*30+100, 110, 0.7f, 0, nomi[i]);
@@ -2820,10 +2776,10 @@ void Scena(float t, int order) {
       if (sync > 13) { // total in sync 14.4, in time 10.471
         glColor4f(0,0,0, (t-12.5f)/1.9f); // 10.471
         glBegin(GL_QUADS);
-        glVertex2f(0,0);
-        glVertex2f(640,0);
-        glVertex2f(640,480);
-        glVertex2f(0,480);
+        glVertex2f(0, 0);
+        glVertex2f(WIDTH, 0);
+        glVertex2f(WIDTH, HEIGHT);
+        glVertex2f(0, HEIGHT);
         glEnd();
       }
     }
@@ -2856,69 +2812,10 @@ void Scena(float t, int order) {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);//_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
-/*
-  //pan scene, removed to debug, gotta reenable it somewhere
-  if (order == 4) 
-  {
-    glDisable(GL_TEXTURE_GEN_S);
-    glDisable(GL_TEXTURE_GEN_T);
-    glBegin(GL_QUADS);
-    for(int k = 0; k < 4; k++) 
-    {
-      float sync = (t*3.14)/0.7275;
-      glColor3f(0.2*tan(sync)+0.05f, 0.1*tan(sync)+0.05f, 0.1*tan(sync)+0.05f);
-      int s1 = (k & 1)*2-1;
-      int s2 = (k & 2)-1;
-      glTexCoord2f(0+s1*sin(sync), 0-s2*cos(sync));
-      glVertex2f(0,0);
-      glTexCoord2f(k-s1*cos(sync), 0-s2*sin(sync));
-      glVertex2f(640,0);
-      glTexCoord2f(k-s1*sin(sync), k*0.75+s2*cos(sync));
-      glVertex2f(640,480);
-      glTexCoord2f(0+s1*cos(sync), k*0.75+s2*sin(sync));
-      glVertex2f(0,480);
-    }
-    glEnd();
-  }
-  tex->use();
-
-	glEnable(GL_TEXTURE_GEN_S);
-	glEnable(GL_TEXTURE_GEN_T);
-  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-
-  panViewOrtho();
-  glColor3f(1, 1, 1);
-
-  if (order == 0) 
-  {
-    
-  } 
-  else if ((order == 1) || (order == 2)) 
-  {
-    //CoolPrint1(*FontArial, 50, t, 0.1f, 0.2f, 5.5f, 6.5f, 320, 80, 80, 0.5f, 0, "SpinningKids");
-//    CoolPrint1(*FontArial, 50, t, 0, 0.1, 6.0, 7.0, 320, 80, 60, 0.5, 0.25, "SpinningKids");
-  }
-
-  for(int tmp = 0; tmp < 20; tmp++) 
-  {
-//     CoolPrint1(*FontArial, 50, t, tmp*2+2, tmp*2+3, tmp*2+3, tmp*2+4, 50, 100, 90, 0.7, 0, "Tirulero");
-  }
-
-  if (order == 0)
-    CoolPrint1(*FontArial, 10, t, 0, 0.1f, 5.5f, 6.5f, 320, 320, 200+50*sin(t), 0.5f, -0.25*sin(t), "Liver");
-  //CoolPrint1(font,numero,tempo,st,on,fd,durata,x,y,gs,ratio,tracking,scritta)
-*/
-
-  float mytempo = (t-3.14f)/3.14f;
-
   panViewPerspective();
 
   //leave it for last (rIO)
-//  if ((order != 10) && (order != 9))
     drawBorder(rgb_a(0,0,0,1),rgb_a(0,0,0,0),80);
-//  else if (order == 9)
-//    drawBorder(rgb_a(0,0,0,1.0f - (t / 15.0f)),rgb_a(0,0,0,0),80);
 
 	glDepthMask(GL_TRUE);
 
@@ -3098,51 +2995,10 @@ void skDraw() {
       CoolPrint1(*FontArial, 20,    t, 50.0f, 51.0f, 5000.0f, 5000.0f, 300, 230, 40, 0.4f, -0.2f, "are you dreaming of electric sheeps ?");
   }
 
-/*
-  glColor3f(1,1,1);
-  static unsigned int i = t*1000;
-  unsigned int c = t*1000;
-  if (c > i) i = c;
-
-  static int oldorder = -1;
-  static int oldrow = 65536;
-  static float timebase = 0;
-
-  int order = FMUSIC_GetOrder(fmodule);
-  int row = FMUSIC_GetRow(fmodule);
-
-  if ((order == oldorder) && (row < oldrow)) 
-    row = oldrow;
-  if ((order > oldorder) && (row < oldrow)) {
-    oldorder = order;
-    oldrow = row;
-    timebase = t;
-  } else {
-    order = oldorder;
-    oldrow = row;
-  }
-  FontArial->printfx(10, 20, 20, 0, 1, 1, 0, 0, "%4.3f  %4.3f  %4.3f  %d", t, (t-timebase), timebase, order);
-*/
-
-//	DrawBack(1,0,0,1);
-//	if (t < 31)
-//    Scena2(t);
-//  else if (t < 500)
-//    Scena2(t);
-//  DrawDragon(t, 0.5);
-
   skSwappuffers();
 
   skTimerFrame();
 
-//  if (t>473) PostQuitMessage(0);
-
-/*
-  if (t>500) {
-    skKill(0);
-    g_RunDemo = false;
-  }
-*/
 }
 
 void skInitDemoStuff()
@@ -3206,9 +3062,6 @@ void skInitDemoStuff()
   //LOD, radius
   initSphereObject(40,2);
 
-  logo = 0;
-  //LoadBMP(rgb_a(1,1,1,1),114,logo);
-  //skLoadBitmap(rgb_a(1,1,1,1),"IDB_BITMAP1",logo);
   logo = CreatePKLogoTexture();
 }
 
@@ -3383,7 +3236,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 								   windowRect.right - windowRect.left,	// Window Width
 								   windowRect.bottom - windowRect.top,	// Window Height
 								   HWND_DESKTOP,						// Desktop Is Window's Parent
-								   0,									// No Menu
+								   nullptr,									// No Menu
 								   hInstance, // Pass The Window Instance
         nullptr)) {
   	hDC = GetDC (hWND);
