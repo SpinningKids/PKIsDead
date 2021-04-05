@@ -54,18 +54,10 @@ public:
     void Create(CParticleSystem* parent, float time_counter);
 
     const Vector3& GetPosition() const { return m_v3Position; }
-    float GetAlpha() const { return m_fAlpha; }
     float GetSize() const { return m_fSize; }
-    const rgb_a& GetColor() const { return color; }
     float GetAge() const { return m_fAge; }
 
     Vector3 m_v3Velocity{ 0.f, 0.f, 0.f };		//The particle's current velocity
-
-    rgb_a color{ 0.f, 0.f, 0.f, 0.f };			//The particle's color
-    rgb_a color_counter{ 0.f, 0.f, 0.f, 0.f };	//The color counter!
-
-    float m_fAlpha{ 0.f };
-    float m_fAlpha_counter{ 0.f };	//Adds/subtracts transparency over time
 
     float m_fSize{ 0.f };				//The particle's current size
     float m_fSize_counter{ 0.f };		//Adds/subtracts transparency over time
@@ -83,7 +75,6 @@ class CParticleSystem : public CObject
 public:
     void SetUpdateFlag(int flag);
     bool StepOver(float time, float num_to_create);
-    void PostOBJMessage(char* msg, float p1, float p2, float p3, float p4);
     void Draw(float time);
     void SetVelocity(Vector3 vel);
     void SetSystemFlag(int flag, bool state);
@@ -93,11 +84,8 @@ public:
     void SetParticlesPerSec(unsigned int number);
     void SetLife(float seconds);
     void SetGravity(float x, float y, float z);
-    void SetStartColor(rgb_a start);
-    void SetEndColor(rgb_a end);
     void SetAttraction(unsigned int Attraction_Percent);
     void SetAngle(float half_angle);
-    void SetStartEndAlpha(float startalpha, float endalpha);
     CParticleSystem();
     virtual ~CParticleSystem();
 
@@ -113,14 +101,6 @@ public:
     float m_fStart_size;			//The starting size of the particles
     float m_fSize_counter;			//Adds/subtracts particle size over time
     float m_fEnd_size;				//The particle's end size (used for a MAX boundry)
-
-    float m_fStart_alpha;			//The starting transparency of the particle
-    float m_fAlpha_counter;		//Adds/subtracts particle's transparency over time
-    float m_fEnd_alpha;			//The end transparency (used for a MAX boundry)
-
-    rgb_a start_color;		//The starting color
-    rgb_a color_counter;		//The color that we interpolate over time
-    rgb_a end_color;			//The ending color
 
     float m_fSpeed;				//The system's speed
     float m_fSpeed_counter;		//The system's speed counter

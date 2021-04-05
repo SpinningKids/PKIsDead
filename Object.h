@@ -20,22 +20,10 @@ public:
     void SetLOD(int newlod);
     virtual void CastShadow(int i);
     virtual void CalcShadowMatrix(void* light);
-    void SetTextureEnvy(int val);
-    void SetTexture2(int val);
-    void SetTexture1(int val);
-    float GetAlpha();
-    void SetAlpha(float value);
-    void SetEnvMapped(bool e);
-    bool IsEnvMapped();
 
     //anim params
-    virtual void PostOBJMessage(char* msg, float p1, float p2, float p3, float p4);
     virtual void Update();
-    virtual void StopAnimation();
-    virtual void RestartAnimation();
     virtual int GetActualFrame();
-    virtual void StartAnimation();
-    bool IsAnimated();
 
     //geom params
     Vector3 GetScale();
@@ -60,20 +48,6 @@ protected:
     Vector3   m_v3Position;
     Vector3   m_v3Rotation;
     Vector3	  m_v3Scale;
-
-    int       m_iTexture1ID;
-    int       m_iTexture2ID;
-
-    float     m_fAlpha;
-
-    //indicates if the objet is in animation mode
-    bool	m_bAnimated;
-
-    //indicates if the object need to be drawn with sphere envy
-    bool	m_bEnvMapped;
-    int   m_iEnvyTexID;
-
-    int m_iLod;
 
     float m_fSpeed;
     float m_fFXSpeed;

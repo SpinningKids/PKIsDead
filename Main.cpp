@@ -943,7 +943,6 @@ void drawTexture(GLTexture* tex, float sx, float sy, bool calc, float value, flo
     glDisable(GL_TEXTURE_GEN_T);
     glDisable(GL_CULL_FACE);
     glDisable(GL_COLOR_MATERIAL);
-    //glBindTexture(GL_TEXTURE_2D, this->m_iTexture1ID);
     tex->use();
 
     glPushMatrix();
@@ -1829,25 +1828,19 @@ void drawCredits(float t)
     Vector3 gravity(0.5,5,0);
     Vector3 rot(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     int tobecreated = 10;
-    parts1.SetTexture1(0);//gauss->getID());  //gauss->getID()
     parts1.SetParticlesPerSec(200);
     parts1.SetSize(0.05f, 0.0f);
     parts1.SetAngle(100.0f);
     parts1.SetAttraction(0);
-    parts1.SetStartColor(rgb_a(1.0f,0.6f,0.8f, 0.01f));
-    parts1.SetEndColor(rgb_a(0.8f, 0.6f, 0.6f, 0.0f));
     parts1.SetLife(3.0f);
     parts1.SetSpeed(3.0f);
     parts1.SetSpread(8.0f,8.0f,2);
-    parts1.SetStartEndAlpha(0.2f , 0.0f);
     parts1.SetUpdateFlag(UPDATE_AND_CREATE);
-    parts1.SetAlpha(0.001f);
     parts1.SetPosition(&pos);
     parts1.SetVelocity(vel);
     parts1.SetGravity(gravity.x,gravity.y,gravity.z);
     parts1.SetSize(0.2f,0.1f);
     parts1.SetRotation(rot.x,rot.y,rot.z);
-    parts1.SetStartEndAlpha(0.5,0.0);
     parts1.StepOver(t2,tobecreated);
     parts1.Draw(t2);
 
@@ -1856,25 +1849,19 @@ void drawCredits(float t)
     gravity = Vector3(0.5,-5.0f,0);
     rot = Vector3(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     tobecreated = 10;
-    parts2.SetTexture1(0);//gauss->getID());  //gauss->getID()
     parts2.SetParticlesPerSec(200);
     parts2.SetSize(0.05f, 0.0f);
     parts2.SetAngle(100.0f);
     parts2.SetAttraction(0);
-    parts2.SetStartColor(rgb_a(1.0f,0.8f,0.6f, 0.01f));
-    parts2.SetEndColor(rgb_a(0.8f, 0.6f, 0.6f, 0.0f));
     parts2.SetLife(3.0f);
     parts2.SetSpeed(3.0f);
     parts2.SetSpread(8.0f,8.0f,2);
-    parts2.SetStartEndAlpha(0.2f , 0.0f);
     parts2.SetUpdateFlag(UPDATE_AND_CREATE);
-    parts2.SetAlpha(0.001f);
     parts2.SetPosition(&pos);
     parts2.SetVelocity(vel);
     parts2.SetGravity(gravity.x,gravity.y,gravity.z);
     parts2.SetSize(0.2f,0.1f);
     parts2.SetRotation(rot.x,rot.y,rot.z);
-    parts2.SetStartEndAlpha(0.5,0.0);
     parts2.StepOver(t2,tobecreated);
     parts2.Draw(t2);
   glPopMatrix();

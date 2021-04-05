@@ -16,14 +16,6 @@ CObject::CObject()
 
   SetScale(1.0f,1.0f,1.0f);
 
-	m_bAnimated = true;
-
-  m_fAlpha = 1.0f;
-
-  m_iTexture1ID = 0;
-  m_iTexture2ID = 0;
-  m_iEnvyTexID  = 0;
-
   m_fSpeed = 1;
   m_fFXSpeed = 1000;
 
@@ -104,12 +96,6 @@ Vector3 CObject::GetScale()
   return m_v3Scale;
 }
 
-//NON VIRTUAL
-bool CObject::IsAnimated()
-{
-  return m_bAnimated;
-}
-
 //VIRTUAL (Animation steps differs from object types)
 int CObject::GetActualFrame()
 {
@@ -117,73 +103,7 @@ int CObject::GetActualFrame()
   return 0;
 }
 
-//VIRTUAL (Animation steps differs from object types)
-void CObject::StartAnimation()
-{
-  //Generic used to start animation
-  m_bAnimated = true;
-}
-
-//VIRTUAL (Animation steps differs from object types)
-void CObject::RestartAnimation()
-{
-  //Generic function to restart the object's animation
-  m_bAnimated = true;
-}
-
-//VIRTUAL (Animation steps differs from object types)
-void CObject::StopAnimation()
-{
-  //Generic function to stop object's animation
-  m_bAnimated = false;
-}
-
-//NON VIRTUAL
-bool CObject::IsEnvMapped()
-{
-  //Return EnvMapping abilitation
-  return m_bEnvMapped;
-}
-
-//NON VIRTUAL
-void CObject::SetEnvMapped(bool e)
-{
-  //Sets the Env mapping flag
-  m_bEnvMapped = e;
-}
-
-void CObject::SetAlpha(float value)
-{
-  m_fAlpha = value;
-}
-
-float CObject::GetAlpha()
-{
-  return m_fAlpha;
-}
-
-void CObject::SetTexture1(int val)
-{
-  m_iTexture1ID = val;
-}
-
-void CObject::SetTexture2(int val)
-{
-  m_iTexture2ID = val;
-}
-
-void CObject::SetTextureEnvy(int val)
-{
-  m_iEnvyTexID = val;
-}
-
 void CObject::Update()
-{
-
-}
-
-//generic message post
-void CObject::PostOBJMessage(char *msg, float p1, float p2, float p3, float p4)
 {
 
 }
@@ -198,11 +118,6 @@ void CObject::CastShadow(int i)
 
 }
 
-
-void CObject::SetLOD(int newlod)
-{
-  m_iLod = newlod;
-}
 
 void CObject::Create()
 {

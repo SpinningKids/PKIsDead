@@ -12,6 +12,7 @@
 
 #include "utils.h"
 #include <algorithm>
+#include <cassert>
 
 void CParticle::Create(CParticleSystem *parent, float time_counter)
 {
@@ -24,29 +25,6 @@ void CParticle::Create(CParticleSystem *parent, float time_counter)
 	//Now, this is where the fun starts.  Kick butt baby.
 	m_fAge = 0.0f;
 	m_fDying_age = (parent->m_fLife)+((rand() / RAND_MAX)*(parent->m_fLife_counter));
-
-	//Now, we are going to set the particle's color.  The color
-	//is going to be the system's start color*color counter
-	color.r = (parent->start_color.r)+(rand() / RAND_MAX)*(parent->color_counter.r);
-	color.g = (parent->start_color.g)+(rand() / RAND_MAX)*(parent->color_counter.g);
-	color.b = (parent->start_color.b)+(rand() / RAND_MAX)*(parent->color_counter.b);
-	color.a = 1.0f;
-
-	//Now, lets calculate the color's counter, so that by the
-	//time the particle is ready to die (poor guy), it will
-	//have reached the system's end color.
-	color_counter.r = ((parent->end_color.r)-color.r) / m_fDying_age;
-	color_counter.g = ((parent->end_color.g)-color.g) / m_fDying_age;
-	color_counter.b = ((parent->end_color.b)-color.b) / m_fDying_age;
-
-	//Calculate the particle's alpha from the system's.
-	this->m_fAlpha = (parent->m_fStart_alpha)+(RANDOM_FLOAT*(parent->m_fAlpha_counter));
-	//Make sure the result of the above line is legal
-	this->m_fAlpha = std::clamp(this->m_fAlpha, MIN_ALPHA, MAX_ALPHA);
-	//Calculate the particle's alpha counter so that by the
-	//time the particle is ready to die, it will have reached 
-	//the system's end alpha
-	m_fAlpha_counter=((parent->m_fEnd_alpha)-this->m_fAlpha) / m_fDying_age;
 
 	//Now, same routine as above, except with size
 	m_fSize = (parent->m_fStart_size)+(RANDOM_FLOAT*(parent->m_fSize_counter));
@@ -149,18 +127,8 @@ bool CParticle::UpdatePart(float time_counter)
 		m_v3Velocity.z+= attract_normal.z*5.0f*time_counter;
 	}
 
-	color.r+= color_counter.r *time_counter;
-	color.g+= color_counter.g *time_counter;
-	color.b+= color_counter.b *time_counter;
-
-	//Adjust the alpha values (for transparency)
-	m_fAlpha+= m_fAlpha_counter*time_counter;
-
 	//Adjust current size 
 	m_fSize += m_fSize_counter*time_counter;
-
-  //things are a lot quick if we can use OpenGL's vector color function.
-	color.a = m_fAlpha;
 
 	return true;
 }
@@ -176,9 +144,6 @@ CParticleSystem::CParticleSystem()
   m_fStart_size = 0.0f;
 	m_fSize_counter = 0.0f;
   m_fEnd_size = 0.0f;
-	m_fStart_alpha = 0.0f;
-  m_fAlpha_counter = 0.0f;
-	m_fEnd_alpha = 0.0f;
   m_fSpeed = 0.0f;
   m_fSpeed_counter = 0.0f;
 	m_fLife = 0.0f;
@@ -200,12 +165,6 @@ CParticleSystem::~CParticleSystem()
 
 }
 
-void CParticleSystem::SetStartEndAlpha(float startalpha, float endalpha)
-{
- 	m_fStart_alpha = startalpha;
-	m_fEnd_alpha = endalpha; 
-}
-
 //This sets the emitter aperture half angle
 //10 = a thin directional emitter
 //45 = a directional emitter
@@ -223,16 +182,6 @@ void CParticleSystem::SetAttraction(unsigned int Attraction_Percent)
 		Attraction_Percent=100;
 		
 	m_fAttraction_percent= (Attraction_Percent/100.0f);
-}
-
-void CParticleSystem::SetStartColor(rgb_a start)
-{
-  start_color = start;
-}
-
-void CParticleSystem::SetEndColor(rgb_a end)
-{
-  end_color = end;
 }
 
 //sets the gravity direction
@@ -312,162 +261,56 @@ void CParticleSystem::SetSystemFlag(int flag, bool state)
 
 }
 
-void CParticleSystem::SetVelocity(Vector3 vel)
-{
+void CParticleSystem::SetVelocity(Vector3 vel) {
   m_v3Velocity = vel;
 }
 
-void CParticleSystem::Draw(float time)
-{
-	int loop;
-	float size;
-	Vector3 vert;
+void CParticleSystem::Draw(float time) {
+	glPushMatrix();
+	glScalef(m_v3Scale.x, m_v3Scale.y, m_v3Scale.z);
+	glRotatef(m_v3Rotation.x, 1, 0, 0);
+	glRotatef(m_v3Rotation.y, 0, 1, 0);
+	glRotatef(m_v3Rotation.z, 0, 0, 1);
 
-  glPushMatrix();
-	glScalef(m_v3Scale.x,m_v3Scale.y,m_v3Scale.z);
-	glRotatef(m_v3Rotation.x,1,0,0);
-	glRotatef(m_v3Rotation.y,0,1,0);
-	glRotatef(m_v3Rotation.z,0,0,1);
-  
 	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_PIXEL_MODE_BIT);
-	//glDisable(GL_DEPTH_TEST);
-  glDepthMask(GL_FALSE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-	glEnable(GL_BLEND);
-  glDisable(GL_CULL_FACE);
-  glEnable(GL_COLOR_MATERIAL);
-  glEnable(GL_TEXTURE_2D);
-	if (this->m_iTexture1ID > 0)
-    glBindTexture(GL_TEXTURE_2D, m_iTexture1ID);
-  else
-    glDisable(GL_TEXTURE_2D);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_COLOR_MATERIAL);
+	glDisable(GL_TEXTURE_2D);
 
-	for(loop=0; loop<MAX_PARTICLES; loop++)
-		{
-		size = particle[loop].m_fSize/2;
-		particle[loop].color[4]=particle[loop].GetAlpha();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	for (int loop = 0; loop < MAX_PARTICLES; loop++) {
+		float size = particle[loop].m_fSize / 2;
 
-		if(particle[loop].m_fAge>=DEATH_AGE)
-			{
-			glColor4fv((float*)&(particle[loop].color));
-			
+		if (particle[loop].m_fAge >= DEATH_AGE) {
 			glBegin(GL_TRIANGLE_STRIP);
+			glVertex3f(
+				particle[loop].GetPosition().x - size,
+				particle[loop].GetPosition().y + size,
+				particle[loop].GetPosition().z);
 
-				vert.x = particle[loop].GetPosition().x - size;
-				vert.y = particle[loop].GetPosition().y + size;
-				vert.z = particle[loop].GetPosition().z;
+			glVertex3f(
+				particle[loop].GetPosition().x + size,
+				particle[loop].GetPosition().y + size,
+				particle[loop].GetPosition().z);
 
-			  glTexCoord2d(1,1); 
-        glVertex3fv((float*)&vert);
+			glVertex3f(
+				particle[loop].GetPosition().x - size,
+				particle[loop].GetPosition().y - size,
+				particle[loop].GetPosition().z);
 
-				vert.x = particle[loop].GetPosition().x + size;
-				vert.y = particle[loop].GetPosition().y + size;
-				vert.z = particle[loop].GetPosition().z;
+			glVertex3f(
+				particle[loop].GetPosition().x + size,
+				particle[loop].GetPosition().y - size,
+				particle[loop].GetPosition().z);
 
-				glTexCoord2d(0,1); 
-        glVertex3fv((float*)&vert);
-
-				vert.x = particle[loop].GetPosition().x - size;
-				vert.y = particle[loop].GetPosition().y - size;
-				vert.z = particle[loop].GetPosition().z;
-
-				glTexCoord2d(1,0); 
-        glVertex3fv((float*)&vert);
-
-				vert.x = particle[loop].GetPosition().x + size;
-				vert.y = particle[loop].GetPosition().y - size;
-				vert.z = particle[loop].GetPosition().z;
-			  
-				glTexCoord2d(0,0); 
-        glVertex3fv((float*)&vert);
-			
 			glEnd();
-			}
-		}		
+		}
+	}
 	glPopAttrib();
-  glPopMatrix();
-  glEnable(GL_CULL_FACE);
-  glDepthMask(GL_TRUE);
-
-}
-
-void CParticleSystem::PostOBJMessage(char *msg, float p1, float p2, float p3, float p4)
-{
-/*  SKString str(msg);
-  str.UpperCase();
-
-  if (str == "SETANGLE")
-  {
-    this->SetAngle(p1);
-  }
-  else if (str == "SETATTRACTION")
-  {
-    this->SetAttraction((unsigned int)p1);
-  }
-  else if (str == "SETSTARTCOLOR")
-  {
-    this->SetStartColor(rgb_a(p1,p2,p3,0));
-  }
-  else if (str == "SETENDCOLOR")
-  {
-    this->SetEndColor(rgb_a(p1,p2,p3,0));
-  }
-  else if (str == "SETGRAVITY")
-  {
-    this->SetGravity(p1,p2,p3);
-  }
-  else if (str == "SETVELOCITY")
-  {
-    this->SetVelocity(Vector3(p1,p2,p3));
-  }
-  else if (str == "SETLIFE")
-  {
-    this->SetLife(p1);
-  }
-  else if (str == "SETPPERSEC")
-  {
-    this->SetParticlesPerSec((unsigned int)p1);
-  }
-  else if (str == "SETSIZE")
-  {
-    this->SetSize(p1,p2);
-  }
-  else if (str == "SETSPEED")
-  {
-    this->SetSpeed(p1);
-  }
-  else if (str == "SETSPREAD")
-  {
-    this->SetSpread((int)p1,(int)p2,p3);
-  }
-  else if (str == "SETSEALPHA")
-  {
-    this->SetStartEndAlpha(p1,p2);
-  }
-  else if (str == "SETSYSFLAG")
-  {
-    if(p2 == 0)
-      this->SetSystemFlag((int)p1,false);
-    else
-      this->SetSystemFlag((int)p1,true);
-  }
-  else if (str == "STEPOVER")
-  {
-    this->StepOver(p1 / 1000,p2);
-  }
-  else if (str == "SETUPDATE")
-  {
-    this->SetUpdateFlag(ONLY_UPDATE);
-  }
-  else if (str == "SETUPDATECREATE")
-  {
-    this->SetUpdateFlag(UPDATE_AND_CREATE);
-  }
-  else if (str == "SETCREATE")
-  {
-    this->SetUpdateFlag(ONLY_CREATE);
-  }
-  */
+	glPopMatrix();
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
 }
 
 bool CParticleSystem::StepOver(float time, float num_to_create)
