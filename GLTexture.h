@@ -23,7 +23,7 @@ public:
     int getSize() const { return size_; }
 
     void update();
-    void use();
+    void use() const;
     int getID() const { return txt_; }
 };
 
