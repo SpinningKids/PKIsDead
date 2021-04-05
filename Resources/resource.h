@@ -3,8 +3,6 @@
 // Used by Script1.rc
 //
 #define IDR_RC_MUSIC                    105
-#define IDB_PHILIPKDICK                 106
-#define IDR_MS3DRES11                   108
 #define IDI_SPINNINGKID                 115
 
 // Next default values for new objects
