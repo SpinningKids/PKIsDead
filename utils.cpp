@@ -21,8 +21,7 @@ void panViewOrtho() {
     glLoadIdentity();
 }
 
-void panViewOrthoWidthHeight(int pwidth, int pheight)
-{
+void panViewOrthoWidthHeight(int pwidth, int pheight) {
     glViewport(0, 0, pwidth, pheight);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -40,8 +39,7 @@ void panViewPerspective() {
     glLoadIdentity();
 }
 
-void panViewPerspectiveFOV(float fov)
-{
+void panViewPerspectiveFOV(float fov) {
     glViewport(0, 0, WIDTH, HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -63,8 +61,7 @@ static float      timer_lastup;
 static float      timer_fps;
 
 /* Timing Functions */
-void skInitTimer()
-{
+void skInitTimer() {
 #ifdef WIN32
     QueryPerformanceCounter((LARGE_INTEGER*)&timer_start);
     QueryPerformanceFrequency((LARGE_INTEGER*)&timer_frq);
@@ -74,8 +71,7 @@ void skInitTimer()
     timer_lastup = 0;
 }
 
-float skGetTime()
-{
+float skGetTime() {
 #ifdef WIN32
     return timer_time;
 #else
@@ -83,8 +79,7 @@ float skGetTime()
 #endif
 }
 
-float skTimerFrame()
-{
+float skTimerFrame() {
 #ifdef WIN32
     __int64 a;
     QueryPerformanceCounter((LARGE_INTEGER*)&a);
@@ -101,7 +96,6 @@ float skTimerFrame()
     return timer_time;
 }
 
-float skGetFPS()
-{
-    return (float)timer_fps;
+float skGetFPS() {
+    return timer_fps;
 }

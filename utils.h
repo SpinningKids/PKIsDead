@@ -5,7 +5,6 @@
 #define USEFMOD TRUE
 
 #define RANDOM_FLOAT (((float)rand()-(float)rand())/(float)RAND_MAX)
-#define CHECK_RANGE(x,min,max) ((x= (x<min  ? min : x<max ? x : max)))
 #define DEG_TO_RAD(angle)  ((angle)*PIOVER180)
 
 /* Timing Functions */
