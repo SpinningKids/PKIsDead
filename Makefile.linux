@@ -21,7 +21,6 @@ OBJECTS= \
   Object.o \
   ParticleSystem.o \
   SphereEffect.o \
-  Timer.o \
   utils.o \
   glf.o
 
