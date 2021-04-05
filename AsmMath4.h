@@ -1,7 +1,6 @@
-#ifndef _ASM_MATH3_H_
-#define _ASM_MATH3_H_
+#ifndef ASM_MATH3_H_
+#define ASM_MATH3_H_
 
-#include <math.h>
 #include <stdlib.h>
 
 #define TWOPI           6.2831853071795f
@@ -15,22 +14,17 @@
 
 //#define USE_ASM_VER
 
-struct uv_coord
-{
+struct uv_coord {
     float u, v;
 
-    uv_coord() {}
+    uv_coord() = default;
 
-    uv_coord(uv_coord const& uv) : u(uv.u), v(uv.v) {}
+    uv_coord(uv_coord const& uv) = default;
+    uv_coord& operator = (uv_coord const& uv) = default;
+    uv_coord(uv_coord&& uv) = default;
+    uv_coord& operator = (uv_coord&& uv) = default;
 
     uv_coord(const float pu, const float pv) : u(pu), v(pv) {}
-
-    inline uv_coord& operator = (uv_coord const& uv)
-    {
-        u = uv.u;
-        v = uv.v;
-        return(*this);
-    }
 
 };
 
@@ -40,37 +34,35 @@ struct rgb_a
 
     rgb_a() {}
 
-    rgb_a(rgb_a const& c) : r(c.r), g(c.g), b(c.b), a(c.a) {}
+    rgb_a(rgb_a const& c) = default;
+    rgb_a& operator = (rgb_a const& v) = default;
+    rgb_a(rgb_a&& c) = default;
+    rgb_a& operator = (rgb_a&& v) = default;
 
     rgb_a(const float cr, const float cg, const float cb, const float ca) : r(cr), g(cg), b(cb), a(ca) {}
 
-    float& operator[](const int ind)
-    {
+    float& operator[](const int ind) {
         if (ind == 0) return r;
         if (ind == 1) return g;
         if (ind == 2) return b;
         return a;
     }
 
-    void Set(const float ar, const float ag, const float ab, const float aa)
-    {
+    const float& operator[](const int ind) const {
+        if (ind == 0) return r;
+        if (ind == 1) return g;
+        if (ind == 2) return b;
+        return a;
+    }
+
+    void Set(const float ar, const float ag, const float ab, const float aa) {
         this->r = ar;
         this->g = ag;
         this->b = ab;
         this->a = aa;
     }
 
-    inline rgb_a& operator = (rgb_a const& v)
-    {
-        r = v.r;
-        g = v.g;
-        b = v.b;
-        a = v.a;
-        return(*this);
-    }
-
-    inline rgb_a& operator+=(const rgb_a& c)
-    {
+    rgb_a& operator+=(const rgb_a& c) {
         r += c.r;
         g += c.g;
         b += c.b;
@@ -78,8 +70,7 @@ struct rgb_a
         return *this;
     }
 
-    inline rgb_a& operator+=(const float& c)
-    {
+    rgb_a& operator+=(const float& c) {
         r += c;
         g += c;
         b += c;
@@ -87,8 +78,7 @@ struct rgb_a
         return *this;
     }
 
-    inline rgb_a& operator-=(const rgb_a& c)
-    {
+    rgb_a& operator-=(const rgb_a& c) {
         r -= c.r;
         g -= c.g;
         b -= c.b;
@@ -96,8 +86,7 @@ struct rgb_a
         return *this;
     }
 
-    inline rgb_a& operator-=(const float& c)
-    {
+    rgb_a& operator-=(const float& c) {
         r -= c;
         g -= c;
         b -= c;
@@ -105,8 +94,7 @@ struct rgb_a
         return *this;
     }
 
-    inline rgb_a& operator*=(const float c)
-    {
+    rgb_a& operator*=(const float c) {
         r *= c;
         g *= c;
         b *= c;
@@ -114,8 +102,7 @@ struct rgb_a
         return *this;
     }
 
-    inline rgb_a& operator/=(const float c)
-    {
+    rgb_a& operator/=(const float c) {
         r /= c;
         g /= c;
         b /= c;
@@ -124,91 +111,37 @@ struct rgb_a
     }
 };
 
-inline rgb_a operator-(const rgb_a& a)
-{
+inline rgb_a operator-(const rgb_a& a) {
     return rgb_a(-a.r, -a.g, -a.b, -a.a);
 }
 
-inline rgb_a operator+(const rgb_a& a, const rgb_a& b)
-{
+inline rgb_a operator+(const rgb_a& a, const rgb_a& b) {
     return rgb_a(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
 }
 
-inline rgb_a operator-(const rgb_a& a, const rgb_a& b)
-{
+inline rgb_a operator-(const rgb_a& a, const rgb_a& b) {
     return rgb_a(a.r - b.r, a.g - b.g, a.b - b.b, a.a - b.a);
 }
 
-inline rgb_a operator*(const rgb_a& a, const float b)
-{
+inline rgb_a operator*(const rgb_a& a, const float b) {
     return rgb_a(a.r * b, a.g * b, a.b * b, a.a * b);
 }
 
-inline rgb_a operator*(float a, const rgb_a& b)
-{
+inline rgb_a operator*(float a, const rgb_a& b) {
     return rgb_a(a * b.r, a * b.g, a * b.b, a * b.a);
 }
 
-inline rgb_a operator/(const rgb_a& a, const float b)
-{
+inline rgb_a operator/(const rgb_a& a, const float b) {
     float ib = 1.f / b;
     return rgb_a(a.r * ib, a.g * ib, a.b * ib, a.a * ib);
 }
 
-static float Random(float min, float max)
-{
-
-    return ((rand() % ((int)(max * 10) - (int)(min + 1 * 10))) + (min * 10)) / 10.0f;
+inline float Random(float min, float max) {
+    return ((rand() % ((int)(max * 10) - (int)(min + 1 * 10))) + min * 10) / 10.0f;
 };
 
-static double CalcPow(double a, double p, int p_is_constant)
-{
-
-    if (a == 0.0)
-        return 0.0;
-
-    //controlal che non sia una costante o un negativo
-    if (p_is_constant && (int)p == p && (int)p >= 0)
-    {
-
-        int n = (int)p;
-
-        //fino a 4 lo faccio brutale con le moltiplicazioni
-        if (n == 0) return 1.0;
-        else if (n == 1) return a;
-        else if (n == 2) return a * a;
-        else if (n == 3) return a * a * a;
-        else if (n == 4) return (a * a) * (a * a);
-
-        //da 5 a 16 richiamo me stesso in modo ricorsivo
-        //e genero le moltiplicazioni
-        else if (n <= 16)
-            return CalcPow(a, (double)(n / 2), 1) * CalcPow(a, (double)((n + 1) / 2), 1);
-
-        //gestisce n>16 con un loop
-        //calcola ( ** ( 2 ** x)) per 2 <= x <= n e somma
-        //i risultati per ogni potenza di 2 che il bit  corrispondente
-        //settato in n
-
-        else
-        {
-            double prod = 1.0;
-            for (; n != 0; a *= a, n >>= 1)
-                if (n & 1) prod *= a;
-            return prod;
-        }
-    }
-
-    //se p e' negativo uso la pow standard
-    else
-    {
-        return pow((float)a, (float)p);
-    }
-}
-
 //returns the colour between start and end at a "where" position (range 0,1)
-inline rgb_a GetFade(rgb_a start, rgb_a end, float where)
-{
+inline rgb_a GetFade(rgb_a start, rgb_a end, float where) {
     rgb_a tmp;
 
     tmp.r = start.r + ((end.r - start.r) * where);
@@ -222,4 +155,4 @@ inline rgb_a GetFade(rgb_a start, rgb_a end, float where)
 
 #include "asmmath2.h"
 
-#endif
+#endif // ASM_MATH3_H_
