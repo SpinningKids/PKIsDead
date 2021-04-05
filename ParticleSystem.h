@@ -46,32 +46,36 @@
 
 class CParticleSystem;
 
-class CParticle : public CObject
+class CParticle
 {
 public:
     bool UpdatePart(float time_counter);
-    void SetParentSystem(CParticleSystem* psys);
+    void SetParentSystem(CParticleSystem* psys) { this->m_pParent = psys; }
     void Create(CParticleSystem* parent, float time_counter);
-    CParticle();
-    virtual ~CParticle();
 
-    Vector3 m_v3Prev_location;	//The particle's last position
-    Vector3 m_v3Velocity;		//The particle's current velocity
+    const Vector3& GetPosition() const { return m_v3Position; }
+    float GetAlpha() const { return m_fAlpha; }
+    float GetSize() const { return m_fSize; }
+    const rgb_a& GetColor() const { return color; }
+    float GetAge() const { return m_fAge; }
 
-    rgb_a color;			//The particle's color
-    rgb_a color_counter;	//The color counter!
+    Vector3 m_v3Velocity{ 0.f, 0.f, 0.f };		//The particle's current velocity
 
-    float m_fAlpha_counter;	//Adds/subtracts transparency over time
+    rgb_a color{ 0.f, 0.f, 0.f, 0.f };			//The particle's color
+    rgb_a color_counter{ 0.f, 0.f, 0.f, 0.f };	//The color counter!
 
-    float m_fSize;				//The particle's current size
-    float m_fSize_counter;		//Adds/subtracts transparency over time
+    float m_fAlpha{ 0.f };
+    float m_fAlpha_counter{ 0.f };	//Adds/subtracts transparency over time
 
-    float m_fAge;				//The particle's current age
-    float m_fDying_age;		//The age at which the particle DIES!
+    float m_fSize{ 0.f };				//The particle's current size
+    float m_fSize_counter{ 0.f };		//Adds/subtracts transparency over time
 
+    float m_fAge{ 0.f };				//The particle's current age
+    float m_fDying_age{ 0.f };		//The age at which the particle DIES!
+
+    Vector3   m_v3Position{ 0.f, 0.f, 0.f };
 private:
-    CParticleSystem* m_pParent;
-
+    CParticleSystem* m_pParent{ nullptr };
 };
 
 class CParticleSystem : public CObject
@@ -99,8 +103,6 @@ public:
 
     bool IsAttracting(void) { return m_bAttracting; }
     bool IsStopped(void) { return m_bStopped; }
-
-
 
     CParticle particle[MAX_PARTICLES];//All of our particles
 

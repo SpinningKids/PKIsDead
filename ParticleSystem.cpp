@@ -13,34 +13,6 @@
 #include "utils.h"
 #include <algorithm>
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-CParticle::CParticle()
-{
-  m_fAge = 0.0f;
-  m_fDying_age = 0.0f;
-  m_fSize = 0.0f;
-  m_fSize_counter = 0.0f;
-	m_fAlpha = 0.0f;
-  m_fAlpha_counter = 0.0f;
-
-	color.r = 0.0f;		//Set all of the vectors to 0.0 
-	color.g = 0.0f; 
-	color.b = 0.0f; 
-	color.a = 0.0f;
-
-	color_counter.r = 0.0f;
-	color_counter.g = 0.0f;
-	color_counter.b = 0.0f;
-	color_counter.a = 0.0f;
-}
-
-CParticle::~CParticle()
-{
-
-}
-
 void CParticle::Create(CParticleSystem *parent, float time_counter)
 {
 	Vector3 temp_velocity;
@@ -129,11 +101,6 @@ void CParticle::Create(CParticleSystem *parent, float time_counter)
 
 }
 
-void CParticle::SetParentSystem(CParticleSystem *psys)
-{
-  this->m_pParent = psys;
-}
-
 bool CParticle::UpdatePart(float time_counter)
 {
 	static Vector3 attract_location;
@@ -147,12 +114,6 @@ bool CParticle::UpdatePart(float time_counter)
 		m_fAge=-1.0f;
 		return false;
 	}
-	
-	//Set the particle's previous location with the location that
-	//will be the old one by the time we get through this function
-	m_v3Prev_location.x = m_v3Position.x;
-	m_v3Prev_location.y = m_v3Position.y;
-	m_v3Prev_location.z = m_v3Position.z;
 
 	//Move the particle's current location
 	m_v3Position.x += m_v3Velocity.x*time_counter;
