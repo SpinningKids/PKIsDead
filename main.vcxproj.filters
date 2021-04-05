@@ -57,7 +57,6 @@
     <ClCompile Include="noise.cpp">
       <Filter>Pan</Filter>
     </ClCompile>
-    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
@@ -115,7 +114,6 @@
     <ClInclude Include="noise.h">
       <Filter>Pan</Filter>
     </ClInclude>
-    <ClInclude Include="Frustum.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Math3.h" />
     <ClInclude Include="Object.h" />

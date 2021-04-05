@@ -103,7 +103,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CoolPrint.cpp" />
-    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="GenTex.cpp" />
     <ClCompile Include="GLFont.cpp" />
     <ClCompile Include="GLTexture.cpp" />
@@ -124,7 +123,6 @@
     <ClInclude Include="asmmath2.h" />
     <ClInclude Include="AsmMath4.h" />
     <ClInclude Include="CoolPrint.h" />
-    <ClInclude Include="Frustum.h" />
     <ClInclude Include="GenTex.h" />
     <ClInclude Include="GLFont.h" />
     <ClInclude Include="Globals.h" />

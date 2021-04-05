@@ -43,7 +43,6 @@
 #include "noise.h"
 #include "CoolPrint.h"
 #include "ParticleSystem.h"
-#include "Frustum.h"
 #include "SphereEffect.h"
 #include "PKLogo.h"
 #include "utils.h"
@@ -101,8 +100,6 @@ GLTexture* tex2;
 GLTexture* scritte;
 
 GLuint logo;
-
-CFrustum frust;
 
 //solo per provare...
 Vector3 poscubo(0,0,0);
@@ -655,8 +652,6 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
   Vector3 norm2(0,0,0);
   Vector3 norm3(0,0,0);
 
-  frust.GetOGLFrustum();
-
   if (fill) {
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
@@ -713,20 +708,17 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
           norm3.z = -cosf((x+1) * horstep);
           //glNormal3f( sinf((x+1) * horstep), 0, -cosf((x+1) * horstep));
 
-          if (frust.QuadInFrustum(tmpv0,tmpv1,tmpv2,tmpv3))
-          {
-            glNormal3fv((float*)&norm0);
-            glVertex3fv((float*)&tmpv0);
+          glNormal3fv((float*)&norm0);
+          glVertex3fv((float*)&tmpv0);
 
-            glNormal3fv((float*)&norm1);
-            glVertex3fv((float*)&tmpv1);
+          glNormal3fv((float*)&norm1);
+          glVertex3fv((float*)&tmpv1);
 
-            glNormal3fv((float*)&norm2);
-            glVertex3fv((float*)&tmpv2);
+          glNormal3fv((float*)&norm2);
+          glVertex3fv((float*)&tmpv2);
 
-            glNormal3fv((float*)&norm3);
-            glVertex3fv((float*)&tmpv3);
-          }
+          glNormal3fv((float*)&norm3);
+          glVertex3fv((float*)&tmpv3);
       }
     }
 
@@ -1969,32 +1961,6 @@ void dPanLandscape(float t, float nstep, float len, float H) {
     }
   }
 
-/* ########################################################
-//SUKA
-PAN KORNUTO, c'e' il frustum che funziona adesso, 
-devi chiamare frust.GetOGLFrustum() all'inizio della routine, lui 
-si carica le eq dei piani del frustu e poi puoi usare
-le altre funzioni tipo PointInFrustum(Vector3 p) per controllare se
-punti,piani,quads e sfere sono dentro al frustum
-
-Es:
-
-  glPushMatrix();
-  glTranslatef
-  glRotate..
-  frust.GetOGLFrustum();
-  glBegin(GL_TRIANGLES);
-    if (frust.TriInFrustum(v1,v2,v3))
-    {
-       glVertex3f(v1);
-       glVertex3f(v2);
-       glVertex3f(v3);
-    }
-  glEnd();
-
- ######################################################## */
-
-
   glPushMatrix();
   glTranslatef(center, 0, center);
   glColor4f(1,1,1,0.06f);
@@ -2080,8 +2046,6 @@ void drawPanLandscape(float t) {
   glRotatef(t*10, 0, 1, 0);
   glRotatef(15, 1, 0, 0);
   glTranslatef(0, -3, 0);
-  //SUKA qui sarebbe da mettere frust.GetOGLFrust
-  //e dentro la dPanLandscape sarebbero da controllare i tri/quads
   dPanLandscape(t, 0.2f, len/2, 1.5f);
   glTranslatef(0, -0.1f, 0);
   dPanLandscape(t+0.2f, 0.2f, len/2, 1.6f);
@@ -2192,7 +2156,6 @@ float durata;
     glRotatef(-sinf(mytime / 10) * 180.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(-sinf(mytime / 10) * 45.0f, 0.0f, 1.0f, 0.0f);
     glRotatef(-sinf(mytime / 10) * 45.0f, 0.0f, 0.0f, 1.0f);
-    frust.GetOGLFrustum();
     dCylinder(0.2f,24,12,5,sinf(mytime),cosf(mytime * 2) * 2,sinf(cosf(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0f,1.0f,1.0f,0.7f),15);
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
@@ -2661,7 +2624,6 @@ void Scena(float t, int order) {
     glRotatef(sinf(mytime / 10) * 180.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(sinf(mytime / 10) * 45.0f, 0.0f, 1.0f, 0.0f);
     glRotatef(sinf(mytime / 10) * 45.0f, 0.0f, 0.0f, 1.0f);
-    frust.GetOGLFrustum();
     dCylinder(0.2f,24,12,5,sinf(mytime),cosf(mytime * 2) * 2,sinf(cosf(mytime)),mytime,true,rgb_a(0.9f, 0.9f, 0.9f, 0.0f),rgb_a(1.0,1.0,1.0,0.7f),15);
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
