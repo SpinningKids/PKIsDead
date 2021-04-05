@@ -5,12 +5,6 @@
 #ifndef PARTICLESYSTEM_H_
 #define PARTICLESYSTEM_H_
 
-#ifdef WIN32
-#define NOMINMAX
-#include <Windows.h>
-#endif /* WIN32 */
-#include <GL/gl.h>
-
 #include "Object.h"
 
 #define MAX_PARTICLES 4000
@@ -83,8 +77,6 @@ private:
 class CParticleSystem : public CObject
 {
 public:
-    void SetDestAlphaFunc(GLenum mode);
-    void SetSrcAlphaFunc(GLenum mode);
     void SetUpdateFlag(int flag);
     bool StepOver(float time, float num_to_create);
     void PostOBJMessage(char* msg, float p1, float p2, float p3, float p4);
@@ -157,9 +149,6 @@ private:
     float m_fEmission_residue;		//Helps emit very precise amounts of particles
 
     int m_iUpdateFlag;
-
-    GLenum src_alpha_func;
-    GLenum dst_alpha_func;
 };
 
 #endif // PARTICLESYSTEM_H_

@@ -1480,7 +1480,6 @@ void drawLines(float t,float alpha, int n)
 void drawBugs(float t,rgb_a barcolor,Vector3 pos,Vector3 rot,Vector3 size,float nutpos,Vector3 eye)
 {
   glClearColor(0.3f,0.2f,0.1f,0.5f);
-  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT);
 
 	float fogColor[4] = { 0.3f, 0.2f, 0.1f, 0.f };
 
@@ -1801,7 +1800,6 @@ void drawCredits(float t)
 
   float t2 = panGetTime();
   glClearColor(0,0,0,0.5);
-  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
 
   panViewPerspective();
   //enable stenciling writing
@@ -1831,8 +1829,6 @@ void drawCredits(float t)
     Vector3 gravity(0.5,5,0);
     Vector3 rot(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     int tobecreated = 10;
-    parts1.SetSrcAlphaFunc(GL_SRC_ALPHA);
-    parts1.SetDestAlphaFunc(GL_ONE_MINUS_SRC_COLOR);
     parts1.SetTexture1(0);//gauss->getID());  //gauss->getID()
     parts1.SetParticlesPerSec(200);
     parts1.SetSize(0.05f, 0.0f);
@@ -1860,8 +1856,6 @@ void drawCredits(float t)
     gravity = Vector3(0.5,-5.0f,0);
     rot = Vector3(0,0,0); //sinf(t) * 5.0f, 0.0f , cosf(sinf(t/2.0f) * 1.5f) * 180.0f);
     tobecreated = 10;
-    parts2.SetSrcAlphaFunc(GL_SRC_ALPHA);
-    parts2.SetDestAlphaFunc(GL_ONE_MINUS_SRC_COLOR);
     parts2.SetTexture1(0);//gauss->getID());  //gauss->getID()
     parts2.SetParticlesPerSec(200);
     parts2.SetSize(0.05f, 0.0f);
@@ -2076,7 +2070,6 @@ float durata;
     else if ( tr < (1.4548f * 8)) // ...e io ti piscio in culo...
       val = 1;
 
-    //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
     PrepareRenderToTexture((100.0f - (sinf(mytime) * 45.0f)), 256);
     drawHelix(mytime * 300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7f,0,0),rgb_a(1,0.7f,0,0.9f));
@@ -2084,7 +2077,6 @@ float durata;
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
-	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     drawLines(mytime,0.4f,20);
     panViewPerspective();
 
@@ -2107,7 +2099,6 @@ float durata;
   {
     
     //scena 13 originale
-	  //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
     PrepareRenderToTexture(45, 256); //(100.0f - (sin(mytime) * 45.0f))
     glTranslatef(0,0,-10);
@@ -2118,7 +2109,6 @@ float durata;
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
-	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     panViewPerspective();
     //SUKA MODIFICATE LE SEGUENTI CHIAMATE
     drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7f,0.7f,0.7f,0.8f),false);
@@ -2140,7 +2130,6 @@ float durata;
   {
 
     //glClearColor(0.0f,0.0f,0.0f,0.0f);
-	  //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     drawPanLandscape(timebase[11] - tr);
   }
 
@@ -2552,7 +2541,6 @@ void Scena(float t, int order) {
   if (order == 11)
   {
     //glClearColor(0.0f,0.0f,0.0f,0.0f);
-	  //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     drawPanLandscape(mytime);
     glDisable(GL_FOG);
     panViewOrtho();
@@ -2573,7 +2561,6 @@ void Scena(float t, int order) {
   //peli
   if (order == 12)
   {
-	  //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
     PrepareRenderToTexture(45, 256); //(100.0f - (sin(mytime) * 45.0f))
     glTranslatef(0,0,-10);
@@ -2584,7 +2571,6 @@ void Scena(float t, int order) {
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
-	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     panViewPerspective();
     //SUKA MODIFICATE LE SEGUENTI CHIAMATE
     drawTexture(tex,1,1,mytime,mytime / 2,12,rgb_a(0.7f,0.7f,0.7f,0.8f),false);
@@ -2633,14 +2619,12 @@ void Scena(float t, int order) {
     else if ( t < (1.4548f * 8))
       val = 1;
 /*      
-	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
     PrepareRenderToTexture(45.0f, 256);
     drawHelix(mytime * -300,2.0f, 3.5f, val, 30,GL_FILL,rgb_a(1,0.7,0.0,1.0),rgb_a(0.5,0.5,0.5,0.5));
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 */
-    //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     glDisable(GL_FOG);
     PrepareRenderToTexture((100.0f - (sinf(mytime) * 45.0f)), 256);
     drawHelix(mytime * -300,2.0f, 3.5f, (int) val, 30,GL_FILL,rgb_a(1,0.7f,0,0),rgb_a(1,0.7f,0,0.9f));
@@ -2648,7 +2632,6 @@ void Scena(float t, int order) {
     DoRenderToTexture(256,frame2);
     donerendertotexture = false;
 
-	  glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
     drawLines(mytime,0.4f,20);
     panViewPerspective();
 
@@ -2807,7 +2790,6 @@ void Scena(float t, int order) {
 	  glDisable(GL_TEXTURE_GEN_S);
 	  glDisable(GL_TEXTURE_GEN_T);
     glDisable(GL_TEXTURE_2D);
-	  //glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT || GL_STENCIL_BUFFER_BIT);
   }
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);//_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);

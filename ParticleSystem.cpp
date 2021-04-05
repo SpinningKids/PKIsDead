@@ -3,6 +3,13 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "ParticleSystem.h"
+
+#ifdef WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif /* WIN32 */
+#include <GL/gl.h>
+
 #include "utils.h"
 #include <algorithm>
 
@@ -225,9 +232,6 @@ CParticleSystem::CParticleSystem()
 	m_fAttraction_percent = 0.0f;
 
   m_iUpdateFlag = UPDATE_AND_CREATE;
-
-  src_alpha_func = GL_SRC_ALPHA;
-  dst_alpha_func = GL_ONE;
 }
 
 CParticleSystem::~CParticleSystem()
@@ -367,7 +371,7 @@ void CParticleSystem::Draw(float time)
 	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_PIXEL_MODE_BIT);
 	//glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
-	glBlendFunc(src_alpha_func, dst_alpha_func);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
 	glEnable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glEnable(GL_COLOR_MATERIAL);
@@ -601,14 +605,4 @@ bool CParticleSystem::StepOver(float time, float num_to_create)
 void CParticleSystem::SetUpdateFlag(int flag)
 {
   m_iUpdateFlag = flag;
-}
-
-void CParticleSystem::SetSrcAlphaFunc(GLenum mode)
-{
-  src_alpha_func = mode;
-}
-
-void CParticleSystem::SetDestAlphaFunc(GLenum mode)
-{
-  dst_alpha_func = mode;
 }
