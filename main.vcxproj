@@ -126,7 +126,6 @@
     <ClInclude Include="GLFont.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="GLTexture.h" />
-    <ClInclude Include="Math3.h" />
     <ClInclude Include="minifmod\minifmod.h" />
     <ClInclude Include="minifmod\Mixer.h" />
     <ClInclude Include="minifmod\mixer_clipcopy.h" />

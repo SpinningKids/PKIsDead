@@ -4,6 +4,6 @@
 
 #include "GLTexture.h"
 
-GLTexture *perlin(int logsize, float freq, float amp, float base, float k, bool wrap);
+GLTexture* perlin(int logsize, float freq, float amp, float base, float k, bool wrap);
 
 #endif // GENTEX_H_

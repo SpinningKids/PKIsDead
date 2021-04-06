@@ -7,7 +7,7 @@
 #include "AsmMath4.h"
 
 int initSphereObject(int g_subd, float radius);
-void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base);
+void dSphereEffect(const rgb_a& pcolor, const rgb_a& vcolor, bool base);
 void unloadSphereEffect();
 
 #endif	// SPHERE_EFFECT_H_

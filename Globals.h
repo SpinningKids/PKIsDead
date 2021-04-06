@@ -10,5 +10,5 @@
 //Undefine WHITE if BLACK ???  ;D  (rIO)
 
 #ifndef _DEBUG
-  #define FULLSCREEN
+#define FULLSCREEN
 #endif

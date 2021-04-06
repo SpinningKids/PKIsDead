@@ -24,7 +24,7 @@ public:
 
     void update();
     void use() const;
-    int getID() const { return txt_; }
+    unsigned int getID() const { return txt_; }
 };
 
 #endif // GLTEXTURE_H_

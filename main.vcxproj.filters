@@ -114,7 +114,6 @@
       <Filter>Pan</Filter>
     </ClInclude>
     <ClInclude Include="Globals.h" />
-    <ClInclude Include="Math3.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="SphereEffect.h" />
     <ClInclude Include="asmmath2.h" />

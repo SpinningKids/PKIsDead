@@ -34,7 +34,7 @@ void panViewPerspective() {
     glViewport(0, 0, WIDTH, HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0f, ((float)WIDTH) / HEIGHT, 0.1f, 600.0f);
+    gluPerspective(45.0, (double)WIDTH / HEIGHT, 0.1, 600.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -43,7 +43,7 @@ void panViewPerspectiveFOV(float fov) {
     glViewport(0, 0, WIDTH, HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(fov, ((float)WIDTH) / HEIGHT, 0.1f, 600.0f);
+    gluPerspective((double)fov, (double)WIDTH / HEIGHT, 0.1, 600.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }

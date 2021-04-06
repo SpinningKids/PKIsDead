@@ -6,15 +6,12 @@
  ************************************/
 
 #include "noise.h"
+
+#include <cassert>
 #include <stdlib.h>
 #include <math.h>
 
- // randoms
-
- //#define RANDMASK 0x7fffffff
- //#define RANDNBR (random()/(float)(RANDMASK))
-
-static int pan_random() {
+ static int pan_random() {
     return (rand() << 16) + (rand() << 1) + (rand() & 1);
 }
 
@@ -28,7 +25,7 @@ static void pan_srandom(int seed) {
 
 static float catmullrom(float x, const float knots[4]) {
     float c3 = -0.5f * knots[0] + 1.5f * knots[1] - 1.5f * knots[2] + 0.5f * knots[3];
-    float c2 = knots[0] - 2.5f * knots[1] + 2.0f * knots[2] - 0.5f * knots[3];
+    float c2 = knots[0] - 2.5f * knots[1] + 2.f * knots[2] - 0.5f * knots[3];
     float c1 = -0.5f * knots[0] + 0.5f * knots[2];
     float c0 = knots[1];
     return (float)(((c3 * x + c2) * x + c1) * x + c0);
@@ -92,16 +89,14 @@ float vnoise2(int off, int idx, int num, int ix[], float fx[]) {
 }
 
 float vnoise(int num, float x[]) {
-    int ix[16];// = new int[num];
-    float fx[16];// = new float[num];
+    assert(num < 16);
+    int ix[16];
+    float fx[16];
     for (int i = 0; i < num; i++) {
         ix[i] = FLOOR(x[i]);
         fx[i] = x[i] - ix[i];
     }
-    float r = vnoise2(num - 1, 0, num, ix, fx);
-    //  delete[] ix;
-    //  delete[] fx;
-    return r;
+    return vnoise2(num - 1, 0, num, ix, fx);
 }
 
 float vnoise(float t) {

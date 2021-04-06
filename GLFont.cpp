@@ -31,7 +31,7 @@ GLFont::GLFont(HDC hDC, const char* s) {
 
     wglUseFontOutlines(hDC, 32, 96, base,
         0.015f,							// Deviation From The True Outlines
-        0.0f,							// Font Thickness In The Z Direction
+        0.f,							// Font Thickness In The Z Direction
         WGL_FONT_POLYGONS, gmf);
 
     DeleteObject(font);
@@ -58,10 +58,10 @@ void GLFont::printChar(char c, float lsx, float lsy, float lr, float tracking) c
 
     glPushMatrix();
 
-    glTranslatef(gmf[c].gmfCellIncX / 2.0f, gmf[c].gmfBlackBoxY / 2.0f, 0);
+    glTranslatef(gmf[c].gmfCellIncX / 2.f, gmf[c].gmfBlackBoxY / 2.f, 0);
     glRotatef(lr, 0, 0, 1);
     glScalef(lsx, lsy, 1);
-    glTranslatef(-gmf[c].gmfCellIncX / 2.0f, -gmf[c].gmfBlackBoxY / 2.0f, 0);
+    glTranslatef(-gmf[c].gmfCellIncX / 2.f, -gmf[c].gmfBlackBoxY / 2.f, 0);
 
     glCallList(base + c);
     glPopMatrix();										// Pops The Display List Bits

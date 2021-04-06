@@ -4,14 +4,15 @@
 ////////////////////////////////////////////////////////
 //		includes
 
-#include <assert.h>
+#include "SphereEffect.h"
+
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
 #endif /* WIN32 */
 #include <gl/GL.h>
-#include "SphereEffect.h"
-#include "AsmMath4.h"
+#include <cassert>
+#include "asmmath2.h"
 
 ////////////////////////////////////////////////////////
 //		globals
@@ -20,7 +21,7 @@ static int			g_subd;
 static int			g_numVertex = 0;
 static Vector3* g_pVertex = nullptr;
 
-static float	g_toRad = (2.0f * 3.141592653589f / 360.0f);
+static constexpr float g_toRad = 2.f * 3.141592653589f / 360.f;
 
 static Vector3		g_pos;
 
@@ -30,21 +31,19 @@ static Vector3		g_pos;
 // subd = 40, radius = 2
 int initSphereObject(int subd, float radius) {
     int i = 0, j = 0, offset = 0;
-    float angle = 360.0f / subd;
+    float angle = 360.f / subd;
 
     assert(subd);
 
     g_subd = subd;
     g_numVertex = g_subd * g_subd;
-    //rIO
-  //g_pVertex = (Vector3 *) malloc( sizeof(Vertex) * g_numVertex );	
-    g_pVertex = (Vector3*) new Vector3[g_numVertex];
+    g_pVertex = new Vector3[g_numVertex];
 
     if (!g_pVertex)
         return -1;
 
-    float inc_phi = 360.0f / g_subd;
-    float inc_theta = 180.0f / g_subd;
+    float inc_phi = 360.f / g_subd;
+    float inc_theta = 180.f / g_subd;
 
     // modify the sphere shape
     for (float phi = 0; phi < 180; phi += inc_phi, i++) {
@@ -68,7 +67,7 @@ int initSphereObject(int subd, float radius) {
 
 
 
-void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base) {
+void dSphereEffect(const rgb_a& pcolor, const rgb_a& vcolor, bool base) {
     assert(g_numVertex && g_subd && g_pVertex);
 
     glPushMatrix();
@@ -118,5 +117,4 @@ void dSphereEffect(rgb_a pcolor, rgb_a vcolor, bool base) {
 
 void unloadSphereEffect() {
     delete[] g_pVertex;
-    glDisable(GL_FOG);
 }
