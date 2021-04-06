@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <math.h>
 
- static int pan_random() {
+static int pan_random() {
     return (rand() << 16) + (rand() << 1) + (rand() & 1);
 }
 
@@ -43,7 +43,6 @@ bool valueTabInit(int seed) {
     pan_srandom(seed);
     for (int i = 0; i < TABSIZE; i++) {
         *table++ = (float)(1.f - 2.f * i / (TABSIZE - 1));
-        //    *table++ = (float)(1. - 2.*RANDNBR);
         perm[i] = i;
     }
     for (int i = 0; i < 16 * (TABSIZE); i++) {
@@ -60,8 +59,9 @@ static bool init = valueTabInit(665);
 
 int index(int num, int idx[]) {
     int newidx = 0;
-    for (int i = 0; i < num; i++)
+    for (int i = 0; i < num; i++) {
         newidx = PERM(newidx + idx[i]);
+    }
     return newidx & (TABMASK);
 }
 

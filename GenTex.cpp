@@ -1,4 +1,9 @@
 
+/************************************
+  Code By: Pan/SpinningKids
+  Comments: Creation
+ ************************************/
+
 #include "GenTex.h"
 #include "noise.h"
 #include <cmath>
