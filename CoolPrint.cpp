@@ -11,8 +11,7 @@
 #include <algorithm>
 
 static constexpr float PI = 3.1415926535897932384626433832795f;
-static constexpr float PIOVER180 = 0.0174532925199432957692369076848861f;
-static constexpr float PIUNDER180 = 57.2957795130823208767981548141052f;
+static constexpr float PIUNDER180 = 180.f/PI;
 
 void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd, float en, float x, float y, float gs, float ratio, float tracking, const char* fmt, ...) {
     if (t < st - 0.5f) return;

@@ -1524,10 +1524,10 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
 }
 
 void drawCreditsBack(float t) {
-    drawBlendBis(t / 1.454875f * 4, 8, { 1.f, 1.f, 1.f, 0.25f }, -100, -75, 740, 555, 20, 20);
-    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125f }, -100, -75, 740, 555, 20, 30);
-    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.0625f }, -100, -75, 740, 555, 20, 40);
-    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -100, -75, 740, 555, 20, 50);
+    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(20 * WIDTH / 640, 20 * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(30 * WIDTH / 640, 30 * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(40 * WIDTH / 640, 40 * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
 }
 
 void drawCredits(float t) {
@@ -1542,10 +1542,10 @@ void drawCredits(float t) {
     glDisable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
 
-    CoolPrint1(*FontArial, 20, sync, 0.f, 1.f, 3.f, 4.f, 220, sync * 30 + 45, 230, 0.6f, 0.2f, "rio");
-    CoolPrint1(*FontArial, 20, sync, 3.f, 4.f, 6.f, 7.f, 220, sync * 30 + 45, 200, 0.6f, 0.f, "pan");
-    CoolPrint1(*FontArial, 20, sync, 6.f, 7.f, 9.f, 10.f, 220, sync * 30 + 45, 160, 0.6f, -0.1f, "dixan");
-    CoolPrint1(*FontArial, 20, sync, 9.f, 10.f, 12.f, 13.f, 220, sync * 30 + 45, 170, 0.6f, 0.f, "wiss");
+    CoolPrint1(*FontArial, 20, sync, 0.f,  1.f,  3.f,  4.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 230 * WIDTH / 640, 0.6f, 0.2f, "rio");
+    CoolPrint1(*FontArial, 20, sync, 3.f,  4.f,  6.f,  7.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 200 * WIDTH / 640, 0.6f, 0.f, "pan");
+    CoolPrint1(*FontArial, 20, sync, 6.f,  7.f,  9.f, 10.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 160 * WIDTH / 640, 0.6f, -0.1f, "dixan");
+    CoolPrint1(*FontArial, 20, sync, 9.f, 10.f, 12.f, 13.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 170 * WIDTH / 640, 0.6f, 0.f, "wiss");
 
     float t2 = panGetTime();
     glClearColor(0, 0, 0, 0.5);
@@ -1611,7 +1611,7 @@ void drawCredits(float t) {
     glBindTexture(GL_TEXTURE_2D, logo);
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-    drawBlendBis(t / 1.45f, 1, { 1.f, 1.f, 1.f, 0.5f }, WIDTH / 2, 80, WIDTH, HEIGHT - 80, 10, 50);
+    drawBlendBis(t / 1.45f, 1, { 1.f, 1.f, 1.f, 0.5f }, WIDTH / 2, 80 * HEIGHT / 480, WIDTH, HEIGHT - 80 * HEIGHT / 480, 10, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
 
     glDisable(GL_STENCIL_TEST);
 
@@ -1756,7 +1756,7 @@ void ScenaRewind(int orderr)
     tr = (panGetTime() - timebase[15] - (1.4548f * orderr)) / 1.4548f * durata;
     float tr2 = (orderr + 1) * 1.4548f * speed - mytime;
 
-    CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 320, 400, 50 - 15 * (1 - 1.f / (1.1f + sinf(tr * 0.8f))), 0.6f, 0, "from a close sight nobody is normal");
+    CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 0.5 * WIDTH, 400 * HEIGHT / 480, (50 - 15 * (1 - 1.f / (1.1f + sinf(tr * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
 
     panViewPerspectiveFOV(45);
     drawLines(tr, 0.5, 30);
@@ -1857,7 +1857,6 @@ void ScenaRewind(int orderr)
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            //      CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 320, 400, 50-15*(1-1.f/(1.1f+sin(tr*0.8))), 0.6f, 0, "from a close sight nobody is normal");
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
             glDisable(GL_TEXTURE_2D);
@@ -2040,9 +2039,9 @@ void Scena(float t, int order) {
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            CoolPrint1(*FontArial, 50, t, 0.f, 1.5f, 8.f, 10.f, 240, 140, 60, 0.6f, -0.2f, "reality is that which");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 8.f, 10.f, 400, 340, 60, 0.6f, -0.2f, "doesn't go away");
-            CoolPrint1(*FontArial, 50, 10 - t, -1.f, 1.f, 5.f, 7.f, 320, 240, 40, 0.6f, 0.2f, "when you stop believing in it");
+            CoolPrint1(*FontArial, 50, t, 0.f, 1.5f, 8.f, 10.f, 0.375*WIDTH, 0.21875*HEIGHT, 0.09375*WIDTH, 0.6f, -0.2f, "reality is that which");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 8.f, 10.f, 0.625*WIDTH, 0.78125*HEIGHT, 0.09375*WIDTH, 0.6f, -0.2f, "doesn't go away");
+            CoolPrint1(*FontArial, 50, 10 - t, -1.f, 1.f, 5.f, 7.f, 0.5*WIDTH, 0.5*HEIGHT, 0.06250*WIDTH, 0.6f, 0.2f, "when you stop believing in it");
             //        CoolPrint1(*FontArial, 50,    t, 6.f, 8.f, 9.f, 10.f, 480, 400, 60, 0.6f, -0.2f, "Philip K. Dick");
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
@@ -2068,8 +2067,8 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140, 80, 60, 0.6f, 0.5f, "clean");
-        CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "perceptions");
+        CoolPrint1(*FontArial, 50, t, 0.f, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640,  80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5f, "clean");
+        CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "perceptions");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2092,10 +2091,10 @@ void Scena(float t, int order) {
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         if (order == 3) {
-            CoolPrint1(*FontArial, 50, t, -1.5f, 0.f, 1.f, 2.5f, 500, 400, 40, 0.8f, -0.1f, "perceptions");
+            CoolPrint1(*FontArial, 50, t, -1.5f, 0.f, 1.f, 2.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "perceptions");
         } else {
-            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140, 80, 60, 0.6f, 0.5, "clear");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "illusions");
+            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640, 80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5, "clear");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "illusions");
         }
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
@@ -2120,11 +2119,11 @@ void Scena(float t, int order) {
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         if (order == 4) {
-            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140, 80, 60, 0.6f, 0.5, "fuzzy");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "dimensions");
+            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640, 80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5, "fuzzy");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "dimensions");
         } else {
-            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140, 80, 60, 0.6f, 0.5, "furry");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500, 400, 40, 0.8f, -0.1f, "onions");
+            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640, 80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5, "furry");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "onions");
         }
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
@@ -2159,8 +2158,8 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, WIDTH / 2, HEIGHT / 2 - 20, 200 + 50 * sinf(t), 0.5f, -0.25f * sinf(t), "GO");
-        CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, 500, 400, 50, 1.5f, -0.25f * sinf(t), "where?");
+        CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, WIDTH / 2, HEIGHT / 2 - 20, (200 + 50 * sinf(t)) * WIDTH / 640, 0.5f, -0.25f * sinf(t), "GO");
+        CoolPrint1(*FontArial, 50, t, 0, 0.1f, 5.5f, 6.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 50 * WIDTH / 480, 1.5f, -0.25f * sinf(t), "where?");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2181,7 +2180,7 @@ void Scena(float t, int order) {
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 320, 400, 50 - 15 * (1 - 1.f / (1.1f + sinf(t * 0.8f))), 0.6f, 0, "from a close sight nobody is normal");
+            CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 0.5 * WIDTH, 400 * HEIGHT / 480, (50 - 15 * (1 - 1.f / (1.1f + sinf(t * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
             glDisable(GL_TEXTURE_2D);
@@ -2213,8 +2212,8 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 1.0, 2.f, 5.8f, 7.f, WIDTH / 2, 80, 100 + 25 * sinf(t), 0.7f, -0.25f * sinf(t), "look around");
-        CoolPrint1(*FontArial, 50, t, 5.8f, 7.f, 10.6f, 11.6f, WIDTH / 2, 80, 100 + 25 * sinf(t), 0.7f, -0.25f * sinf(t), "look inside");
+        CoolPrint1(*FontArial, 50, t, 1.0f, 2.f,  5.8f,   7.f, WIDTH / 2, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look around");
+        CoolPrint1(*FontArial, 50, t, 5.8f, 7.f, 10.6f, 11.6f, WIDTH / 2, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look inside");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2256,8 +2255,8 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 0, 1.f, 11.4f, 11.6f, 320, 60, 50 + 5 * sinf(t), 0.5f, 0, "do you have the");
-        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 320, 400, 120, 1.f, -0.25f * sinf(t), "POWER");
+        CoolPrint1(*FontArial, 50, t, 0.f, 1.f, 11.4f, 11.6f, 0.5 * WIDTH,  60 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "do you have the");
+        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 0.5 * WIDTH, 400 * HEIGHT / 480, 120 * WIDTH / 640, 1.f, -0.25f * sinf(t), "POWER");
     }
 
     //flusso energetico lamadonna
@@ -2307,9 +2306,9 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.6f, 5.8f, 320, 100, 50 + 5 * sinf(t), 0.5f, 0, "to make your  d r e a m s ");
-        CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 320, 100, 50 + 5 * sinf(t), 0.5f, 0, "to make your nightmares");
-        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 320, 300, 120, 1.f, -0.25f * sinf(t), "REAL?");
+        CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.6f, 5.8f, 0.5 * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your  d r e a m s ");
+        CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 0.5 * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your nightmares");
+        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 0.5 * WIDTH, 300 * HEIGHT / 480, 120 * WIDTH / 640, 1.f, -0.25f * sinf(t), "REAL?");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2347,7 +2346,7 @@ void Scena(float t, int order) {
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-        CoolPrint1(*FontArial, 50, t, 0, 1, 10.5f, 11.5f, 370, 120, 70, 0.7f, 0, "Join us!");
+        CoolPrint1(*FontArial, 50, t, 0, 1, 10.5f, 11.5f, 370 * WIDTH / 640, 120 * HEIGHT / 480, 70 * WIDTH / 640, 0.7f, 0, "Join us!");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2376,7 +2375,7 @@ void Scena(float t, int order) {
         static const char* nomi[12] = { "haujobb", "", "mfx", "farbrausch", "mewlers", "vantage", "foobug", "purple", "kolor", "hirmu", "calodox" };
         // quello vuoto e' vuoto perche' non si vede
         for (int i = 0; i < 12; i++) {
-            CoolPrint1(*FontArial, 50, sync, i - 0.1f, (float)i, i + 1.f, i + 1.1f, 420.f - 160.f * (i % 2), i * 30.f + 100.f, 110.f, 0.7f, 0, nomi[i]);
+            CoolPrint1(*FontArial, 50, sync, i - 0.1f, (float)i, i + 1.f, i + 1.1f, (420.f - 160.f * (i % 2)) * WIDTH / 640, (i * 30.f + 100.f) * HEIGHT / 480, 110.f * WIDTH / 640, 0.7f, 0, nomi[i]);
         }
 
 
@@ -2398,9 +2397,9 @@ void Scena(float t, int order) {
         if ((order != 15) || (rsync <= 13)) {
             glClearColor(0, 0, 0, 0.5);
             texture2->use();
-            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -100, -75, 740, 555, 20, 50);
-            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -100, -75, 740, 555, 20, 50);
-            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -100, -75, 740, 555, 20, 50);
+            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
         }
         if (order == 9) { // solo sui wisscosi!
             if (sync > 13) { // total in sync 14.4, in time 10.471
@@ -2427,10 +2426,10 @@ void Scena(float t, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, -0.06f, 0.f, 5.6f, 5.8f, 270, 120, 120, 0.7f, 0, "P");
-        CoolPrint1(*FontArial, 50, t, 0.20f, 0.26f, 5.6f, 5.8f, 370, 120, 120, 0.7f, 0, "K");
-        CoolPrint1(*FontArial, 50, t, 0.47f, 0.53f, 11.4f, 11.6f, 320, 240, 120, 0.7f, 0, "IS");
-        CoolPrint1(*FontArial, 50, t, 0.73f, 0.79f, 11.4f, 11.6f, 320, 360, 120 + 40 * sinf((t - 0.73f) * 3), 0.7f, 0, "DEAD");
+        CoolPrint1(*FontArial, 50, t, -0.06f, 0.f, 5.6f, 5.8f, 270 * WIDTH / 640, 120 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "P");
+        CoolPrint1(*FontArial, 50, t, 0.20f, 0.26f, 5.6f, 5.8f, 370 * WIDTH / 640, 120 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "K");
+        CoolPrint1(*FontArial, 50, t, 0.47f, 0.53f, 11.4f, 11.6f, 0.5 * WIDTH, 240 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "IS");
+        CoolPrint1(*FontArial, 50, t, 0.73f, 0.79f, 11.4f, 11.6f, 0.5 * WIDTH, 360 * HEIGHT / 480, (120 + 40 * sinf((t - 0.73f) * 3)) * WIDTH / 640, 0.7f, 0, "DEAD");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
@@ -2529,11 +2528,11 @@ void skDraw() {
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            CoolPrint1(*FontArial, 50, curtime, 0.f, 1.f, 6.f, 7.f, 320, 50, 50, 0.6f, 0.1f, "MekkaSymposium 2002");
-            CoolPrint1(*FontArial, 10, curtime, 0.f, 1.f, 6.f, 7.f, 320, 300, 20, 0.8f, 0.f, "this spurious reality hasn't been manufactured by");
-            CoolPrint1(*FontArial, 30, curtime, 0.f, 1.f, 6.f, 7.f, 320, 325, 30, 0.8f, 0.1f, "Runciter Associates");
-            CoolPrint1(*FontArial, 10, curtime, 0.f, 1.f, 6.f, 7.f, 320, 350, 20, 0.8f, 0.f, "and in any case not in collaboration with");
-            CoolPrint1(*FontArial, 100, curtime, 0.f, 1.f, 6.f, 7.f, 320, 385, 80, 0.8f, 0.1f, "SpinningKids");
+            CoolPrint1(*FontArial,  50, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH,  50 * HEIGHT / 480, 50 * WIDTH / 640, 0.6f, 0.1f, "MekkaSymposium 2002");
+            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 300 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "this spurious reality hasn't been manufactured by");
+            CoolPrint1(*FontArial,  30, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 325 * HEIGHT / 480, 30 * WIDTH / 640, 0.8f, 0.1f, "Runciter Associates");
+            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 350 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "and in any case not in collaboration with");
+            CoolPrint1(*FontArial, 100, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 385 * HEIGHT / 480, 80 * WIDTH / 640, 0.8f, 0.1f, "SpinningKids");
             glColor3f(1, 1, 1);
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
@@ -2557,62 +2556,51 @@ void skDraw() {
         glEnable(GL_BLEND);
         glDisable(GL_LIGHTING);
         glColor3f(1, 1, 1);
-        CoolPrint1(*FontArial, 20, t, 0.f, 1.f, 6.f, 7.f, 160, 20, 40, 0.5f, -0.2f, "P.K.Dick Bibliography :");
-        CoolPrint1(*FontArial, 20, t, 1.f, 2.f, 7.f, 8.f, 130, 40, 40, 0.4f, -0.2f, "Solar Lottery (1955)");
-        CoolPrint1(*FontArial, 20, t, 2.f, 3.f, 8.f, 9.f, 200, 60, 40, 0.4f, -0.2f, "The World Jones Made (1956)");
-        CoolPrint1(*FontArial, 20, t, 3.f, 4.f, 9.f, 10.f, 180, 80, 40, 0.4f, -0.2f, "The Man Who Japed (1956)");
-        CoolPrint1(*FontArial, 20, t, 4.f, 5.f, 10.f, 11.f, 140, 100, 40, 0.4f, -0.2f, "Eye in the sky (1957)");
-        CoolPrint1(*FontArial, 20, t, 5.f, 6.f, 11.f, 12.f, 185, 120, 40, 0.4f, -0.2f, "The Cosmic Puppets (1957)");
-        CoolPrint1(*FontArial, 20, t, 6.f, 7.f, 12.f, 13.f, 160, 140, 40, 0.4f, -0.2f, "Time out of Joint (1959)");
-
-        CoolPrint1(*FontArial, 20, t, 7.f, 8.f, 13.f, 14.f, 125, 160, 40, 0.4f, -0.2f, "Dr.Futurity (1960)");
-        CoolPrint1(*FontArial, 20, t, 8.f, 9.f, 14.f, 15.f, 165, 180, 40, 0.4f, -0.2f, "Vulcan's Hammer (1960)");
-        CoolPrint1(*FontArial, 20, t, 9.f, 10.f, 15.f, 16.f, 195, 200, 40, 0.4f, -0.2f, "Man in the high castle (1963)");
-        CoolPrint1(*FontArial, 20, t, 10.f, 11.f, 16.f, 17.f, 200, 220, 40, 0.4f, -0.2f, "Game Players of Titan (1963)");
-
-        CoolPrint1(*FontArial, 20, t, 11.f, 12.f, 17.f, 18.f, 185, 240, 40, 0.4f, -0.2f, "Martian Time Sleep (1964)");
-        CoolPrint1(*FontArial, 20, t, 12.f, 13.f, 18.f, 19.f, 140, 260, 40, 0.4f, -0.2f, "The Simulacra (1964)");
-        CoolPrint1(*FontArial, 20, t, 13.f, 14.f, 19.f, 20.f, 220, 280, 40, 0.4f, -0.2f, "Clans of the Alphane Moon (1964)");
-        CoolPrint1(*FontArial, 20, t, 14.f, 15.f, 20.f, 21.f, 200, 300, 40, 0.4f, -0.2f, "The Penultimate Truth (1964)");
-
-        CoolPrint1(*FontArial, 20, t, 15.f, 16.f, 21.f, 22.f, 290, 320, 40, 0.4f, -0.2f, "The tree stigmata of Palmer Eldritch (1965)");
-        CoolPrint1(*FontArial, 20, t, 16.f, 17.f, 22.f, 23.f, 145, 340, 40, 0.4f, -0.2f, "Dr.Bloodmoney (1965)");
-        CoolPrint1(*FontArial, 20, t, 17.f, 18.f, 23.f, 24.f, 180, 360, 40, 0.4f, -0.2f, "The crack in space (1966)");
-        CoolPrint1(*FontArial, 20, t, 18.f, 19.f, 24.f, 25.f, 190, 380, 40, 0.4f, -0.2f, "No wait for last year (1966)");
-
-        CoolPrint1(*FontArial, 20, t, 19.f, 20.f, 25.f, 26.f, 200, 400, 40, 0.4f, -0.2f, "The unteleported man (1966)");
-        CoolPrint1(*FontArial, 20, t, 20.f, 21.f, 26.f, 27.f, 195, 420, 40, 0.4f, -0.2f, "Counter clock world (1967)");
-        CoolPrint1(*FontArial, 20, t, 21.f, 22.f, 27.f, 28.f, 135, 20, 40, 0.4f, -0.2f, "The zap gun (1967)");
-        CoolPrint1(*FontArial, 20, t, 22.f, 23.f, 28.f, 29.f, 210, 40, 40, 0.4f, -0.2f, "The Ganymede takeover (1967)");
-
-        CoolPrint1(*FontArial, 20, t, 23.f, 24.f, 29.f, 30.f, 310, 60, 40, 0.4f, -0.2f, "Do androids dream of electric sheeps? (1968)");
-        CoolPrint1(*FontArial, 20, t, 24.f, 25.f, 30.f, 31.f, 85, 80, 40, 0.4f, -0.2f, "Ubik (1969)");
-        CoolPrint1(*FontArial, 20, t, 25.f, 26.f, 31.f, 32.f, 190, 100, 40, 0.4f, -0.2f, "Galactic Pot-Healer (1969)");
-        CoolPrint1(*FontArial, 20, t, 26.f, 27.f, 32.f, 33.f, 145, 120, 40, 0.4f, -0.2f, "Maze of death (1970)");
-
-        CoolPrint1(*FontArial, 20, t, 27.f, 28.f, 33.f, 34.f, 220, 140, 40, 0.4f, -0.2f, "Our friends from Frolix 8 (1970)");
-        CoolPrint1(*FontArial, 20, t, 28.f, 29.f, 34.f, 35.f, 165, 160, 40, 0.4f, -0.2f, "We can build you (1972)");
-        CoolPrint1(*FontArial, 20, t, 29.f, 30.f, 35.f, 36.f, 275, 180, 40, 0.4f, -0.2f, "Flow my tears the policeman said (1974)");
-        CoolPrint1(*FontArial, 20, t, 30.f, 31.f, 36.f, 37.f, 240, 200, 40, 0.4f, -0.2f, "Confessions of a crap artist (1975)");
-
-        CoolPrint1(*FontArial, 20, t, 31.f, 32.f, 37.f, 38.f, 125, 220, 40, 0.4f, -0.2f, "Deus irae (1976)");
-        CoolPrint1(*FontArial, 20, t, 32.f, 33.f, 38.f, 39.f, 165, 240, 40, 0.4f, -0.2f, "A scanner darkly (1977)");
-        CoolPrint1(*FontArial, 20, t, 33.f, 34.f, 39.f, 40.f, 85, 260, 40, 0.4f, -0.2f, "Valis (1981)");
-        CoolPrint1(*FontArial, 20, t, 34.f, 35.f, 40.f, 41.f, 185, 280, 40, 0.4f, -0.2f, "The divine Invasion (1981)");
-
-        CoolPrint1(*FontArial, 20, t, 35.f, 36.f, 41.f, 42.f, 305, 300, 40, 0.4f, -0.2f, "The trasmigrating of Timothy Archer (1982)");
-        CoolPrint1(*FontArial, 20, t, 36.f, 37.f, 42.f, 43.f, 285, 320, 40, 0.4f, -0.2f, "The man whose ttet where all alike (1984)");
-        CoolPrint1(*FontArial, 20, t, 37.f, 38.f, 43.f, 44.f, 190, 340, 40, 0.4f, -0.2f, "Radio free Albemuth (1985)");
-        CoolPrint1(*FontArial, 20, t, 38.f, 39.f, 44.f, 45.f, 265, 360, 40, 0.4f, -0.2f, "Puttering about in a small land (1985)");
-
-        CoolPrint1(*FontArial, 20, t, 39.f, 40.f, 45.f, 46.f, 220, 380, 40, 0.4f, -0.2f, "In Milton Lumky Territoru (1985)");
-        CoolPrint1(*FontArial, 20, t, 40.f, 41.f, 46.f, 47.f, 230, 400, 40, 0.4f, -0.2f, "Humpy dumpty in Hoackland (1986)");
-        CoolPrint1(*FontArial, 20, t, 41.f, 42.f, 47.f, 48.f, 185, 420, 40, 0.4f, -0.2f, "Mary and the Giant (1987)");
-        CoolPrint1(*FontArial, 20, t, 42.f, 43.f, 48.f, 49.f, 170, 440, 40, 0.4f, -0.2f, "The broken bubble (1988)");
-
-        CoolPrint1(*FontArial, 20, t, 43.f, 44.f, 49.f, 50.f, 220, 460, 40, 0.4f, -0.2f, "Gather yourself together (1994)");
-
-        CoolPrint1(*FontArial, 20, t, 50.f, 51.f, 5000.f, 5000.f, 300, 230, 40, 0.4f, -0.2f, "are you dreaming of electric sheeps ?");
+        CoolPrint1(*FontArial, 20, t, 0.f,  1.f,  6.f,  7.f,  160 * WIDTH / 640,  20 * HEIGHT / 480, 0.0625f * WIDTH, 0.5f, -0.2f, "P.K.Dick Bibliography :");
+        CoolPrint1(*FontArial, 20, t, 1.f,  2.f,  7.f,  8.f,  130 * WIDTH / 640,  40 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Solar Lottery (1955)");
+        CoolPrint1(*FontArial, 20, t, 2.f,  3.f,  8.f,  9.f,  200 * WIDTH / 640,  60 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The World Jones Made (1956)");
+        CoolPrint1(*FontArial, 20, t, 3.f,  4.f,  9.f,  10.f, 180 * WIDTH / 640,  80 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The Man Who Japed (1956)");
+        CoolPrint1(*FontArial, 20, t, 4.f,  5.f,  10.f, 11.f, 140 * WIDTH / 640, 100 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Eye in the sky (1957)");
+        CoolPrint1(*FontArial, 20, t, 5.f,  6.f,  11.f, 12.f, 185 * WIDTH / 640, 120 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The Cosmic Puppets (1957)");
+        CoolPrint1(*FontArial, 20, t, 6.f,  7.f,  12.f, 13.f, 160 * WIDTH / 640, 140 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Time out of Joint (1959)");
+        CoolPrint1(*FontArial, 20, t, 7.f,  8.f,  13.f, 14.f, 125 * WIDTH / 640, 160 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Dr.Futurity (1960)");
+        CoolPrint1(*FontArial, 20, t, 8.f,  9.f,  14.f, 15.f, 165 * WIDTH / 640, 180 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Vulcan's Hammer (1960)");
+        CoolPrint1(*FontArial, 20, t, 9.f,  10.f, 15.f, 16.f, 195 * WIDTH / 640, 200 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Man in the high castle (1963)");
+        CoolPrint1(*FontArial, 20, t, 10.f, 11.f, 16.f, 17.f, 200 * WIDTH / 640, 220 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Game Players of Titan (1963)");
+        CoolPrint1(*FontArial, 20, t, 11.f, 12.f, 17.f, 18.f, 185 * WIDTH / 640, 240 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Martian Time Sleep (1964)");
+        CoolPrint1(*FontArial, 20, t, 12.f, 13.f, 18.f, 19.f, 140 * WIDTH / 640, 260 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The Simulacra (1964)");
+        CoolPrint1(*FontArial, 20, t, 13.f, 14.f, 19.f, 20.f, 220 * WIDTH / 640, 280 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Clans of the Alphane Moon (1964)");
+        CoolPrint1(*FontArial, 20, t, 14.f, 15.f, 20.f, 21.f, 200 * WIDTH / 640, 300 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The Penultimate Truth (1964)");
+        CoolPrint1(*FontArial, 20, t, 15.f, 16.f, 21.f, 22.f, 290 * WIDTH / 640, 320 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The tree stigmata of Palmer Eldritch (1965)");
+        CoolPrint1(*FontArial, 20, t, 16.f, 17.f, 22.f, 23.f, 145 * WIDTH / 640, 340 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Dr.Bloodmoney (1965)");
+        CoolPrint1(*FontArial, 20, t, 17.f, 18.f, 23.f, 24.f, 180 * WIDTH / 640, 360 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The crack in space (1966)");
+        CoolPrint1(*FontArial, 20, t, 18.f, 19.f, 24.f, 25.f, 190 * WIDTH / 640, 380 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "No wait for last year (1966)");
+        CoolPrint1(*FontArial, 20, t, 19.f, 20.f, 25.f, 26.f, 200 * WIDTH / 640, 400 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The unteleported man (1966)");
+        CoolPrint1(*FontArial, 20, t, 20.f, 21.f, 26.f, 27.f, 195 * WIDTH / 640, 420 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Counter clock world (1967)");
+        CoolPrint1(*FontArial, 20, t, 21.f, 22.f, 27.f, 28.f, 135 * WIDTH / 640,  20 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The zap gun (1967)");
+        CoolPrint1(*FontArial, 20, t, 22.f, 23.f, 28.f, 29.f, 210 * WIDTH / 640,  40 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The Ganymede takeover (1967)");
+        CoolPrint1(*FontArial, 20, t, 23.f, 24.f, 29.f, 30.f, 310 * WIDTH / 640,  60 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Do androids dream of electric sheeps? (1968)");
+        CoolPrint1(*FontArial, 20, t, 24.f, 25.f, 30.f, 31.f,  85 * WIDTH / 640,  80 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Ubik (1969)");
+        CoolPrint1(*FontArial, 20, t, 25.f, 26.f, 31.f, 32.f, 190 * WIDTH / 640, 100 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Galactic Pot-Healer (1969)");
+        CoolPrint1(*FontArial, 20, t, 26.f, 27.f, 32.f, 33.f, 145 * WIDTH / 640, 120 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Maze of death (1970)");
+        CoolPrint1(*FontArial, 20, t, 27.f, 28.f, 33.f, 34.f, 220 * WIDTH / 640, 140 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Our friends from Frolix 8 (1970)");
+        CoolPrint1(*FontArial, 20, t, 28.f, 29.f, 34.f, 35.f, 165 * WIDTH / 640, 160 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "We can build you (1972)");
+        CoolPrint1(*FontArial, 20, t, 29.f, 30.f, 35.f, 36.f, 275 * WIDTH / 640, 180 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Flow my tears the policeman said (1974)");
+        CoolPrint1(*FontArial, 20, t, 30.f, 31.f, 36.f, 37.f, 240 * WIDTH / 640, 200 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Confessions of a crap artist (1975)");
+        CoolPrint1(*FontArial, 20, t, 31.f, 32.f, 37.f, 38.f, 125 * WIDTH / 640, 220 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Deus irae (1976)");
+        CoolPrint1(*FontArial, 20, t, 32.f, 33.f, 38.f, 39.f, 165 * WIDTH / 640, 240 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "A scanner darkly (1977)");
+        CoolPrint1(*FontArial, 20, t, 33.f, 34.f, 39.f, 40.f,  85 * WIDTH / 640, 260 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Valis (1981)");
+        CoolPrint1(*FontArial, 20, t, 34.f, 35.f, 40.f, 41.f, 185 * WIDTH / 640, 280 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The divine Invasion (1981)");
+        CoolPrint1(*FontArial, 20, t, 35.f, 36.f, 41.f, 42.f, 305 * WIDTH / 640, 300 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The trasmigrating of Timothy Archer (1982)");
+        CoolPrint1(*FontArial, 20, t, 36.f, 37.f, 42.f, 43.f, 285 * WIDTH / 640, 320 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The man whose ttet where all alike (1984)");
+        CoolPrint1(*FontArial, 20, t, 37.f, 38.f, 43.f, 44.f, 190 * WIDTH / 640, 340 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Radio free Albemuth (1985)");
+        CoolPrint1(*FontArial, 20, t, 38.f, 39.f, 44.f, 45.f, 265 * WIDTH / 640, 360 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Puttering about in a small land (1985)");
+        CoolPrint1(*FontArial, 20, t, 39.f, 40.f, 45.f, 46.f, 220 * WIDTH / 640, 380 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "In Milton Lumky Territoru (1985)");
+        CoolPrint1(*FontArial, 20, t, 40.f, 41.f, 46.f, 47.f, 230 * WIDTH / 640, 400 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Humpy dumpty in Hoackland (1986)");
+        CoolPrint1(*FontArial, 20, t, 41.f, 42.f, 47.f, 48.f, 185 * WIDTH / 640, 420 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Mary and the Giant (1987)");
+        CoolPrint1(*FontArial, 20, t, 42.f, 43.f, 48.f, 49.f, 170 * WIDTH / 640, 440 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "The broken bubble (1988)");
+        CoolPrint1(*FontArial, 20, t, 43.f, 44.f, 49.f, 50.f, 220 * WIDTH / 640, 460 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "Gather yourself together (1994)");
+        CoolPrint1(*FontArial, 20, t, 50.f, 51.f, 5000.f, 5000.f, 300 * WIDTH / 640, 230 * HEIGHT / 480, 0.0625f * WIDTH, 0.4f, -0.2f, "are you dreaming of electric sheeps ?");
     }
 
     skSwappuffers();

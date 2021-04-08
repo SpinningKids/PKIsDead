@@ -1,6 +1,6 @@
 
-#define WIDTH 640
-#define HEIGHT (((WIDTH)>>2)+((WIDTH)>>1))
+#define WIDTH 2560
+#define HEIGHT 1440
 #define BITSPERPIXEL 32
 #define WINDOWTITLE "SK Intro"
 
