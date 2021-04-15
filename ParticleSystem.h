@@ -8,37 +8,15 @@
 #include "asmmath2.h"
 #include <algorithm>
 
-#define MAX_PARTICLES 4000
+constexpr int MAX_PARTICLES = 4000;
 
-#define DEATH_AGE  0.f
+constexpr float DEATH_AGE = 0.f;
 
-#define ATTRACTION 0
-#define STOP       1
+constexpr float MIN_SPEED = 0.f;
+constexpr float MIN_SIZE = 0.1f;
 
-#define GET_X 0
-#define GET_Y 1
-#define GET_Z 2
-
-#define SK_OFF false
-#define SK_ON  true
-
-#define MIN_SPEED	 0.f
-#define MIN_SIZE     0.1f
-#define MIN_LIFETIME 0.01f
-#define MIN_SPREAD	 0.01f
-#define MIN_EMISSION 1.f
-#define MIN_GRAVITY -10.f
-#define MIN_ALPHA	 0.f
-#define MIN_COLOR	 0.f
-
-#define MAX_SPEED	 300.f
-#define MAX_SIZE     100.f
-#define MAX_LIFETIME 20.f
-#define MAX_SPREAD   180.f
-#define MAX_EMISSION 1000
-#define MAX_GRAVITY  10.f
-#define MAX_ALPHA	 1.f
-#define MAX_COLOR	 1.f
+constexpr float MAX_SPEED = 300.f;
+constexpr float MAX_SIZE = 100.f;
 
 
 class CParticleSystem;
