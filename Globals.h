@@ -1,8 +1,8 @@
 
-#define WIDTH 2560
-#define HEIGHT 1440
-#define BITSPERPIXEL 32
-#define WINDOWTITLE "SK Intro"
+constexpr int WIDTH = 2560;
+constexpr int HEIGHT = 1440;
+constexpr int BITSPERPIXEL = 32;
+constexpr char WINDOWTITLE[] = "SK Intro";
 
 //Undefine FULLSCREEN if windowed
 

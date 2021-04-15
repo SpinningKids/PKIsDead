@@ -55,11 +55,11 @@ typedef unsigned char byte;
 typedef unsigned short word;
 
 
-#define NUTSH 32
-#define NUTSV 16
+constexpr int NUTSH = 32;
+constexpr int NUTSV = 16;
 
-#define QUADV 20
-#define QUADH 20
+constexpr int QUADV = 20;
+constexpr int QUADH = 20;
 
 GLFont *FontArial;
 CParticleSystem parts1;
@@ -144,69 +144,67 @@ float panGetTime() {
 #define MUSIC_RES_NUM	105
 
 struct MEMFILE {
-	int length;
-	int pos;
-	void *data;
+    int length;
+    int pos;
+    void *data;
 };
 
 unsigned int memopen(char *name) {
-	MEMFILE *memfile;
+    MEMFILE *memfile;
 
-	memfile = new MEMFILE;
+    memfile = new MEMFILE;
 
 #ifdef WIN32
-	{	// hey look some load from resource code!
-		HRSRC		rec;
-		HGLOBAL		handle;
+    {	// hey look some load from resource code!
 
-		rec = FindResourceEx(GetModuleHandle(nullptr),"RC_RTDATA", name, 0);
-		handle = LoadResource(nullptr, rec);
-		memfile->data = LockResource(handle);
-		memfile->length = SizeofResource(nullptr, rec);
-		memfile->pos = 0;
-	}
+        HRSRC rec = FindResourceEx(GetModuleHandle(nullptr), "RC_RTDATA", name, 0);
+        HGLOBAL handle = LoadResource(nullptr, rec);
+        memfile->data = LockResource(handle);
+        memfile->length = SizeofResource(nullptr, rec);
+        memfile->pos = 0;
+    }
 #else
-	memfile->data   = dixiesmod;
-	memfile->length = sizeof(dixiesmod);
-	memfile->pos    = 0;
+    memfile->data   = dixiesmod;
+    memfile->length = sizeof(dixiesmod);
+    memfile->pos    = 0;
 #endif
-	return (unsigned int)memfile;
+    return (unsigned int)memfile;
 }
 
 void memclose(unsigned int handle) {
-	MEMFILE *memfile = (MEMFILE *)handle;
-	delete memfile;
+    MEMFILE *memfile = (MEMFILE *)handle;
+    delete memfile;
 }
 
 int memread(void *buffer, int size, unsigned int handle) {
-	MEMFILE *memfile = (MEMFILE *)handle;
+    MEMFILE *memfile = (MEMFILE *)handle;
 
-	if (memfile->pos + size >= memfile->length)
-		size = memfile->length - memfile->pos;
+    if (memfile->pos + size >= memfile->length)
+        size = memfile->length - memfile->pos;
 
-	memcpy(buffer, (char *)memfile->data+memfile->pos, size);
-	memfile->pos += size;
-	
-	return size;
+    memcpy(buffer, (char *)memfile->data+memfile->pos, size);
+    memfile->pos += size;
+    
+    return size;
 }
 
 void memseek(unsigned int handle, int pos, signed char mode) {
-	MEMFILE *memfile = (MEMFILE *)handle;
+    MEMFILE *memfile = (MEMFILE *)handle;
 
-	if (mode == SEEK_SET) 
-		memfile->pos = pos;
-	else if (mode == SEEK_CUR) 
-		memfile->pos += pos;
-	else if (mode == SEEK_END)
-		memfile->pos = memfile->length + pos;
+    if (mode == SEEK_SET) 
+        memfile->pos = pos;
+    else if (mode == SEEK_CUR) 
+        memfile->pos += pos;
+    else if (mode == SEEK_END)
+        memfile->pos = memfile->length + pos;
 
-	if (memfile->pos > memfile->length)
-		memfile->pos = memfile->length;
+    if (memfile->pos > memfile->length)
+        memfile->pos = memfile->length;
 }
 
 int memtell(unsigned int handle) {
-	MEMFILE *memfile = (MEMFILE *)handle;
-	return memfile->pos;
+    MEMFILE *memfile = (MEMFILE *)handle;
+    return memfile->pos;
 }
 
 
@@ -303,8 +301,8 @@ void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_
     Vector3 zperp{ 0, 0, 1 };
 
     //lod (h/r)
-    float N = NUTSH;
-    float M = NUTSV;
+    constexpr int N = NUTSH;
+    constexpr int M = NUTSV;
 
     //the calc mess is just to speed up things (sorry)
     //just call this func with calc = true once per frame
@@ -317,11 +315,11 @@ void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_
         float a = fabsf(sinf(value));
         float b = 1.f;
 
-        for (int j = 0; j < (int)M; j++) {
+        for (int j = 0; j < M; j++) {
             float theta1 = TWOPI * j / M;
-            float theta2 = TWOPI * ((j + 1) % (int)M) / M;
+            float theta2 = TWOPI * ((j + 1) % M) / M;
 
-            for (int i = 0; i < (int)N; i++) {
+            for (int i = 0; i < N; i++) {
                 float t1 = PI * i / N;
                 float t2 = PI * (i + 1) / N;
 
@@ -408,19 +406,19 @@ void dHelix(float outr, float inr, int twists, int angle_steps, rgb_a startcol, 
     static GLuint springlist = 0;
 
     glBegin(GL_QUADS);
-    for (float phi = 0; phi <= 360; phi += angle_steps)
+    for (int phi = 0; phi <= 360; phi += angle_steps)
     {
-        float v0 = phi / 180.f * 3.142f;
-        float v1 = (phi + angle_steps) / 180.f * 3.142f;
+        float v0 = phi * PIOVER180;
+        float v1 = (phi + angle_steps) * PIOVER180;
         float cv0 = (cosf(v0) + inr) * outr;
-        float sv0 = sinf(v0) - 2.f * 3.142f;
+        float sv0 = sinf(v0) - TWOPI;
         float cv1 = (cosf(v1) + inr)* outr;
-        float sv1 = sinf(v1) - 2.f * 3.142f;
+        float sv1 = sinf(v1) - TWOPI;
 
-        for (float theta = 0; theta <= 360 * twists; theta += angle_steps)
+        for (int theta = 0; theta <= 360 * twists; theta += angle_steps)
         {
-            float u0 = theta / 180.f * 3.142f;
-            float u1 = (theta + angle_steps) / 180.f * 3.142f;
+            float u0 = theta * PIOVER180;
+            float u1 = (theta + angle_steps) * PIOVER180;
             float cu0 = cosf(u0);
             float su0 = sinf(u0);
             float cu1 = cosf(u1);
@@ -460,21 +458,10 @@ void dHelix(float outr, float inr, int twists, int angle_steps, rgb_a startcol, 
 // wobble : the "wobbling" value, this is a MULTIPLIER
 // wdelta : the value that will be added to the radius
 // wfreq : the wobbles frequency along the tube length
-void dCylinder(float r, int segsh, int segsv, float length, float wobble, float wdelta, float wfreq, float mytime, bool fill, rgb_a color, rgb_a furcolor, float furlenght)
-{
-    float horstep = (float)TWOPI / segsh;
+void dCylinder(float r, int segsh, int segsv, float length, float wobble, float wdelta, float wfreq, float mytime, bool fill, rgb_a color, rgb_a furcolor, float furlenght) {
+    float horstep = TWOPI / segsh;
     float vertstep = length / segsv;
-    float wob = 0;
 
-    Vector3 tmpv0{};
-    Vector3 tmpv1{};
-    Vector3 tmpv2{};
-    Vector3 tmpv3{};
-
-    Vector3 norm0{};
-    Vector3 norm1{};
-    Vector3 norm2{};
-    Vector3 norm3{};
 
     if (fill) {
         glDisable(GL_DEPTH_TEST);
@@ -487,60 +474,32 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
         glBegin(GL_QUADS);
 
         for (int x = 0; x < segsh; x++) {
+            float sinfa = sinf(x * horstep);
+            float cosfa = cosf(x * horstep);
+            float sinfb = sinf((x + 1) * horstep);
+            float cosfb = cosf((x + 1) * horstep);
             for (int y = 0; y < segsv; y++) {
+                float yfa = y * vertstep - (length / 2);
+                float anglea = yfa * wfreq * TWOPI / length + wdelta;
+                float rwoba = r + sinf(anglea) + cosf(anglea) * wobble;
+                float yfb = yfa + vertstep;
+                float angleb = yfb * wfreq * TWOPI / length + wdelta;
+                float rwobb = r + sinf(angleb) + cosf(angleb) * wobble;
                 //  |_
-                tmpv0.y = y * vertstep - (length / 2);
-                //wob is the value tube enlarges in this segment
-                wob = sinf((tmpv0.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv0.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-                tmpv0.x = cosf(x * horstep) * (r + wob);
-                tmpv0.z = sinf(x * horstep) * (r + wob);
-                norm0.x = sinf(x * horstep);
-                norm0.y = 0.f;
-                norm0.z = -cosf(x * horstep);
-                //glNormal3f( sinf(x * horstep), 0.f, -cosf(x * horstep));
+                glNormal3f(sinfa, 0.f, -cosfa);
+                glVertex3f(cosfa * rwoba, yfa, sinfa * rwoba);
 
                 //   _
                 //  |
-                tmpv1.y = (y + 1) * vertstep - (length / 2);
-                wob = sinf((tmpv1.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv1.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-                tmpv1.x = cosf(x * horstep) * (r + wob);
-                tmpv1.z = sinf(x * horstep) * (r + wob);
-                norm1.x = sinf(x * horstep);
-                norm1.y = 0.f;
-                norm1.z = -cosf(x * horstep);
+                glVertex3f(cosfa * rwobb, yfb, sinfa * rwobb);
 
                 //   _
                 //    |
-                tmpv2.y = (y + 1) * vertstep - (length / 2);
-                wob = sinf((tmpv2.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv2.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-                tmpv2.x = cosf((x + 1) * horstep) * (r + wob);
-                tmpv2.z = sinf((x + 1) * horstep) * (r + wob);
-                norm2.x = sinf((x + 1) * horstep);
-                norm2.y = 0.f;
-                norm2.z = -cosf((x + 1) * horstep);
-                //glNormal3f( sinf((x+1) * horstep), 0, -cosf((x+1) * horstep));
+                glNormal3f(sinfb, 0, -cosfb);
+                glVertex3f(cosfb * rwobb, yfb, sinfb * rwobb);
 
                 //  _|
-                tmpv3.y = y * vertstep - (length / 2);
-                wob = sinf((tmpv3.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv3.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-                tmpv3.x = cosf((x + 1) * horstep) * (r + wob);
-                tmpv3.z = sinf((x + 1) * horstep) * (r + wob);
-                norm3.x = sinf((x + 1) * horstep);
-                norm3.y = 0.f;
-                norm3.z = -cosf((x + 1) * horstep);
-                //glNormal3f( sinf((x+1) * horstep), 0, -cosf((x+1) * horstep));
-
-                glNormal3fv((float*)&norm0);
-                glVertex3fv((float*)&tmpv0);
-
-                glNormal3fv((float*)&norm1);
-                glVertex3fv((float*)&tmpv1);
-
-                glNormal3fv((float*)&norm2);
-                glVertex3fv((float*)&tmpv2);
-
-                glNormal3fv((float*)&norm3);
-                glVertex3fv((float*)&tmpv3);
+                glVertex3f(cosfb * rwoba, yfa, sinfb * rwoba);
             }
         }
 
@@ -557,23 +516,18 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
     for (int ix = 0; ix < ch; ix++) {
         for (int iy = 0; iy < cv; iy++) {
             float x = (TWOPI * (vnoise(mytime, vlattice(ix, iy, 1)) + ix)) / ch;
-            float y = (length * (vnoise(mytime, vlattice(ix, iy, 2)) + iy)) / cv;
+            float cosfx = cosf(x);
+            float sinfx = sinf(x);
             //  |_
-            tmpv0.y = y - (length / 2.f);
-            wob = sinf((tmpv0.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv0.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-            tmpv0.x = cosf(x) * (r + wob);
-            tmpv0.z = sinf(x) * (r + wob);
+            float v = (length * (vnoise(mytime, vlattice(ix, iy, 2)) + iy)) / cv - (length / 2.f);
+            float angle = v * wfreq * TWOPI / length;
+            float wob = sinf(angle + wdelta) + cosf(angle + wdelta) * wobble;
             glColor4f(furcolor.r, furcolor.g, furcolor.b, 0.5f);
-            glVertex3fv((float*)&tmpv0);
+            glVertex3f(cosfx * (r + wob), v, sinfx * (r + wob));
 
             //  |_
-            tmpv1.y = y - (length / 2);
-            wob = sinf((tmpv1.y * wfreq / length) * (float)TWOPI + wdelta) + cosf((tmpv1.y * wfreq / length) * (float)TWOPI + wdelta) * wobble;
-            tmpv1.y += wfreq * TWOPI * cosf(tmpv1.y * wfreq * TWOPI / length) / length - wfreq * TWOPI * wobble * sinf(tmpv1.y * wfreq * TWOPI / length) / length;
-            tmpv1.x = cosf(x) * ((r * furlenght) + wob);
-            tmpv1.z = sinf(x) * ((r * furlenght) + wob);
             glColor4f(furcolor.r, furcolor.g, furcolor.b, 0.f);
-            glVertex3fv((float*)&tmpv1);
+            glVertex3f(cosfx * ((r * furlenght) + wob), v + wfreq * TWOPI * (cosf(angle) - wobble * sinf(angle)) / length, sinfx * ((r * furlenght) + wob));
         }
     }
 
@@ -609,7 +563,6 @@ uv_coord TwirlTexCoords(int x, int y,float value, float divisor) {
 void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta1, float theta2, float phi1, float phi2, bool deform) {
     Vector3 e0, e1, p0, p1;
     uv_coord t;
-    float tmpr1;
 
 
     if (r1 < 0)
@@ -629,11 +582,7 @@ void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta
 
             float phi = phi1 + i * (phi2 - phi1) / n;
 
-            if (deform)
-                tmpr1 = r1 + sinf((float)i) / 5 + sinf(t2) * (1 + sinf(j / 8.f + time * 3));
-            //tmpr1 = r1 + sin(i)/8;
-            else
-                tmpr1 = r1;
+            float tmpr1 = deform ? r1 + sinf((float)i) / 5 + sinf(t2) * (1 + sinf(j / 8.f + time * 3)) : r1;
 
             e0.x = cosf(t1) * tmpr1 * cosf(phi);
             e0.y = sinf(phi) * tmpr1;
@@ -953,14 +902,14 @@ void drawToroide(int order, float t, float mytime) {
     glTranslatef(0, 0, -10);
     glRotatef(sinf(t * 1.2f) * 140.f, 1.f, 0.f, 0.f);
     glRotatef(sinf(t * 1.7f) * 60.f, 0.f, 0.f, 1.f);
-    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, (float)TWOPI, 0.f, (float)TWOPI, true);
+    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, TWOPI, 0.f, TWOPI, true);
     glTranslatef(0.f, 0.f, 0.01f);
     if (order < 2)
         glColor4f(1.f, 1.f, 1.f, 0.1f);
     else
         glColor4f(1.f, 1.f, 1.f, (0.5f * (0.2f - t)));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, (float)TWOPI, 0.f, (float)TWOPI, true);
+    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, TWOPI, 0.f, TWOPI, true);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glPopMatrix();
@@ -1524,10 +1473,10 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
 }
 
 void drawCreditsBack(float t) {
-    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(20 * WIDTH / 640, 20 * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(30 * WIDTH / 640, 30 * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(40 * WIDTH / 640, 40 * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(20.f * WIDTH / 640, 20.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(30.f * WIDTH / 640, 30.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(40.f * WIDTH / 640, 40.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
 }
 
 void drawCredits(float t) {
@@ -1542,10 +1491,10 @@ void drawCredits(float t) {
     glDisable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
 
-    CoolPrint1(*FontArial, 20, sync, 0.f,  1.f,  3.f,  4.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 230 * WIDTH / 640, 0.6f, 0.2f, "rio");
-    CoolPrint1(*FontArial, 20, sync, 3.f,  4.f,  6.f,  7.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 200 * WIDTH / 640, 0.6f, 0.f, "pan");
-    CoolPrint1(*FontArial, 20, sync, 6.f,  7.f,  9.f, 10.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 160 * WIDTH / 640, 0.6f, -0.1f, "dixan");
-    CoolPrint1(*FontArial, 20, sync, 9.f, 10.f, 12.f, 13.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 170 * WIDTH / 640, 0.6f, 0.f, "wiss");
+    CoolPrint1(*FontArial, 20, sync, 0.f,  1.f,  3.f,  4.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 230.f * WIDTH / 640, 0.6f, 0.2f, "rio");
+    CoolPrint1(*FontArial, 20, sync, 3.f,  4.f,  6.f,  7.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 200.f * WIDTH / 640, 0.6f, 0.f, "pan");
+    CoolPrint1(*FontArial, 20, sync, 6.f,  7.f,  9.f, 10.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 160.f * WIDTH / 640, 0.6f, -0.1f, "dixan");
+    CoolPrint1(*FontArial, 20, sync, 9.f, 10.f, 12.f, 13.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 170.f * WIDTH / 640, 0.6f, 0.f, "wiss");
 
     float t2 = panGetTime();
     glClearColor(0, 0, 0, 0.5);
@@ -1611,7 +1560,7 @@ void drawCredits(float t) {
     glBindTexture(GL_TEXTURE_2D, logo);
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-    drawBlendBis(t / 1.45f, 1, { 1.f, 1.f, 1.f, 0.5f }, WIDTH / 2, 80 * HEIGHT / 480, WIDTH, HEIGHT - 80 * HEIGHT / 480, 10, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
+    drawBlendBis(t / 1.45f, 1, { 1.f, 1.f, 1.f, 0.5f }, WIDTH / 2, 80 * HEIGHT / 480, WIDTH, HEIGHT - 80 * HEIGHT / 480, 10, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
 
     glDisable(GL_STENCIL_TEST);
 
@@ -2119,11 +2068,11 @@ void Scena(float t, int order) {
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         if (order == 4) {
-            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640, 80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5, "fuzzy");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "dimensions");
+            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140.f * WIDTH / 640, 80.f * HEIGHT / 480, 60.f * WIDTH / 480, 0.6f, 0.5, "fuzzy");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500.f * WIDTH / 640, 400.f * HEIGHT / 480, 40.f * WIDTH / 480, 0.8f, -0.1f, "dimensions");
         } else {
-            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140 * WIDTH / 640, 80 * HEIGHT / 480, 60 * WIDTH / 480, 0.6f, 0.5, "furry");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500 * WIDTH / 640, 400 * HEIGHT / 480, 40 * WIDTH / 480, 0.8f, -0.1f, "onions");
+            CoolPrint1(*FontArial, 50, t, 0, 1.5f, 1.5f, 3.f, 140.f * WIDTH / 640, 80.f * HEIGHT / 480, 60.f * WIDTH / 480, 0.6f, 0.5, "furry");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 3.f, 4.5f, 500.f * WIDTH / 640, 400.f * HEIGHT / 480, 40.f * WIDTH / 480, 0.8f, -0.1f, "onions");
         }
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
@@ -2397,9 +2346,9 @@ void Scena(float t, int order) {
         if ((order != 15) || (rsync <= 13)) {
             glClearColor(0, 0, 0, 0.5);
             texture2->use();
-            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
-            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
-            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50 * WIDTH / 640, 50 * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
         }
         if (order == 9) { // solo sui wisscosi!
             if (sync > 13) { // total in sync 14.4, in time 10.471
@@ -2700,33 +2649,33 @@ int main(int argc, char *argv[]) {
     while ((c = getopt (argc, argv, "?PKwd:")) != -1)
         switch (c)
         {
-	case 'P':
-	    flag_hidden = 1;
-	    break;
-	case 'K':
-	    if (flag_hidden) flag_hidden = 2;
-	    break;
-	case 'w':
-	    flag_w = 1;
-	    break;
-	case 'd':
-	    {
-		char *tail;
-		if (optarg != nullptr) flag_d_value = strtol(optarg,&tail,0);
-		if (optarg == nullptr || tail == optarg || *tail != '\0') {
-		    fprintf(stderr, "Invalid display depth (bits per pixel)\n");
-		    exit(1);
-		}
-	    }
-	    break;
-	case '?':
-	default:
-	    fprintf (stderr,
-		     "\nPK is dead\n"
-		     "  -w        force windowed mode\n"
-		     "  -d bpp    set display depth (defaults to let SDL decide)\n\n");
-	    exit(0);
-	    break;
+    case 'P':
+        flag_hidden = 1;
+        break;
+    case 'K':
+        if (flag_hidden) flag_hidden = 2;
+        break;
+    case 'w':
+        flag_w = 1;
+        break;
+    case 'd':
+        {
+        char *tail;
+        if (optarg != nullptr) flag_d_value = strtol(optarg,&tail,0);
+        if (optarg == nullptr || tail == optarg || *tail != '\0') {
+            fprintf(stderr, "Invalid display depth (bits per pixel)\n");
+            exit(1);
+        }
+        }
+        break;
+    case '?':
+    default:
+        fprintf (stderr,
+             "\nPK is dead\n"
+             "  -w        force windowed mode\n"
+             "  -d bpp    set display depth (defaults to let SDL decide)\n\n");
+        exit(0);
+        break;
         }
 
     if (flag_hidden != 2) flag_hidden = 0;
@@ -2734,14 +2683,14 @@ int main(int argc, char *argv[]) {
     
 
     if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-	fprintf(stderr, "Couldn't init SDL: %s\n", SDL_GetError());
-	exit(1);
+    fprintf(stderr, "Couldn't init SDL: %s\n", SDL_GetError());
+    exit(1);
     }
 
     if ( SDL_SetVideoMode(WIDTH, HEIGHT, flag_d_value, SDL_OPENGL | (!flag_w * SDL_FULLSCREEN)) == nullptr) {
-	fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
-	SDL_Quit();
-	exit(2);
+    fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
+    SDL_Quit();
+    exit(2);
     }
 
     SDL_WM_SetCaption("PK is dead", nullptr);
@@ -2761,50 +2710,50 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   else
     hiddenpart = false;
 
-	hInstance = hinstance;
-	l_hDC=GetDC(GetDesktopWindow());
+    hInstance = hinstance;
+    l_hDC=GetDC(GetDesktopWindow());
   
-	winclass.cbSize			= sizeof(WNDCLASSEX);
-	winclass.style			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC; //CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-	winclass.lpfnWndProc	= (WNDPROC)(skWinProc);
-	winclass.cbClsExtra		= 0;
-	winclass.cbWndExtra		= 0;
-	winclass.hInstance		= hinstance;
-	winclass.hIcon			= LoadIcon(nullptr, IDI_APPLICATION);
-	winclass.hIconSm		= LoadIcon(nullptr, IDI_APPLICATION);
-	winclass.hCursor		= LoadCursor(nullptr, IDC_ARROW);
-	winclass.hbrBackground	= (HBRUSH)(COLOR_APPWORKSPACE);
-	winclass.lpszMenuName	= nullptr;
-	winclass.lpszClassName	= "WINDOW_CLASS";
+    winclass.cbSize			= sizeof(WNDCLASSEX);
+    winclass.style			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC; //CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+    winclass.lpfnWndProc	= (WNDPROC)(skWinProc);
+    winclass.cbClsExtra		= 0;
+    winclass.cbWndExtra		= 0;
+    winclass.hInstance		= hinstance;
+    winclass.hIcon			= LoadIcon(nullptr, IDI_APPLICATION);
+    winclass.hIconSm		= LoadIcon(nullptr, IDI_APPLICATION);
+    winclass.hCursor		= LoadCursor(nullptr, IDC_ARROW);
+    winclass.hbrBackground	= (HBRUSH)(COLOR_APPWORKSPACE);
+    winclass.lpszMenuName	= nullptr;
+    winclass.lpszClassName	= "WINDOW_CLASS";
 
-	if (!RegisterClassEx(&winclass)) 
+    if (!RegisterClassEx(&winclass)) 
     return 0;
 
-	PIXELFORMATDESCRIPTOR pfd = {
-		sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd 
-		1,                                // version number 
-		PFD_DRAW_TO_WINDOW |              // support window 
-		PFD_SUPPORT_OPENGL |              // support OpenGL 
-		PFD_DOUBLEBUFFER,
+    PIXELFORMATDESCRIPTOR pfd = {
+        sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd 
+        1,                                // version number 
+        PFD_DRAW_TO_WINDOW |              // support window 
+        PFD_SUPPORT_OPENGL |              // support OpenGL 
+        PFD_DOUBLEBUFFER,
 //PFD_GENERIC_ACCELERATED,            // double buffered 
-		PFD_TYPE_RGBA,                    // RGBA type 
-		BITSPERPIXEL,                     // color depth 
-		0, 0, 0, 0, 0, 0,                 // color bits ignored 
-		1,                                // no alpha buffer 
-		0,                                // shift bit ignored 
-		0,                                // no accumulation buffer 
-		0, 0, 0, 0,                       // accum bits ignored 
-		16,                               // 32-bit z-buffer     
-		1,                                // stencil buffer 
-		0,                                // no auxiliary buffer 
-		PFD_MAIN_PLANE,                   // main layer 
-		0,                                // reserved 
-		0, 0, 0                           // layer masks ignored 
-	}; 
-	
-	unsigned int  iPixelFormat; 
+        PFD_TYPE_RGBA,                    // RGBA type 
+        BITSPERPIXEL,                     // color depth 
+        0, 0, 0, 0, 0, 0,                 // color bits ignored 
+        1,                                // no alpha buffer 
+        0,                                // shift bit ignored 
+        0,                                // no accumulation buffer 
+        0, 0, 0, 0,                       // accum bits ignored 
+        16,                               // 32-bit z-buffer     
+        1,                                // stencil buffer 
+        0,                                // no auxiliary buffer 
+        PFD_MAIN_PLANE,                   // main layer 
+        0,                                // reserved 
+        0, 0, 0                           // layer masks ignored 
+    }; 
+    
+    unsigned int  iPixelFormat; 
 
-	RECT windowRect = {0, 0, WIDTH, HEIGHT};	// Define Our Window Coordinates
+    RECT windowRect = {0, 0, WIDTH, HEIGHT};	// Define Our Window Coordinates
   DWORD windowStyle, windowExtendedStyle;
 
 #ifdef FULLSCREEN
@@ -2813,54 +2762,54 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   int oldbpp = GetDeviceCaps(l_hDC, BITSPIXEL);
   int oldfreq = GetDeviceCaps(l_hDC, VREFRESH);
 
-	DEVMODE dmScreenSettings;											// Device Mode
-	ZeroMemory (&dmScreenSettings, sizeof (DEVMODE));					// Make Sure Memory Is Cleared
-	dmScreenSettings.dmSize				= sizeof (DEVMODE);				// Size Of The Devmode Structure
-	dmScreenSettings.dmPelsWidth		= WIDTH;						// Select Screen Width
-	dmScreenSettings.dmPelsHeight		= HEIGHT;						// Select Screen Height
-	dmScreenSettings.dmBitsPerPel		= BITSPERPIXEL;					// Select Bits Per Pixel
-	dmScreenSettings.dmFields			= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+    DEVMODE dmScreenSettings;											// Device Mode
+    ZeroMemory (&dmScreenSettings, sizeof (DEVMODE));					// Make Sure Memory Is Cleared
+    dmScreenSettings.dmSize				= sizeof (DEVMODE);				// Size Of The Devmode Structure
+    dmScreenSettings.dmPelsWidth		= WIDTH;						// Select Screen Width
+    dmScreenSettings.dmPelsHeight		= HEIGHT;						// Select Screen Height
+    dmScreenSettings.dmBitsPerPel		= BITSPERPIXEL;					// Select Bits Per Pixel
+    dmScreenSettings.dmFields			= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
   if (ChangeDisplaySettings (&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
     MessageBox(0, "FullScreen mode not available", WINDOWTITLE, MB_OK);
-  	windowStyle = WS_OVERLAPPEDWINDOW;
-  	windowExtendedStyle = WS_EX_APPWINDOW;
+    windowStyle = WS_OVERLAPPEDWINDOW;
+    windowExtendedStyle = WS_EX_APPWINDOW;
     AdjustWindowRectEx (&windowRect, windowStyle, 0, windowExtendedStyle);
   } else {
-  	ShowCursor(false);
-  	windowStyle = WS_POPUP;
-  	windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+    ShowCursor(false);
+    windowStyle = WS_POPUP;
+    windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
   }
 #else
-	windowStyle = WS_OVERLAPPEDWINDOW;
-	windowExtendedStyle = WS_EX_APPWINDOW;
+    windowStyle = WS_OVERLAPPEDWINDOW;
+    windowExtendedStyle = WS_EX_APPWINDOW;
   AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
 #endif
-	if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
-								   WINDOW_CLASS_NAME,	// Class Name
-								   WINDOWTITLE,					// Window Title
-								   windowStyle,							// Window Style
-								   0, 0,								// Window X,Y Position
-								   windowRect.right - windowRect.left,	// Window Width
-								   windowRect.bottom - windowRect.top,	// Window Height
-								   HWND_DESKTOP,						// Desktop Is Window's Parent
-								   nullptr,									// No Menu
-								   hInstance, // Pass The Window Instance
+    if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
+                                   WINDOW_CLASS_NAME,	// Class Name
+                                   WINDOWTITLE,					// Window Title
+                                   windowStyle,							// Window Style
+                                   0, 0,								// Window X,Y Position
+                                   windowRect.right - windowRect.left,	// Window Width
+                                   windowRect.bottom - windowRect.top,	// Window Height
+                                   HWND_DESKTOP,						// Desktop Is Window's Parent
+                                   nullptr,									// No Menu
+                                   hInstance, // Pass The Window Instance
         nullptr)) {
-  	hDC = GetDC (hWND);
+    hDC = GetDC (hWND);
 
-  	iPixelFormat = ChoosePixelFormat(hDC, &pfd);
+    iPixelFormat = ChoosePixelFormat(hDC, &pfd);
 
 
-  	// make that match the device context's current pixel format 
-  	SetPixelFormat(hDC, iPixelFormat, &pfd); 
-  	
-  	// if we can create a rendering context ...  
-  	if (hRC = wglCreateContext(hDC)) { 
-  		// try to make it the thread's current rendering context 
-  		wglMakeCurrent(hDC, hRC); 
-  	} 
+    // make that match the device context's current pixel format 
+    SetPixelFormat(hDC, iPixelFormat, &pfd); 
+    
+    // if we can create a rendering context ...  
+    if (hRC = wglCreateContext(hDC)) { 
+        // try to make it the thread's current rendering context 
+        wglMakeCurrent(hDC, hRC); 
+    } 
 
-  	ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
+    ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
 #endif /* WIN32 */
 
     FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
@@ -2894,18 +2843,18 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 
 #ifdef WIN32
     while (true) {
-  		MSG msg;
-  		if (PeekMessage(&msg, nullptr,0,0,PM_REMOVE)) {
-  			if (msg.message == WM_QUIT) 
+        MSG msg;
+        if (PeekMessage(&msg, nullptr,0,0,PM_REMOVE)) {
+            if (msg.message == WM_QUIT) 
           break;
-  			TranslateMessage(&msg);
-  			DispatchMessage(&msg);
-  		} else
-  			skDraw();
-  	}
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else
+            skDraw();
+    }
 #else
     while ( ! done ) {
-	skDraw();
+    skDraw();
         {
             SDL_Event event;
             while ( SDL_PollEvent(&event) ) {
@@ -2914,16 +2863,16 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
                 }
                 if ( event.type == SDL_KEYDOWN ) {
                     if ( event.key.keysym.sym == SDLK_ESCAPE ||
-			 event.key.keysym.sym == SDLK_SPACE  ||
-			 event.key.keysym.sym == 65          ||
-			 event.key.keysym.sym == 9) { // strange things happen...
+             event.key.keysym.sym == SDLK_SPACE  ||
+             event.key.keysym.sym == 65          ||
+             event.key.keysym.sym == 9) { // strange things happen...
                         done = 1;
                     }
 #ifdef SCREENSHOOTER
-		    if ( event.key.keysym.sym == SDLK_s ||
-			 event.key.keysym.sym == 39) {
-			system("screenshooter.sh 0x1c0000e"); // this is utterly lame :(
-		    }
+            if ( event.key.keysym.sym == SDLK_s ||
+             event.key.keysym.sym == 39) {
+            system("screenshooter.sh 0x1c0000e"); // this is utterly lame :(
+            }
 #endif /* SCREENSHOOTER */
                 }
             }
@@ -2933,8 +2882,8 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 
     if (isMusicEnabled)
     {
-  	  FMUSIC_FreeSong(fmodule);
-  	  FSOUND_Close();
+      FMUSIC_FreeSong(fmodule);
+      FSOUND_Close();
     }
 
 #ifdef WIN32
@@ -2953,7 +2902,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   mode.dmDisplayFrequency = oldfreq;
   mode.dmFields = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
   ChangeDisplaySettings(&mode, 0);
-	ShowCursor(true);
+    ShowCursor(true);
 #endif
 #endif /* WIN32 */
 
@@ -2964,9 +2913,9 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
   skUnloadDemoStuff();
 
 #ifdef WIN32
-	ExitProcess(0);
+    ExitProcess(0);
 #else
-	SDL_Quit();
+    SDL_Quit();
 #endif
   return 0;
 }
