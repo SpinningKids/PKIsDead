@@ -1,11 +1,6 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include "AsmMath4.h"
-
-#define RANDOM_FLOAT (((float)rand()-(float)rand())/(float)RAND_MAX)
-#define DEG_TO_RAD(angle)  ((angle)*PIOVER180)
-
 /* Timing Functions */
 void skInitTimer();
 float skGetTime();

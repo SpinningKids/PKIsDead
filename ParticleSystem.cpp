@@ -11,9 +11,16 @@
 #include <gl/GL.h>
 
 #include "AsmMath4.h"
-#include "utils.h"
 #include <algorithm>
 #include <cassert>
+
+static constexpr float degToRad(float angle) {
+    return  angle * PIOVER180;
+}
+
+float randomFloat() {
+    return (((float)rand() - (float)rand()) / (float)RAND_MAX);
+}
 
 void CParticle::Create(CParticleSystem* parent, float time_counter) {
     //This particle is dead, so its free to mess around with.
@@ -22,7 +29,7 @@ void CParticle::Create(CParticleSystem* parent, float time_counter) {
     m_fDying_age = parent->m_fLife;
 
     //Now, same routine as above, except with size
-    m_fSize = std::clamp(parent->m_fStart_size + RANDOM_FLOAT * parent->m_fSize_counter, MIN_SIZE, MAX_SIZE);
+    m_fSize = std::clamp(parent->m_fStart_size + randomFloat() * parent->m_fSize_counter, MIN_SIZE, MAX_SIZE);
     m_fSize_counter = (parent->m_fEnd_size - m_fSize) / m_fDying_age;
 
     //Now, we calculate the velocity that the particle would 
@@ -32,9 +39,9 @@ void CParticle::Create(CParticleSystem* parent, float time_counter) {
 
     //Now emit the particle from a location between the last
     //known location, and the current location.
-    m_v3Position.x = parent->m_v3Prev_location.x + temp_velocity.x * RANDOM_FLOAT * time_counter;
-    m_v3Position.y = parent->m_v3Prev_location.y + temp_velocity.y * RANDOM_FLOAT * time_counter;
-    m_v3Position.z = parent->m_v3Prev_location.z + temp_velocity.z * RANDOM_FLOAT * time_counter;
+    m_v3Position.x = parent->m_v3Prev_location.x + temp_velocity.x * randomFloat() * time_counter;
+    m_v3Position.y = parent->m_v3Prev_location.y + temp_velocity.y * randomFloat() * time_counter;
+    m_v3Position.z = parent->m_v3Prev_location.z + temp_velocity.z * randomFloat() * time_counter;
 
     //Now a simple randomization of the point that the particle
     //is emitted from.
@@ -47,8 +54,8 @@ void CParticle::Create(CParticleSystem* parent, float time_counter) {
     parent->m_v3Prev_location = parent->GetPosition();
 
     //The emitter has a direction.  This is where we find it:
-    const float random_yaw = RANDOM_FLOAT * PI * 2.f;
-    const float random_pitch = DEG_TO_RAD(RANDOM_FLOAT * parent->m_fAngle);
+    const float random_yaw = randomFloat() * PI * 2.f;
+    const float random_pitch = degToRad(randomFloat() * parent->m_fAngle);
 
     //The following code uses spherical coordinates to randomize
     //the velocity vector of the particle

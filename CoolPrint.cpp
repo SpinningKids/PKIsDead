@@ -7,11 +7,11 @@
  ************************************/
 
 #include "CoolPrint.h"
+
+#include "AsmMath4.h"
+
 #include <stdio.h>
 #include <algorithm>
-
-static constexpr float PI = 3.1415926535897932384626433832795f;
-static constexpr float PIUNDER180 = 180.f/PI;
 
 void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd, float en, float x, float y, float gs, float ratio, float tracking, const char* fmt, ...) {
     if (t < st - 0.5f) return;
