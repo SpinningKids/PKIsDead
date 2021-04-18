@@ -57,7 +57,7 @@
     <ClCompile Include="noise.cpp">
       <Filter>Pan</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SphereEffect.cpp" />
   </ItemGroup>

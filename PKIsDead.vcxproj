@@ -53,9 +53,6 @@
       <BrowseInformation>true</BrowseInformation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
-    <Midl>
-      <TypeLibraryName>.\Release\main.tlb</TypeLibraryName>
-    </Midl>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
@@ -85,9 +82,6 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
-    <Midl>
-      <TypeLibraryName>.\Debug\main.tlb</TypeLibraryName>
-    </Midl>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
@@ -106,7 +100,7 @@
     <ClCompile Include="GenTex.cpp" />
     <ClCompile Include="GLFont.cpp" />
     <ClCompile Include="GLTexture.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="minifmod\Fmusic.c" />
     <ClCompile Include="minifmod\Fsound.c" />
     <ClCompile Include="minifmod\mixer_clipcopy.c" />
