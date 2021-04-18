@@ -61,7 +61,7 @@ constexpr int NUTSV = 16;
 constexpr int QUADV = 20;
 constexpr int QUADH = 20;
 
-GLFont *FontArial;
+ GLFont *FontArial;
 CParticleSystem parts1;
 CParticleSystem parts2;
 GLUquadricObj*   m_glqMyQuadratic;
@@ -102,6 +102,8 @@ Vector3 poscubo{};
 Vector3 posnut{};
 Vector3 sizecubo{ 0.6f,0.6f,0.4f };
 float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f}; // 121 fu 119.240};
+
+constexpr int twirlstable[]{ 7, 1, 6, 2, 8, 1, 7, 1 };
 
 /*##########################################################*/
 /*Standard Var definitions :								*/
@@ -223,10 +225,10 @@ void PrepareRenderToTexture(float FOV,int size) {
 }
 
 
-void DoRenderToTexture(int size, GLTexture* tex) {
+void DoRenderToTexture(GLTexture* tex) {
     glFlush();
     glBindTexture(GL_TEXTURE_2D, tex->getID());
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, size, size, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, tex->getSize(), tex->getSize(), 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, WIDTH, HEIGHT);
     donerendertotexture = true;
@@ -300,10 +302,6 @@ void dCube(const Vector3 &size) {
 void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_a col) {
     Vector3 zperp{ 0, 0, 1 };
 
-    //lod (h/r)
-    constexpr int N = NUTSH;
-    constexpr int M = NUTSV;
-
     //the calc mess is just to speed up things (sorry)
     //just call this func with calc = true once per frame
 
@@ -315,20 +313,20 @@ void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_
         float a = fabsf(sinf(value));
         float b = 1.f;
 
-        for (int j = 0; j < M; j++) {
-            float theta1 = TWOPI * j / M;
-            float theta2 = TWOPI * ((j + 1) % M) / M;
+        for (int j = 0; j < NUTSV; j++) {
+            float theta1 = TWOPI * j / NUTSV;
+            float theta2 = TWOPI * ((j + 1) % NUTSV) / NUTSV;
 
-            for (int i = 0; i < N; i++) {
-                float t1 = PI * i / N;
-                float t2 = PI * (i + 1) / N;
+            for (int i = 0; i < NUTSH; i++) {
+                float t1 = PI * i / NUTSH;
+                float t2 = PI * (i + 1) / NUTSH;
 
                 // faccia dell'ovale
                 Vector3 p0 = EvalNut(t1, a, b);
-                Vector3 n0 = (p0 - EvalNut(t1 + 0.1f / N, a, b)) ^ zperp; //normale 
+                Vector3 n0 = (p0 - EvalNut(t1 + 0.1f / NUTSH, a, b)) ^ zperp; //normale 
 
                 Vector3 p1 = EvalNut(t2, a, b);
-                Vector3 n1 = (EvalNut(t2 - 0.1f / N, a, b) - p1) ^ zperp; //normale
+                Vector3 n1 = (EvalNut(t2 - 0.1f / NUTSH, a, b) - p1) ^ zperp; //normale
 
                 //the following part rotates around the oval axis
                 float ct1 = cosf(theta1);
@@ -424,24 +422,24 @@ void dHelix(float outr, float inr, int twists, int angle_steps, rgb_a startcol, 
             float cu1 = cosf(u1);
             float su1 = sinf(u1);
 
-            Vector3 vertexes[4]{
+            Vector3 vertices[4]{
                 {cu0 * cv0, su0 * cv0, (u0 + sv0) * outr},
                 {cu1 * cv0, su1 * cv0, (u1 + sv0) * outr},
                 {cu1 * cv1, su1 * cv1, (u1 + sv1) * outr},
                 {cu0 * cv1, su0 * cv1, (u0 + sv1) * outr}
             };
 
-            Vector3 normal = CalcNormal(vertexes[2], vertexes[0], vertexes[1]);
+            Vector3 normal = CalcNormal(vertices[2], vertices[0], vertices[1]);
 
             glNormal3fv((float*)&normal);
 
             rgb_a col = GetFade(startcol, endcol, (theta + 1.f) / (360.f * (float)twists));
 
             glColor4fv((float*)&col);
-            glVertex3fv((float*)&vertexes[0]);
-            glVertex3fv((float*)&vertexes[1]);
-            glVertex3fv((float*)&vertexes[2]);
-            glVertex3fv((float*)&vertexes[3]);
+            glVertex3fv((float*)&vertices[0]);
+            glVertex3fv((float*)&vertices[1]);
+            glVertex3fv((float*)&vertices[2]);
+            glVertex3fv((float*)&vertices[3]);
         }
     }
     glEnd();
@@ -535,16 +533,13 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
 
 }
 
-uv_coord TwirlTexCoords(int x, int y,float value, float divisor) {
-    float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
-    float DIVS_Y = QUADH; //m_iLod;
-
-    float r = sqrtf((x - DIVS_X / 2) * (x - DIVS_X / 2) + (y - DIVS_Y / 2) * (y - DIVS_Y / 2));
-    float a = atan2f((x - DIVS_X / 2), (y - DIVS_Y / 2));
+uv_coord TwirlTexCoords(int x, int y, float value) {
+    float r = sqrtf((x - QUADV / 2) * (x - QUADV / 2) + (y - QUADH / 2) * (y - QUADH / 2));
+    float a = atan2f((x - QUADV / 2), (y - QUADH / 2));
     float r2 = r + 5 * (1 + sinf(value * 3));
     float a2 = value + a + 0.5f * sinf(r / 8 + value * 1.5f) + 0.55f * cosf(r / 4 + value * 1.9f);
-    float tx = 0.75f * r2 * sinf(a2) / DIVS_X;
-    float ty = 0.75f * r2 * cosf(a2) / DIVS_Y;
+    float tx = 0.75f * r2 * sinf(a2) / QUADV;
+    float ty = 0.75f * r2 * cosf(a2) / QUADH;
     return { tx - 0.5f, ty - 0.5f };
 }
 
@@ -560,8 +555,7 @@ uv_coord TwirlTexCoords(int x, int y,float value, float divisor) {
 //phi2 : ending of segments angle
 //wobbleval : value for deformation
 //deform : enables the deformation
-void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta1, float theta2, float phi1, float phi2, bool deform) {
-    Vector3 e0, e1, p0, p1;
+void dTorus(float time, float r0, float r1, int n, bool deform) {
     uv_coord t;
 
 
@@ -573,38 +567,31 @@ void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta
         n = -n;
 
     for (int j = 0; j < n; j++) {
-        float t1 = j * (theta2 - theta1) / n;
-        float t2 = (j + 1) * (theta2 - theta1) / n;
+        float t1 = j * TWOPI / n;
+        float t2 = (j + 1) * TWOPI / n;
+        float cosft1 = cosf(t1);
+        float sinft1 = sinf(t1);
+        float cosft2 = cosf(t2);
+        float sinft2 = sinf(t2);
 
         glBegin(GL_QUAD_STRIP);
 
         for (int i = 0; i <= n; i++) {
 
-            float phi = phi1 + i * (phi2 - phi1) / n;
+            float tmpr1 = r1 + sinf((float)i) / 5 + sinft2 * (1 + sinf(j / 8.f + time * 3));
 
-            float tmpr1 = deform ? r1 + sinf((float)i) / 5 + sinf(t2) * (1 + sinf(j / 8.f + time * 3)) : r1;
+            float phi = i * TWOPI / n;
+            float tmpr1cosfphi = tmpr1 * cosf(phi);
+            float tmpr1sinfphi = tmpr1 * sinf(phi);
 
-            e0.x = cosf(t1) * tmpr1 * cosf(phi);
-            e0.y = sinf(phi) * tmpr1;
-            e0.z = sinf(t1) * tmpr1 * cosf(phi);
-            e0.Normalize();
-
-            p0.x = c.x + cosf(t1) * (r0 + tmpr1 * cosf(phi));
-            p0.y = c.y + sinf(phi) * tmpr1;
-            p0.z = c.z + sinf(t1) * (r0 + tmpr1 * cosf(phi));
+            Vector3 e0 = Vector3{ cosft1 * tmpr1cosfphi, tmpr1sinfphi, sinft1 * tmpr1cosfphi }.Normalized();
+            Vector3 p0{ cosft1 * (r0 + tmpr1cosfphi), tmpr1sinfphi, sinft1 * (r0 + tmpr1cosfphi) };
 
             t.u = i / (float)n;
             t.v = j / (float)n;
 
-
-            e1.x = cosf(t2) * tmpr1 * cosf(phi);
-            e1.y = sinf(phi) * tmpr1;
-            e1.z = sinf(t2) * tmpr1 * cosf(phi);
-            e1.Normalize();
-
-            p1.x = cosf(t2) * (r0 + tmpr1 * cosf(phi));
-            p1.y = sinf(phi) * tmpr1;
-            p1.z = sinf(t2) * (r0 + tmpr1 * cosf(phi));
+            Vector3 e1 = Vector3{ cosft2 * tmpr1cosfphi, tmpr1sinfphi, sinft2 * tmpr1cosfphi }.Normalized();
+            Vector3 p1{ cosft2 * (r0 + tmpr1cosfphi), tmpr1sinfphi, sinft2 * (r0 + tmpr1cosfphi) };
 
             t.u = i / (float)n;
             t.v = (j + 1) / (float)n; // BUG: This should be moved after glTexCoord2f
@@ -628,11 +615,8 @@ void dTorus(float time, const Vector3& c, float r0, float r1, int n, float theta
 // value : waving value (time)
 // divisor : the resulting wave sin/cos displacement is divided by this value
 uv_coord WaterTexCoords(int x, int y, float value, float divisor) {
-    float DIVS_X = QUADV; //m_iLod - (m_iLod/2);
-    float DIVS_Y = QUADH; //m_iLod;
-
-    float tx = std::min((x / DIVS_X) + sinf(x * value) / divisor, 1.f);
-    float ty = std::min((y / DIVS_Y) + cosf(y * value) / divisor, 1.f);
+    float tx = std::min(((float)x / QUADV) + sinf(x * value) / divisor, 1.f);
+    float ty = std::min(((float)y / QUADH) + cosf(y * value) / divisor, 1.f);
 
     return { tx, ty };
 }
@@ -706,41 +690,39 @@ void drawTexture(GLTexture* tex, float sx, float sy, bool calc, float value, flo
     //if calc=true then it laods the array, else just draws the array
     if (calc) {
         qind = 0;
-        float DIVS_X = QUADH; //m_iLod - (m_iLod/2);
-        float DIVS_Y = QUADV; //m_iLod;
 
-        for (int y = 0; y < DIVS_Y; y++) {
-            for (int x = 0; x < DIVS_X; x++) {
+        for (int y = 0; y < QUADV; y++) {
+            for (int x = 0; x < QUADH; x++) {
                 if (water)
                     tquad[qind] = WaterTexCoords(x, -y, value, divisor);
                 else
-                    tquad[qind] = TwirlTexCoords(x, -y, value, divisor);
+                    tquad[qind] = TwirlTexCoords(x, -y, value);
 
-                vquad[qind] = Vector3{ (float)x / DIVS_X * (float)WIDTH, (float)y / DIVS_Y * (float)HEIGHT, 0 };
+                vquad[qind] = Vector3{ (float)x / QUADH * (float)WIDTH, (float)y / QUADV * (float)HEIGHT, 0 };
                 qind++;
 
                 if (water)
                     tquad[qind] = WaterTexCoords(x + 1, -y, value, divisor);
                 else
-                    tquad[qind] = TwirlTexCoords(x + 1, -y, value, divisor);
+                    tquad[qind] = TwirlTexCoords(x + 1, -y, value);
 
-                vquad[qind] = Vector3{ (float)(x + 1) / DIVS_X * (float)WIDTH, (float)y / DIVS_Y * (float)HEIGHT, 0 };
+                vquad[qind] = Vector3{ (float)(x + 1) / QUADH * (float)WIDTH, (float)y / QUADV * (float)HEIGHT, 0 };
                 qind++;
 
                 if (water)
                     tquad[qind] = WaterTexCoords(x + 1, -(y + 1), value, divisor);
                 else
-                    tquad[qind] = TwirlTexCoords(x + 1, -(y + 1), value, divisor);
+                    tquad[qind] = TwirlTexCoords(x + 1, -(y + 1), value);
 
-                vquad[qind] = Vector3{ (float)(x + 1) / DIVS_X * (float)WIDTH, (float)(y + 1) / DIVS_Y * (float)HEIGHT, 0 };
+                vquad[qind] = Vector3{ (float)(x + 1) / QUADH * (float)WIDTH, (float)(y + 1) / QUADV * (float)HEIGHT, 0 };
                 qind++;
 
                 if (water)
                     tquad[qind] = WaterTexCoords(x, -(y + 1), value, divisor);
                 else
-                    tquad[qind] = TwirlTexCoords(x, -(y + 1), value, divisor);
+                    tquad[qind] = TwirlTexCoords(x, -(y + 1), value);
 
-                vquad[qind] = Vector3{ (float)x / DIVS_X * (float)WIDTH, (float)(y + 1) / DIVS_Y * (float)HEIGHT, 0 };
+                vquad[qind] = Vector3{ (float)x / QUADH * (float)WIDTH, (float)(y + 1) / QUADV * (float)HEIGHT, 0 };
                 qind++;
             }
         }
@@ -791,7 +773,7 @@ void drawNuts(float t) {
     glRotatef(-30, 0, 1, 0);
     glRotatef(sinf(t * 2) * 30.f, 0.f, 0.f, 1.f);
     glTranslatef(0, 0, -3);
-    dNuts(t, true, false, 0, { 1.f, 1.f, 1.f, 0.4f });  //just loads the vertexes once
+    dNuts(t, true, false, 0, { 1.f, 1.f, 1.f, 0.4f });  //just loads the vertices once
 
 
     //glTranslatef(0,0,-5);
@@ -902,14 +884,14 @@ void drawToroide(int order, float t, float mytime) {
     glTranslatef(0, 0, -10);
     glRotatef(sinf(t * 1.2f) * 140.f, 1.f, 0.f, 0.f);
     glRotatef(sinf(t * 1.7f) * 60.f, 0.f, 0.f, 1.f);
-    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, TWOPI, 0.f, TWOPI, true);
+    dTorus(mytime, 2.f, 0.6f, 64, true);
     glTranslatef(0.f, 0.f, 0.01f);
     if (order < 2)
         glColor4f(1.f, 1.f, 1.f, 0.1f);
     else
         glColor4f(1.f, 1.f, 1.f, (0.5f * (0.2f - t)));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    dTorus(mytime, Vector3{}, 2.f, 0.6f, 64, 0, TWOPI, 0.f, TWOPI, true);
+    dTorus(mytime, 2.f, 0.6f, 64, true);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glPopMatrix();
@@ -1108,9 +1090,9 @@ void drawBlend(rgb_a col, int sx, int sy, int ex, int ey, GLenum modes, GLenum m
 }
 
 
-#define MAXSEG 20
 void drawBlendBis(float t, float power, rgb_a col, int sx, int sy, int ex, int ey, int seg, float disp) {
 
+    constexpr int MAXSEG = 20;
     if (seg >= MAXSEG) seg = MAXSEG - 1;
     static float posx[MAXSEG][MAXSEG];
     static float posy[MAXSEG][MAXSEG];
@@ -1199,6 +1181,23 @@ void drawLines(float t, float alpha, int n) {
     glPopMatrix();
 }
 
+void dBugs(float t, bool calc, float xpos, float zpos, float scale, float alphazero, float xtrans, float ytrans, float ztrans) {
+    glPushMatrix();
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glTranslatef(xpos, 0, zpos);
+    glScalef(scale, scale, scale);
+    dNuts(t, calc, true, -0.3f, { 1.f, 1.f, 1.f, alphazero });  //just loads the vertices once
+    glScalef(1.f, -1.f, 1.f);
+    glTranslatef(0.f, 0.5f, 0.f);
+    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertices once
+    glTranslatef(0.f, -0.5f, 0.f);
+    glScalef(1.f, 0.001f, 1.f);
+    glTranslatef(xtrans, ytrans, ztrans);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertices once
+    glPopMatrix();
+}
+
 void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, float nutpos, Vector3 eye) {
     glClearColor(0.3f, 0.2f, 0.1f, 0.5f);
 
@@ -1236,7 +1235,6 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
     glDisable(GL_LIGHTING);
 
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_GEN_S);
@@ -1259,217 +1257,21 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
     glRotatef(rot.y + 90, 0, 1, 0);
     glRotatef(rot.z, 0, 0, 1);
 
-    glPushMatrix();
-    glTranslatef(nutpos - 1.9f, 0, 1.3f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, true, true, -0.3f, { 1.f, 1.f, 1.f, 0.9f });  //just loads the vertexes once
-    glScalef(1.f, -1.f, 1.f);
-    glTranslatef(0.f, 0.5f, 0.f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0.f, -0.5f, 0.f);
-    glScalef(1.f, 0.001f, 1.f);
-    glTranslatef(-0.5f, -20.f, -0.5f);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos, 0, 0.3f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, true, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.f, -1.f, 1.f);
-    glTranslatef(0.f, 0.5f, 0.f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0.f, -0.5f, 0.f);
-    glScalef(1.f, 0.001f, 1.f);
-    glTranslatef(-0.5f, -20.f, -0.5f);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.0, 0.0, 0.0, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-
-    glPushMatrix();
-    glTranslatef(nutpos + 1.6f, 0.f, -1.6f);
-    glScalef(0.5f, 0.5f, 0.5f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.f, -1.f, 1.f);
-    glTranslatef(0.f, 0.5f, 0.f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0.f, -0.5f, 0.f);
-    glScalef(1.f, 0.001f, 1.f);
-    glTranslatef(-0.7f, -1.f, -0.5f);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 2.6f, 0.f, 2.5f);
-    glScalef(0.5f, 0.5f, 0.5f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.f, -1.f, 1.f);
-    glTranslatef(0.f, 0.5f, 0.f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0.f, -0.5f, 0.f);
-    glScalef(1.f, 0.001f, 1.f);
-    glTranslatef(-0.7f, -1.f, -0.5f);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 3.5f, 0, 0.5f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 4.5f, 0, -1.5f);
-    glScalef(0.7f, 0.7f, 0.7f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 6.1f, 0, -0.5f);
-    glScalef(0.5, 0.5, 0.5);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 7.7f, 0, -2.0);
-    glScalef(0.5, 0.5, 0.5);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 8.1f, 0, -0.3f);
-    glScalef(0.5, 0.5, 0.5);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 8.6f, 0, 2.3f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.1f, 0, -2.3f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.4f, 0, 0.5);
-    glScalef(0.5, 0.5, 0.5);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(nutpos + 9.6f, 0, 1.5f);
-    glScalef(0.6f, 0.6f, 0.6f);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.8f });  //just loads the vertexes once
-    glScalef(1.0, -1.0, 1.0);
-    glTranslatef(0, 0.5, 0);
-    dNuts(t, false, true, -0.3f, { 1.f, 1.f, 1.f, 0.1f });  //just loads the vertexes once
-    glTranslatef(0, -0.5, 0);
-    glScalef(1.0, 0.001f, 1.0);
-    glTranslatef(-0.7f, -1.0, -0.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    dNuts(t, false, true, -0.3f, { 0.f, 0.f, 0.f, 0.05f });  //just loads the vertexes once
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glPopMatrix();
+    dBugs(t, true, nutpos - 1.9f, 1.3f, 0.6f, 0.9f, -0.5f, -20.f, -0.5f);
+    dBugs(t, true, nutpos, 0.3f, 0.6f, 0.8f, -0.5f, -20.f, -0.5f);
+    dBugs(t, false, nutpos + 1.6f, -1.6f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 2.6f, 2.5f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 3.5f, 0.5f, 0.6f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 4.5f, -1.5f, 0.7f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 6.1f, -0.5f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 7.7f, -2.5f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 8.1f, -0.3f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 8.6f, 2.3f, 0.6f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 9.1f, -2.3f, 0.6f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 9.4f, 0.5f, 0.5f, 0.8f, -0.7f, -1.f, -0.5f);
+    dBugs(t, false, nutpos + 9.6f, 1.5f, 0.6f, 0.8f, -0.7f, -1.f, -0.5f);
 
     glPopMatrix();
-
 }
 
 void drawCreditsBack(float t) {
@@ -1573,11 +1375,11 @@ void drawCredits(float t) {
 #define PANLANDSIZE 50
 void dPanLandscape(float t, float nstep, float len, float H) {
     float videostep = len / PANLANDSIZE;
-    float heights[PANLANDSIZE][PANLANDSIZE];
+    float heights[PANLANDSIZE + 1][PANLANDSIZE + 1];
     float center = -videostep * (PANLANDSIZE - 1) / 2.f;
-    for (int i = 0; i < PANLANDSIZE; i++) {
+    for (int i = 0; i <= PANLANDSIZE; i++) {
         float x = nstep * i;
-        for (int j = 0; j < PANLANDSIZE; j++) {
+        for (int j = 0; j <= PANLANDSIZE; j++) {
             float y = nstep * j;
             heights[i][j] = vnoise(x, y, t);
         }
@@ -1592,16 +1394,10 @@ void dPanLandscape(float t, float nstep, float len, float H) {
     for (int i = 0; i < PANLANDSIZE - 1; i += 2) {
         float x = videostep * i;
         float x1 = i * deltatex;
-        float z, z1;
         for (int j = 0; j < PANLANDSIZE - 1; j += 2) {
-            z = videostep * j;
-            z1 = j * deltatex;
-            /*
-                  glVertex3f(x, heights[i][j], z);
-                  glVertex3f(x, heights[i][j+1], z+videostep);
-                  glVertex3f(x+videostep, heights[i+1][j+1], z+videostep); // a scambiare questo e il prossimo ci si diverte!
-                  glVertex3f(x+videostep, heights[i+1][j], z);
-            */
+            float z = videostep * j;
+            float z1 = j * deltatex;
+
             glTexCoord2f(heights[i][j], x1);
             glVertex3f(x, heights[i][j] * H, z);
             glTexCoord2f(heights[i + 2][j], x1 + deltatex * 2);
@@ -1713,29 +1509,14 @@ void ScenaRewind(int orderr)
 
     //coso energetico
     if (orderr == 0) {
-        float val = 1;
-        if (tr < 1.4548f)
-            val = 7;
-        else if (tr < (1.4548f * 2))
-            val = 1;
-        else if (tr < (1.4548f * 3))
-            val = 6;
-        else if (tr < (1.4548f * 4))
-            val = 2;
-        else if (tr < (1.4548f * 5))
-            val = 8;
-        else if (tr < (1.4548f * 6))
-            val = 1;
-        else if (tr < (1.4548f * 7)) // domanda: a che (cazzo) serve ?
-            val = 7;                   // a farci belli agli occhi di dio
-        else if (tr < (1.4548f * 8)) // ...e io ti piscio in culo...
-            val = 1;
+        int pxx = std::max(0, (int)floor(tr / 1.4548f));
+        int val = (pxx < 8) ? twirlstable[pxx] : 1;
 
         glDisable(GL_FOG);
-        PrepareRenderToTexture((100.f - (sinf(mytime) * 45.f)), 256);
-        drawHelix(mytime * 300, 2.f, 3.5f, (int)val, 30, GL_FILL, { 1, 0.7f, 0, 0 }, { 1, 0.7f, 0, 0.9f });
-        drawHelix(mytime * 300, 2.f, 3.5f, (int)val, 30, GL_LINE, { 1, 0.6f, 0, 0 }, { 1, 0.6f, 0, 0.9f });
-        DoRenderToTexture(256, frame2);
+        PrepareRenderToTexture((100.f - (sinf(mytime) * 45.f)), frame2->getSize());
+        drawHelix(mytime * 300, 2.f, 3.5f, val, 30, GL_FILL, { 1, 0.7f, 0, 0 }, { 1, 0.7f, 0, 0.9f });
+        drawHelix(mytime * 300, 2.f, 3.5f, val, 30, GL_LINE, { 1, 0.6f, 0, 0 }, { 1, 0.6f, 0, 0.9f });
+        DoRenderToTexture(frame2);
         donerendertotexture = false;
 
         drawLines(mytime, 0.4f, 20);
@@ -1758,17 +1539,17 @@ void ScenaRewind(int orderr)
     if (orderr == 1) {
         //scena 13 originale
         glDisable(GL_FOG);
-        PrepareRenderToTexture(45, 256); //(100.f - (sin(mytime) * 45.f))
+        PrepareRenderToTexture(45, frame2->getSize()); //(100.f - (sin(mytime) * 45.f))
         glTranslatef(0, 0, -10);
         glRotatef(-sinf(mytime / 10) * 180.f, 1.f, 0.f, 0.f);
         glRotatef(-sinf(mytime / 10) * 45.f, 0.f, 1.f, 0.f);
         glRotatef(-sinf(mytime / 10) * 45.f, 0.f, 0.f, 1.f);
         dCylinder(0.2f, 24, 12, 5, sinf(mytime), cosf(mytime * 2) * 2, sinf(cosf(mytime)), mytime, true, { 0.9f, 0.9f, 0.9f, 0.f }, { 1.f, 1.f, 1.f, 0.7f }, 15);
-        DoRenderToTexture(256, frame2);
+        DoRenderToTexture(frame2);
         donerendertotexture = false;
 
         panViewPerspective();
-        drawTexture(tex, 1, 1, mytime, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
+        drawTexture(tex, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
 
         drawTexture(frame2, 1, 1, true, 0.5f, 12, { 1.f, 1.f, 1.f, 0.8f }, true);
         drawTexture(frame2, 1, 1, true, 0.6f, 15, { 1.f, 1.f, 1.f, 0.8f }, true);
@@ -1930,7 +1711,7 @@ void Scena(float t, int order) {
     //merdaccia per renderare nella texture i resti del toroide
     //SHIT SHIT SHIT!!! used to render once in the texture the rest of first scene torus
     if ((order == 2) && (donerendertotexture == false)) {
-        PrepareRenderToTexture((180.f - (mytime * 15.f)), 256);
+        PrepareRenderToTexture((180.f - (mytime * 15.f)), frame->getSize());
         //BEWARE oof matrices, do not use other drawing calls, or pay attention to
         //matrices they set, in this part no matrices ops should be done!!
         //attenzione alla merda che fanno le altre scene NON USARLE PER ORA!
@@ -1944,17 +1725,17 @@ void Scena(float t, int order) {
         glTranslatef(-2 * val, 0, 0);
         drawToroide(order, t + 50, mytime + 2);
         glPopMatrix();
-        DoRenderToTexture(256, frame);
+        DoRenderToTexture(frame);
     }
 
     if ((order == 7) && (donerendertotexture == false)) {
-        PrepareRenderToTexture(45, 256);
+        PrepareRenderToTexture(45, frame2->getSize());
         //BEWARE oof matrices, do not use other drawing calls, or pay attention to
         //matrices they set, in this part no matrices ops should be done!!
         //attenzione alla merda che fanno le altre scene NON USARLE PER ORA!
         //drawSfondo(order,t);
         drawTubo(order, timebase[7] - timebase[6], { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
-        DoRenderToTexture(256, frame2);
+        DoRenderToTexture(frame2);
     }
 
     if (order == 0) {
@@ -2172,18 +1953,18 @@ void Scena(float t, int order) {
     //peli
     if (order == 12) {
         glDisable(GL_FOG);
-        PrepareRenderToTexture(45, 256); //(100.f - (sin(mytime) * 45.f))
+        PrepareRenderToTexture(45, frame2->getSize()); //(100.f - (sin(mytime) * 45.f))
         glTranslatef(0, 0, -10);
         glRotatef(sinf(mytime / 10) * 180.f, 1.f, 0.f, 0.f);
         glRotatef(sinf(mytime / 10) * 45.f, 0.f, 1.f, 0.f);
         glRotatef(sinf(mytime / 10) * 45.f, 0.f, 0.f, 1.f);
         dCylinder(0.2f, 24, 12, 5, sinf(mytime), cosf(mytime * 2) * 2, sinf(cosf(mytime)), mytime, true, { 0.9f, 0.9f, 0.9f, 0.f }, { 1.0, 1.0, 1.0, 0.7f }, 15);
-        DoRenderToTexture(256, frame2);
+        DoRenderToTexture(frame2);
         donerendertotexture = false;
 
         panViewPerspective();
 
-        drawTexture(tex, 1, 1, mytime, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
+        drawTexture(tex, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
 
 
         drawTexture(frame2, 1, 1, true, 0.5f, 12, { 1.f, 1.f, 1.f, 0.8f }, true);
@@ -2210,29 +1991,14 @@ void Scena(float t, int order) {
 
     //flusso energetico lamadonna
     if (order == 13) {
-        float val = 1;
-        if (t < 1.4548f)
-            val = 7;
-        else if (t < (1.4548f * 2))
-            val = 1;
-        else if (t < (1.4548f * 3))
-            val = 6;
-        else if (t < (1.4548f * 4))
-            val = 2;
-        else if (t < (1.4548f * 5))
-            val = 8;
-        else if (t < (1.4548f * 6))
-            val = 1;
-        else if (t < (1.4548f * 7))
-            val = 7;
-        else if (t < (1.4548f * 8))
-            val = 1;
+        int pxx = std::max(0, (int)floor(t / 1.4548f));
+        int val = (pxx < 8) ? twirlstable[pxx] : 1;
 
         glDisable(GL_FOG);
-        PrepareRenderToTexture((100.f - (sinf(mytime) * 45.f)), 256);
-        drawHelix(mytime * -300, 2.f, 3.5f, (int)val, 30, GL_FILL, { 1.f, 0.7f, 0.f, 0.f }, { 1.f, 0.7f, 0.f, 0.9f });
-        drawHelix(mytime * -300, 2.f, 3.5f, (int)val, 30, GL_LINE, { 1.f, 0.6f, 0.f, 0.f }, { 1.f, 0.6f, 0.f, 0.9f });
-        DoRenderToTexture(256, frame2);
+        PrepareRenderToTexture((100.f - (sinf(mytime) * 45.f)), frame2->getSize());
+        drawHelix(mytime * -300, 2.f, 3.5f, val, 30, GL_FILL, { 1.f, 0.7f, 0.f, 0.f }, { 1.f, 0.7f, 0.f, 0.9f });
+        drawHelix(mytime * -300, 2.f, 3.5f, val, 30, GL_LINE, { 1.f, 0.6f, 0.f, 0.f }, { 1.f, 0.6f, 0.f, 0.9f });
+        DoRenderToTexture(frame2);
         donerendertotexture = false;
 
         drawLines(mytime, 0.4f, 20);
@@ -2601,8 +2367,8 @@ void skInitDemoStuff()
     gluQuadricTexture(m_glqMyQuadratic, GL_TRUE);
 
     env = perlin(3, 4, 0.6f, 0.4f, 1, true);
-    frame = perlin(8, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
-    frame2 = perlin(8, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
+    frame = perlin(10, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
+    frame2 = perlin(10, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
     //int a = frame2->getSize();
     gauss = perlin(3, 1, 0.3f, 0.7f, 2, true);
 
