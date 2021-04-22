@@ -1329,7 +1329,6 @@ void drawCredits(float t) {
     parts1.SetAngle(100.f);
     parts1.SetLife(3.f);
     parts1.SetSpeed(3.f);
-    parts1.SetSpread(8.f, 8.f, 2);
     parts1.SetPosition({ 2.f, -13.f, -30.f });
     parts1.SetVelocity({ sinf(t2) / 1.5f, fabsf(cosf(t2)), 0.f });
     parts1.SetGravity({ 0.5f, 5, 0.f });
@@ -1342,7 +1341,6 @@ void drawCredits(float t) {
     parts2.SetAngle(100.f);
     parts2.SetLife(3.f);
     parts2.SetSpeed(3.f);
-    parts2.SetSpread(8.f, 8.f, 2);
     parts2.SetPosition({ 2.f, 0.f, -30.f });
     parts2.SetVelocity({ -sinf(t2) / 1.5f, -fabsf(cosf(t2)) * 3.f, 0.f });
     parts2.SetGravity({ 0.5f, -5.f, 0.f });

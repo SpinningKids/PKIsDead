@@ -61,16 +61,6 @@ public:
         m_v3Velocity = vel;
     }
 
-    //- Descriptions: Set the particle's spread (random spread around
-    //-				  the emitter's position).  You can set the min
-    //-               max, and the answer of that is divided by the
-    //-               spread_factor.
-    void SetSpread(float min, float max, float value) {
-        m_fSpread_min = min;
-        m_fSpread_max = max;
-        m_fSpread_factor = std::max(value, 1.f);
-    }
-
     void SetSpeed(float value) {
         m_fSpeed = value;
     }
@@ -117,10 +107,6 @@ public:
     float m_fLife{};				//The system's life (in seconds)
 
     float m_fAngle{};				//System's angle (90==1/2 sphere, 180==full sphere)
-
-    float m_fSpread_min{};			//Used for random positioning around the emitter
-    float m_fSpread_max{};
-    float m_fSpread_factor{};		//Used to divide spread
 
     Vector3 gravity{};		    	//Gravity for the X, Y, and Z axis
 private:

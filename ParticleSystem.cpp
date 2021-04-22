@@ -18,8 +18,12 @@ static constexpr float degToRad(float angle) {
     return  angle * PIOVER180;
 }
 
-float randomFloat() {
+static float randomFloat() {
     return (((float)rand() - (float)rand()) / (float)RAND_MAX);
+}
+
+static float unexpectedlyRandomValue() {
+    return (rand() % 62) / 20.f + 4.f;
 }
 
 void CParticle::Create(CParticleSystem* parent, float time_counter) {
@@ -45,9 +49,9 @@ void CParticle::Create(CParticleSystem* parent, float time_counter) {
 
     //Now a simple randomization of the point that the particle
     //is emitted from.
-    m_v3Position.x += Random(parent->m_fSpread_min, parent->m_fSpread_max) / parent->m_fSpread_factor;
-    m_v3Position.y += Random(parent->m_fSpread_min, parent->m_fSpread_max) / parent->m_fSpread_factor;
-    m_v3Position.z += Random(parent->m_fSpread_min, parent->m_fSpread_max) / parent->m_fSpread_factor;
+    m_v3Position.x += unexpectedlyRandomValue();
+    m_v3Position.y += unexpectedlyRandomValue();
+    m_v3Position.z += unexpectedlyRandomValue();
 
     //Update the previous location so the next update can 
     //remember where we were

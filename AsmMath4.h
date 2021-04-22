@@ -1,8 +1,6 @@
 #ifndef ASMMATH4_H_
 #define ASMMATH4_H_
 
-#include <cstdlib>
-
 constexpr float TWOPI = 6.2831853071795f;
 constexpr float HALFPI = 1.5707963267948f;
 constexpr float PI = 3.1415926535897932384626433832795f;
@@ -92,10 +90,6 @@ inline rgb_a operator/(const rgb_a& a, const float b) {
     float ib = 1.f / b;
     return { a.r * ib, a.g * ib, a.b * ib, a.a * ib };
 }
-
-inline float Random(float min, float max) {
-    return ((rand() % ((int)(max * 10) - (int)(min + 1 * 10))) + min * 10) / 10.f;
-};
 
 //returns the colour between start and end at a "where" position (range 0,1)
 inline rgb_a GetFade(rgb_a start, rgb_a end, float where) {
