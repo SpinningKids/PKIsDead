@@ -1,6 +1,7 @@
 
 #define WIN32_LEAN_AND_MEAN
-#define WINDOW_CLASS_NAME "WINDOW_CLASS"
+
+constexpr char WINDOW_CLASS_NAME[] = "WINDOW_CLASS";
 
 /*##########################################################*/
 /* Standard includes										*/
@@ -34,7 +35,6 @@
 #endif /* SCREENSHOOTER */
 #endif
 
-#include <math.h>
 #include <string.h>
 #include "Globals.h"
 #include "GLFont.h"
@@ -61,7 +61,7 @@ constexpr int NUTSV = 16;
 constexpr int QUADV = 20;
 constexpr int QUADH = 20;
 
- GLFont *FontArial;
+GLFont *FontArial;
 CParticleSystem parts1;
 CParticleSystem parts2;
 GLUquadricObj*   m_glqMyQuadratic;
@@ -2491,76 +2491,67 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
     winclass.lpszClassName	= "WINDOW_CLASS";
 
     if (!RegisterClassEx(&winclass)) 
-    return 0;
-
-    PIXELFORMATDESCRIPTOR pfd = {
-        sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd 
-        1,                                // version number 
-        PFD_DRAW_TO_WINDOW |              // support window 
-        PFD_SUPPORT_OPENGL |              // support OpenGL 
-        PFD_DOUBLEBUFFER,
-//PFD_GENERIC_ACCELERATED,            // double buffered 
-        PFD_TYPE_RGBA,                    // RGBA type 
-        BITSPERPIXEL,                     // color depth 
-        0, 0, 0, 0, 0, 0,                 // color bits ignored 
-        1,                                // no alpha buffer 
-        0,                                // shift bit ignored 
-        0,                                // no accumulation buffer 
-        0, 0, 0, 0,                       // accum bits ignored 
-        16,                               // 32-bit z-buffer     
-        1,                                // stencil buffer 
-        0,                                // no auxiliary buffer 
-        PFD_MAIN_PLANE,                   // main layer 
-        0,                                // reserved 
-        0, 0, 0                           // layer masks ignored 
-    }; 
+        return 0;
     
-    unsigned int  iPixelFormat; 
+  unsigned int  iPixelFormat; 
 
-    RECT windowRect = {0, 0, WIDTH, HEIGHT};	// Define Our Window Coordinates
+  RECT windowRect = {0, 0, WIDTH, HEIGHT};	// Define Our Window Coordinates
   DWORD windowStyle, windowExtendedStyle;
 
-#ifdef FULLSCREEN
-  int oldwidth = GetDeviceCaps(l_hDC, HORZRES);
-  int oldheight = GetDeviceCaps(l_hDC, VERTRES);
-  int oldbpp = GetDeviceCaps(l_hDC, BITSPIXEL);
-  int oldfreq = GetDeviceCaps(l_hDC, VREFRESH);
+  DEVMODE previous_mode{};
 
-    DEVMODE dmScreenSettings;											// Device Mode
-    ZeroMemory (&dmScreenSettings, sizeof (DEVMODE));					// Make Sure Memory Is Cleared
-    dmScreenSettings.dmSize				= sizeof (DEVMODE);				// Size Of The Devmode Structure
-    dmScreenSettings.dmPelsWidth		= WIDTH;						// Select Screen Width
-    dmScreenSettings.dmPelsHeight		= HEIGHT;						// Select Screen Height
-    dmScreenSettings.dmBitsPerPel		= BITSPERPIXEL;					// Select Bits Per Pixel
-    dmScreenSettings.dmFields			= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-  if (ChangeDisplaySettings (&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL) {
-    MessageBox(0, "FullScreen mode not available", WINDOWTITLE, MB_OK);
-    windowStyle = WS_OVERLAPPEDWINDOW;
-    windowExtendedStyle = WS_EX_APPWINDOW;
-    AdjustWindowRectEx (&windowRect, windowStyle, 0, windowExtendedStyle);
-  } else {
-    ShowCursor(false);
-    windowStyle = WS_POPUP;
-    windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+  bool fullscreen = false;
+
+  if constexpr (FULLSCREEN) {
+      previous_mode.dmSize = sizeof(previous_mode);
+      previous_mode.dmBitsPerPel = GetDeviceCaps(l_hDC, BITSPIXEL);
+      previous_mode.dmPelsWidth = GetDeviceCaps(l_hDC, HORZRES);
+      previous_mode.dmPelsHeight = GetDeviceCaps(l_hDC, VERTRES);
+      previous_mode.dmDisplayFrequency = GetDeviceCaps(l_hDC, VREFRESH);
+      previous_mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+
+      int num = 0;
+      int selected_num = -1;
+      DEVMODE dmScreenSettings;
+      size_t selected_bits = 0;
+      while (EnumDisplaySettings(nullptr, num, &dmScreenSettings)) {
+          size_t current_bits = dmScreenSettings.dmBitsPerPel * dmScreenSettings.dmPelsHeight * dmScreenSettings.dmPelsWidth;
+          if (selected_bits < current_bits) {
+              WIDTH = dmScreenSettings.dmPelsWidth;
+              HEIGHT = dmScreenSettings.dmPelsHeight;
+              BITSPERPIXEL = dmScreenSettings.dmBitsPerPel;
+              selected_num = num;
+}
+          ++num;
+        }
+
+      EnumDisplaySettings(nullptr, selected_num, &dmScreenSettings);
+      fullscreen = ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL;
+      if (fullscreen) {
+          ShowCursor(false);
+          windowStyle = WS_POPUP;
+          windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+      }
+    }
+  if (!fullscreen) {
+      windowStyle = WS_OVERLAPPEDWINDOW;
+      windowExtendedStyle = WS_EX_APPWINDOW;
+      RECT windowRect = { 0, 0, WIDTH, HEIGHT };
+      AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
   }
-#else
-    windowStyle = WS_OVERLAPPEDWINDOW;
-    windowExtendedStyle = WS_EX_APPWINDOW;
-  AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
-#endif
-    if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
+  if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
                                    WINDOW_CLASS_NAME,	// Class Name
                                    WINDOWTITLE,					// Window Title
                                    windowStyle,							// Window Style
                                    0, 0,								// Window X,Y Position
-                                   windowRect.right - windowRect.left,	// Window Width
-                                   windowRect.bottom - windowRect.top,	// Window Height
+                                   WIDTH,	// Window Width
+                                   HEIGHT,	// Window Height
                                    HWND_DESKTOP,						// Desktop Is Window's Parent
                                    nullptr,									// No Menu
                                    hInstance, // Pass The Window Instance
         nullptr)) {
     hDC = GetDC (hWND);
-
+    PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, PFD_TYPE_RGBA, BITSPERPIXEL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 16, 1, 0, PFD_MAIN_PLANE, 0, 0, 0, 0 }; // but his is even longer....
     iPixelFormat = ChoosePixelFormat(hDC, &pfd);
 
 
@@ -2657,17 +2648,10 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,i
 #endif /* WIN32 */
 
 #ifdef WIN32
-#ifdef FULLSCREEN
-  static DEVMODE mode;
-  mode.dmSize=sizeof(mode);
-  mode.dmBitsPerPel=oldbpp;
-  mode.dmPelsWidth=oldwidth;
-  mode.dmPelsHeight=oldheight;
-  mode.dmDisplayFrequency = oldfreq;
-  mode.dmFields = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
-  ChangeDisplaySettings(&mode, 0);
-    ShowCursor(true);
-#endif
+    if (fullscreen) {
+        ChangeDisplaySettings(&previous_mode, 0);
+        ShowCursor(true);
+    }
 #endif /* WIN32 */
 
 //  if (!isMusicEnabled) 
