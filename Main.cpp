@@ -65,7 +65,6 @@ GLFont *FontArial;
 CParticleSystem parts1;
 CParticleSystem parts2;
 GLUquadricObj*   m_glqMyQuadratic;
-float mytime;
 bool donerendertotexture = false;
 bool isMusicEnabled = true;
 
@@ -85,12 +84,10 @@ int qind = 0;
 GLTexture* env; //genric envy
 GLTexture* frame; //used by render to texture
 GLTexture* frame2; //used by render to texture
-GLTexture* gauss;  //DOVREBBE essere un gauss
 GLTexture* toro;
 GLTexture* cubo;
 GLTexture *texture1;
 GLTexture *texture2;
-GLTexture* mytek;
 GLTexture* tex;
 GLTexture* tex2;
 GLTexture* scritte;
@@ -98,10 +95,7 @@ GLTexture* scritte;
 GLuint logo;
 
 //solo per provare...
-Vector3 poscubo{};
-Vector3 posnut{};
-Vector3 sizecubo{ 0.6f,0.6f,0.4f };
-float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f}; // 121 fu 119.240};
+constexpr float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f}; // 121 fu 119.240};
 
 constexpr int twirlstable[]{ 7, 1, 6, 2, 8, 1, 7, 1 };
 
@@ -111,10 +105,7 @@ constexpr int twirlstable[]{ 7, 1, 6, 2, 8, 1, 7, 1 };
 
 
 #ifdef WIN32
-HWND		hWND;
-HDC			hDC;
-HGLRC		hRC;
-HINSTANCE	hInstance;
+HDC hDC;
 #endif /* WIN32 */
 
 /*##########################################################*/
@@ -152,10 +143,7 @@ struct MEMFILE {
 };
 
 unsigned int memopen(char *name) {
-    MEMFILE *memfile;
-
-    memfile = new MEMFILE;
-
+    MEMFILE *memfile = new MEMFILE;
 #ifdef WIN32
     {	// hey look some load from resource code!
 
@@ -1370,8 +1358,8 @@ void drawCredits(float t) {
 
 }
 
-#define PANLANDSIZE 50
 void dPanLandscape(float t, float nstep, float len, float H) {
+    constexpr int PANLANDSIZE = 50;
     float videostep = len / PANLANDSIZE;
     float heights[PANLANDSIZE + 1][PANLANDSIZE + 1];
     float center = -videostep * (PANLANDSIZE - 1) / 2.f;
@@ -1695,9 +1683,8 @@ void ScenaRewind(int orderr)
     }
 }
 
-void Scena(float t, int order) {
-
-    mytime = panGetTime();
+void Scena(float mytime, int order) {
+    float t = mytime - timebase[order];
     if (!isMusicEnabled)
         skTimerFrame();
 
@@ -1835,8 +1822,7 @@ void Scena(float t, int order) {
         drawSfondo({ sinf(t) * 90.f, 0, sinf(t * 2) * 45.f }, { 0.5f, 0.5f, 1.f, 1.f });
         panViewPerspectiveFOV(45);
         drawTubo(order, t, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5f, 0.25f, 0.0625f, 0.5f });
-        if (donerendertotexture)
-            donerendertotexture = false;
+        donerendertotexture = false;
 
         glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
         glEnable(GL_BLEND);
@@ -2191,7 +2177,7 @@ int done;
 
 void skDraw() {
     static int maxscene = (sizeof(timebase) / sizeof(float));
-    float t = panGetTime();
+    const float t = panGetTime();
 
     //  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
@@ -2253,7 +2239,7 @@ void skDraw() {
             drawLines(curtime, 0.1f, 100);
             //    return;
         } else {
-            Scena(t - timebase[scene], scene);
+            Scena(t, scene);
         }
     } else {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -2368,13 +2354,11 @@ void skInitDemoStuff()
     frame = perlin(10, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
     frame2 = perlin(10, 1, 0.3f, 0.7f, 2, true); // ma cristodundio! I parametri no a caso! - modificato in 8
     //int a = frame2->getSize();
-    gauss = perlin(3, 1, 0.3f, 0.7f, 2, true);
 
     toro = perlin(4, 5, 0.4f, 0.5f, 1.5, true);
     cubo = perlin(5, 16, 0.2f, 0.3f, 2.2f, true);
     texture1 = perlin(8, 3000, 0.3f, 0.5, 1.8f, false);
     texture2 = perlin(8, 300, 0.1f, 0.97f, 3, false);
-    mytek = perlin(4, 16, 0.4f, 0.5f, 3, true);
     tex = perlin(3, 1, 0.4f, 0.5f, 2, true);
     tex2 = perlin(8, 132, 0.3f, 0.7f, 2, true);
     scritte = perlin(7, 100, 0.6f, 0.5f, 1.3f, true);// usare per le scritte
@@ -2410,51 +2394,51 @@ int flag_d_value = 0;
 int main(int argc, char *argv[]) {
     int c;
 
-    while ((c = getopt (argc, argv, "?PKwd:")) != -1)
-        switch (c)
-        {
-    case 'P':
-        flag_hidden = 1;
-        break;
-    case 'K':
-        if (flag_hidden) flag_hidden = 2;
-        break;
-    case 'w':
-        flag_w = 1;
-        break;
-    case 'd':
-        {
-        char *tail;
-        if (optarg != nullptr) flag_d_value = strtol(optarg,&tail,0);
-        if (optarg == nullptr || tail == optarg || *tail != '\0') {
-            fprintf(stderr, "Invalid display depth (bits per pixel)\n");
-            exit(1);
+    while ((c = getopt(argc, argv, "?PKwd:")) != -1) {
+        switch (c) {
+            case 'P':
+                flag_hidden = 1;
+                break;
+            case 'K':
+                if (flag_hidden) flag_hidden = 2;
+                break;
+            case 'w':
+                flag_w = 1;
+                break;
+            case 'd':
+                {
+                    char* tail;
+                    if (optarg != nullptr) flag_d_value = strtol(optarg, &tail, 0);
+                    if (optarg == nullptr || tail == optarg || *tail != '\0') {
+                        fprintf(stderr, "Invalid display depth (bits per pixel)\n");
+                        exit(1);
+                    }
+                }
+                break;
+            case '?':
+            default:
+                fprintf(stderr,
+                    "\nPK is dead\n"
+                    "  -w        force windowed mode\n"
+                    "  -d bpp    set display depth (defaults to let SDL decide)\n\n");
+                exit(0);
+                break;
         }
-        }
-        break;
-    case '?':
-    default:
-        fprintf (stderr,
-             "\nPK is dead\n"
-             "  -w        force windowed mode\n"
-             "  -d bpp    set display depth (defaults to let SDL decide)\n\n");
-        exit(0);
-        break;
-        }
+    }
 
     if (flag_hidden != 2) flag_hidden = 0;
     if (flag_hidden) hiddenpart = true; else hiddenpart = false;
     
 
     if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-    fprintf(stderr, "Couldn't init SDL: %s\n", SDL_GetError());
-    exit(1);
+        fprintf(stderr, "Couldn't init SDL: %s\n", SDL_GetError());
+        exit(1);
     }
 
-    if ( SDL_SetVideoMode(WIDTH, HEIGHT, flag_d_value, SDL_OPENGL | (!flag_w * SDL_FULLSCREEN)) == nullptr) {
-    fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
-    SDL_Quit();
-    exit(2);
+    if (SDL_SetVideoMode(WIDTH, HEIGHT, flag_d_value, SDL_OPENGL | (!flag_w * SDL_FULLSCREEN)) == nullptr) {
+        fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
+        SDL_Quit();
+        exit(2);
     }
 
     SDL_WM_SetCaption("PK is dead", nullptr);
@@ -2464,208 +2448,189 @@ int main(int argc, char *argv[]) {
 #endif /* __LINUX__ */
 
 #ifdef WIN32
-int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,int ncmdshow) {
+int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow) {
+    hiddenpart = (strcmp(lpcmdline, "/PK") == 0);
 
-  WNDCLASSEX		winclass;
-  HDC				l_hDC;
+    HDC l_hDC = GetDC(GetDesktopWindow());
 
-  if (strcmp(lpcmdline,"/PK") == 0)
-    hiddenpart = true;
-  else
-    hiddenpart = false;
+    WNDCLASSEX winclass{
+        sizeof(WNDCLASSEX),
+        CS_HREDRAW | CS_VREDRAW | CS_OWNDC, //CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+        (WNDPROC)(skWinProc),
+        0,
+        0,
+        hinstance,
+        LoadIcon(nullptr, IDI_APPLICATION),
+        LoadCursor(nullptr, IDC_ARROW),
+        (HBRUSH)(COLOR_APPWORKSPACE),
+        nullptr,
+        "WINDOW_CLASS",
+        LoadIcon(nullptr, IDI_APPLICATION)
+    };
 
-    hInstance = hinstance;
-    l_hDC=GetDC(GetDesktopWindow());
-  
-    winclass.cbSize			= sizeof(WNDCLASSEX);
-    winclass.style			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC; //CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-    winclass.lpfnWndProc	= (WNDPROC)(skWinProc);
-    winclass.cbClsExtra		= 0;
-    winclass.cbWndExtra		= 0;
-    winclass.hInstance		= hinstance;
-    winclass.hIcon			= LoadIcon(nullptr, IDI_APPLICATION);
-    winclass.hIconSm		= LoadIcon(nullptr, IDI_APPLICATION);
-    winclass.hCursor		= LoadCursor(nullptr, IDC_ARROW);
-    winclass.hbrBackground	= (HBRUSH)(COLOR_APPWORKSPACE);
-    winclass.lpszMenuName	= nullptr;
-    winclass.lpszClassName	= "WINDOW_CLASS";
-
-    if (!RegisterClassEx(&winclass)) 
+    if (!RegisterClassEx(&winclass))
         return 0;
-    
-  unsigned int  iPixelFormat; 
 
-  RECT windowRect = {0, 0, WIDTH, HEIGHT};	// Define Our Window Coordinates
-  DWORD windowStyle, windowExtendedStyle;
+    unsigned int iPixelFormat;
 
-  DEVMODE previous_mode{};
+    RECT windowRect = { 0, 0, WIDTH, HEIGHT };	// Define Our Window Coordinates
+    DWORD windowStyle, windowExtendedStyle;
 
-  bool fullscreen = false;
+    DEVMODE previous_mode{};
 
-  if constexpr (FULLSCREEN) {
-      previous_mode.dmSize = sizeof(previous_mode);
-      previous_mode.dmBitsPerPel = GetDeviceCaps(l_hDC, BITSPIXEL);
-      previous_mode.dmPelsWidth = GetDeviceCaps(l_hDC, HORZRES);
-      previous_mode.dmPelsHeight = GetDeviceCaps(l_hDC, VERTRES);
-      previous_mode.dmDisplayFrequency = GetDeviceCaps(l_hDC, VREFRESH);
-      previous_mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+    bool fullscreen = false;
 
-      int num = 0;
-      int selected_num = -1;
-      DEVMODE dmScreenSettings;
-      size_t selected_bits = 0;
-      while (EnumDisplaySettings(nullptr, num, &dmScreenSettings)) {
-          size_t current_bits = dmScreenSettings.dmBitsPerPel * dmScreenSettings.dmPelsHeight * dmScreenSettings.dmPelsWidth;
-          if (selected_bits < current_bits) {
-              WIDTH = dmScreenSettings.dmPelsWidth;
-              HEIGHT = dmScreenSettings.dmPelsHeight;
-              BITSPERPIXEL = dmScreenSettings.dmBitsPerPel;
-              selected_num = num;
-}
-          ++num;
+    if constexpr (FULLSCREEN) {
+        previous_mode.dmSize = sizeof(previous_mode);
+        previous_mode.dmBitsPerPel = GetDeviceCaps(l_hDC, BITSPIXEL);
+        previous_mode.dmPelsWidth = GetDeviceCaps(l_hDC, HORZRES);
+        previous_mode.dmPelsHeight = GetDeviceCaps(l_hDC, VERTRES);
+        previous_mode.dmDisplayFrequency = GetDeviceCaps(l_hDC, VREFRESH);
+        previous_mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+
+        int num = 0;
+        int selected_num = -1;
+        DEVMODE dmScreenSettings;
+        size_t selected_bits = 0;
+        while (EnumDisplaySettings(nullptr, num, &dmScreenSettings)) {
+            size_t current_bits = dmScreenSettings.dmBitsPerPel * dmScreenSettings.dmPelsHeight * dmScreenSettings.dmPelsWidth;
+            if (selected_bits < current_bits) {
+                WIDTH = dmScreenSettings.dmPelsWidth;
+                HEIGHT = dmScreenSettings.dmPelsHeight;
+                BITSPERPIXEL = dmScreenSettings.dmBitsPerPel;
+                selected_num = num;
+            }
+            ++num;
         }
 
-      EnumDisplaySettings(nullptr, selected_num, &dmScreenSettings);
-      fullscreen = ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL;
-      if (fullscreen) {
-          ShowCursor(false);
-          windowStyle = WS_POPUP;
-          windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
-      }
+        EnumDisplaySettings(nullptr, selected_num, &dmScreenSettings);
+        fullscreen = ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL;
+        if (fullscreen) {
+            ShowCursor(false);
+            windowStyle = WS_POPUP;
+            windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+        }
     }
-  if (!fullscreen) {
-      windowStyle = WS_OVERLAPPEDWINDOW;
-      windowExtendedStyle = WS_EX_APPWINDOW;
-      RECT windowRect = { 0, 0, WIDTH, HEIGHT };
-      AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
-  }
-  if (hWND = CreateWindowEx (windowExtendedStyle,					// Extended Style
-                                   WINDOW_CLASS_NAME,	// Class Name
-                                   WINDOWTITLE,					// Window Title
-                                   windowStyle,							// Window Style
-                                   0, 0,								// Window X,Y Position
-                                   WIDTH,	// Window Width
-                                   HEIGHT,	// Window Height
-                                   HWND_DESKTOP,						// Desktop Is Window's Parent
-                                   nullptr,									// No Menu
-                                   hInstance, // Pass The Window Instance
-        nullptr)) {
-    hDC = GetDC (hWND);
-    PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, PFD_TYPE_RGBA, BITSPERPIXEL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 16, 1, 0, PFD_MAIN_PLANE, 0, 0, 0, 0 }; // but his is even longer....
-    iPixelFormat = ChoosePixelFormat(hDC, &pfd);
+    if (!fullscreen) {
+        windowStyle = WS_OVERLAPPEDWINDOW;
+        windowExtendedStyle = WS_EX_APPWINDOW;
+        RECT windowRect = { 0, 0, WIDTH, HEIGHT };
+        AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
+    }
+    HWND hWND = CreateWindowEx(windowExtendedStyle, WINDOW_CLASS_NAME, WINDOWTITLE, windowStyle, 0, 0, WIDTH, HEIGHT, HWND_DESKTOP, nullptr, hinstance, nullptr);
+    if (hWND) {
+        hDC = GetDC(hWND);
+        PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, PFD_TYPE_RGBA, BITSPERPIXEL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 16, 1, 0, PFD_MAIN_PLANE, 0, 0, 0, 0 }; // but his is even longer....
+        iPixelFormat = ChoosePixelFormat(hDC, &pfd);
 
 
-    // make that match the device context's current pixel format 
-    SetPixelFormat(hDC, iPixelFormat, &pfd); 
-    
-    // if we can create a rendering context ...  
-    if (hRC = wglCreateContext(hDC)) { 
-        // try to make it the thread's current rendering context 
-        wglMakeCurrent(hDC, hRC); 
-    } 
+        // make that match the device context's current pixel format 
+        SetPixelFormat(hDC, iPixelFormat, &pfd);
 
-    ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
+        // if we can create a rendering context ...
+        HGLRC hRC = wglCreateContext(hDC);
+        if (hRC) {
+            // try to make it the thread's current rendering context 
+            wglMakeCurrent(hDC, hRC);
+        }
+
+        ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
 #endif /* WIN32 */
 
-    FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
-    if (!FSOUND_Init(44100, 0)) 
-    {
-      //why quit if no audio available ??  (rIO)
-      //PostQuitMessage(0); 
-      isMusicEnabled = false;
-    }
-    if (isMusicEnabled)
-    {
-#ifdef WIN32
-        fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
-#else
-        fmodule = FMUSIC_LoadSong("cippa", nullptr);
-#endif
-    }
-
-    if (!fmodule) 
-    {
-      //why quit if no audio available ??  (rIO)
-      //PostQuitMessage(0); //g_isMusicEnabled = false;
-      isMusicEnabled = false;
-    }
-
-
-    skInitDemoStuff();
-    if (isMusicEnabled)
-      FMUSIC_PlaySong(fmodule);  
-    skInitTimer();
-
-#ifdef WIN32
-    while (true) {
-        MSG msg;
-        if (PeekMessage(&msg, nullptr,0,0,PM_REMOVE)) {
-            if (msg.message == WM_QUIT) 
-          break;
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        } else
-            skDraw();
-    }
-#else
-    while ( ! done ) {
-    skDraw();
+        FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
+        if (!FSOUND_Init(44100, 0))
         {
+            //why quit if no audio available ??  (rIO)
+            //PostQuitMessage(0); 
+            isMusicEnabled = false;
+        }
+        if (isMusicEnabled)
+        {
+#ifdef WIN32
+            fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
+#else
+            fmodule = FMUSIC_LoadSong("cippa", nullptr);
+#endif
+        }
+
+        if (!fmodule)
+        {
+            //why quit if no audio available ??  (rIO)
+            //PostQuitMessage(0); //g_isMusicEnabled = false;
+            isMusicEnabled = false;
+        }
+
+
+        skInitDemoStuff();
+        if (isMusicEnabled)
+            FMUSIC_PlaySong(fmodule);
+        skInitTimer();
+
+#ifdef WIN32
+        while (true) {
+            MSG msg;
+            if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                if (msg.message == WM_QUIT)
+                    break;
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            } else {
+                skDraw();
+            }
+        }
+#else
+        while (!done) {
+            skDraw();
             SDL_Event event;
-            while ( SDL_PollEvent(&event) ) {
-                if ( event.type == SDL_QUIT ) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) {
                     done = 1;
                 }
-                if ( event.type == SDL_KEYDOWN ) {
-                    if ( event.key.keysym.sym == SDLK_ESCAPE ||
-             event.key.keysym.sym == SDLK_SPACE  ||
-             event.key.keysym.sym == 65          ||
-             event.key.keysym.sym == 9) { // strange things happen...
+                if (event.type == SDL_KEYDOWN) {
+                    if (event.key.keysym.sym == SDLK_ESCAPE ||
+                        event.key.keysym.sym == SDLK_SPACE ||
+                        event.key.keysym.sym == 65 ||
+                        event.key.keysym.sym == 9) { // strange things happen...
                         done = 1;
                     }
 #ifdef SCREENSHOOTER
-            if ( event.key.keysym.sym == SDLK_s ||
-             event.key.keysym.sym == 39) {
-            system("screenshooter.sh 0x1c0000e"); // this is utterly lame :(
-            }
+                    if (event.key.keysym.sym == SDLK_s ||
+                        event.key.keysym.sym == 39) {
+                        system("screenshooter.sh 0x1c0000e"); // this is utterly lame :(
+                    }
 #endif /* SCREENSHOOTER */
                 }
             }
         }
-    }
 #endif
 
-    if (isMusicEnabled)
-    {
-      FMUSIC_FreeSong(fmodule);
-      FSOUND_Close();
+        if (isMusicEnabled) {
+            FMUSIC_FreeSong(fmodule);
+            FSOUND_Close();
+        }
+
+#ifdef WIN32
+    } else {
+        MessageBox(GetDesktopWindow(), "Can't create window", "SKerror", MB_OK);
     }
-
-#ifdef WIN32
-  } 
-  else
-    MessageBox(GetDesktopWindow(), "Can't create window", "SKerror", MB_OK);
-#endif /* WIN32 */
-
-#ifdef WIN32
     if (fullscreen) {
         ChangeDisplaySettings(&previous_mode, 0);
         ShowCursor(true);
     }
 #endif /* WIN32 */
 
-//  if (!isMusicEnabled) 
-//    MessageBox(GetDesktopWindow(), "Sound Device not found", "SKerror", MB_OK);
+    //  if (!isMusicEnabled) 
+    //    MessageBox(GetDesktopWindow(), "Sound Device not found", "SKerror", MB_OK);
 
 
-  skUnloadDemoStuff();
+    skUnloadDemoStuff();
 
 #ifdef WIN32
     ExitProcess(0);
 #else
     SDL_Quit();
 #endif
-  return 0;
+    return 0;
 }
 
 

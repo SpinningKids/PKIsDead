@@ -9,7 +9,6 @@
 #endif
 #include <gl/GL.h>
 #include <gl/GLU.h>
-#include "AsmMath4.h"
 #include "Globals.h"
 
 void panViewOrtho() {
@@ -75,7 +74,7 @@ float skGetTime() {
 #ifdef WIN32
     return timer_time;
 #else
-    return static_cast<float>(SDL_GetTicks() - (double)timer_start) / 1000.f;;
+    return static_cast<float>(SDL_GetTicks() - (float)timer_start) / 1000.f;;
 #endif
 }
 
