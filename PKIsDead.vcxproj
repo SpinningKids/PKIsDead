@@ -141,7 +141,7 @@
     <CustomBuild Include="Resources\Dxn_2.xm" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resources\Script1.rc">
+    <ResourceCompile Include="resources\resource.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">resources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">resources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>

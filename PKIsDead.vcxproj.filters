@@ -120,16 +120,18 @@
     <ClInclude Include="AsmMath4.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resources\Script1.rc">
+    <ResourceCompile Include="resources\resource.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\SK.ICO" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Resources\Dxn_2.xm">
       <Filter>Resources</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\SK.ICO">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
 </Project>
