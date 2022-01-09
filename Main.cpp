@@ -104,7 +104,7 @@ void PrepareRenderToTexture(float FOV,int size) {
 
 void DoRenderToTexture(GLTexture* tex) {
     glFlush();
-    glBindTexture(GL_TEXTURE_2D, tex->getID());
+    tex->use();
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, tex->getSize(), tex->getSize(), 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, WIDTH, HEIGHT);
@@ -118,7 +118,7 @@ Vector3 EvalNut(float t, float a, float b) {
    float a2s = a2 * sinf(2 * t);
    float c1 = b2 * b2 - a2s * a2s;
    float c2 = sqrtf(a2 * cosf(2 * t) + (c1 <= 0 ? 0 : sqrtf(c1)));
-   
+
    return{ cosf(t) * c2 - ((a > b) ? a : 0), sinf(t) * c2, 0.0 };
 }
 
@@ -173,7 +173,7 @@ void dCube(const Vector3 &size) {
 //Params:
 //value : distance from oval centers
 //recalc : recalc the vertex arrays (to be done one time per frame)
-//flatten : if enabled flatten the ovals UNDER the fval 
+//flatten : if enabled flatten the ovals UNDER the fval
 //fval : if flatten is enabled the ovals are flatten under this value
 //
 void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_a col) {
@@ -200,7 +200,7 @@ void dNuts(float value, bool recalc, bool flattenonfloor, float flattenval, rgb_
 
                 // faccia dell'ovale
                 Vector3 p0 = EvalNut(t1, a, b);
-                Vector3 n0 = (p0 - EvalNut(t1 + 0.1f / NUTSH, a, b)) ^ zperp; //normale 
+                Vector3 n0 = (p0 - EvalNut(t1 + 0.1f / NUTSH, a, b)) ^ zperp; //normale
 
                 Vector3 p1 = EvalNut(t2, a, b);
                 Vector3 n1 = (EvalNut(t2 - 0.1f / NUTSH, a, b) - p1) ^ zperp; //normale
@@ -380,7 +380,7 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
 
         glEnd();
 
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
         glEnable(GL_BLEND);
         glDisable(GL_LIGHTING);
         glBegin(GL_LINES);
@@ -411,8 +411,10 @@ void dCylinder(float r, int segsh, int segsv, float length, float wobble, float 
 }
 
 uv_coord TwirlTexCoords(int x, int y, float value) {
-    float r = sqrtf((x - QUADV / 2) * (x - QUADV / 2) + (y - QUADH / 2) * (y - QUADH / 2));
-    float a = atan2f((x - QUADV / 2), (y - QUADH / 2));
+    float xf = (x - QUADV / 2);
+    float yf = (y - QUADH / 2);
+    float r = sqrtf(xf * xf + yf * yf);
+    float a = atan2f(xf, yf);
     float r2 = r + 5 * (1 + sinf(value * 3));
     float a2 = value + a + 0.5f * sinf(r / 8 + value * 1.5f) + 0.55f * cosf(r / 4 + value * 1.9f);
     float tx = 0.75f * r2 * sinf(a2) / QUADV;
@@ -505,7 +507,7 @@ void drawHelix(float angle, float inr, float outr, int twirls, int angstep, GLen
     glEnable(GL_BLEND);
     glDisable(GL_TEXTURE_GEN_S);
     glDisable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glCullFace(GL_BACK);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -563,7 +565,7 @@ void drawTexture(GLTexture* tex, float sx, float sy, bool calc, float value, flo
     glScalef(sx, sy, 1);
     glColor4f(color.r, color.g, color.b, color.a);
 
-    //the calc mess is just used to speed up quadwavedtexture rendering...    
+    //the calc mess is just used to speed up quadwavedtexture rendering...
     //if calc=true then it laods the array, else just draws the array
     if (calc) {
         qind = 0;
@@ -644,7 +646,7 @@ void drawNuts(float t) {
     panViewPerspective();
 
     glColor4f(1.f, 1.f, 1.f, 0.8f);
-    //set a amtrix to render them slighty rotated and 
+    //set a amtrix to render them slighty rotated and
     //translated going far away (IMHO looks good)
     glTranslatef(-2.2f, -0.3f, 0.f); // pan modifica - se sta sempre dentro lo schermo fa da cagare...
     glRotatef(-30, 0, 1, 0);
@@ -740,7 +742,6 @@ void drawToroide(int order, float t, float mytime) {
 
     glDepthMask(GL_TRUE);
     glEnable(GL_BLEND);
-    //glDisable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_TEXTURE_GEN_S);
@@ -784,11 +785,10 @@ void drawToroide(int order, float t, float mytime) {
 void drawWissEffect(const Vector3& pos, const Vector3& rot, const rgb_a& pcolor, const rgb_a& vcolor, bool base) {
     float fogColor[4] = { 0, 0, 0, 0 };
 
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glDisable(GL_CULL_FACE);
     glDisable(GL_TEXTURE_GEN_S);
     glDisable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
 
@@ -802,7 +802,7 @@ void drawWissEffect(const Vector3& pos, const Vector3& rot, const rgb_a& pcolor,
     glEnable(GL_FOG);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    panViewPerspectiveFOV(45);
+    panViewPerspective(45);
 
     glPushMatrix();
     glLoadIdentity();
@@ -847,7 +847,7 @@ void drawSfondo(const Vector3& rot, const rgb_a& col) {
     glPushMatrix();
     glLoadIdentity();
 
-    panViewPerspectiveFOV(168);
+    panViewPerspective(168);
 
     glScalef(2, 2, 2);
     glDisable(GL_TEXTURE_GEN_S);
@@ -858,7 +858,7 @@ void drawSfondo(const Vector3& rot, const rgb_a& col) {
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
-    glBindTexture(GL_TEXTURE_2D, cubo->getID());
+    cubo->use();
     glTranslatef(0, 0, 0);
     glRotatef(rot.x, 1, 0, 0);
     glRotatef(rot.y, 0, 1, 0);
@@ -868,7 +868,7 @@ void drawSfondo(const Vector3& rot, const rgb_a& col) {
     glDepthMask(GL_TRUE);
     glPopMatrix();
 
-    panViewPerspectiveFOV(45);
+    panViewPerspective(45);
 }
 
 
@@ -876,10 +876,10 @@ void drawSfondo(const Vector3& rot, const rgb_a& col) {
 // bcol : colour used for the border side
 // ccolor : colour used for the central side
 // size : size of borders
-void drawBorder(rgb_a bcol, rgb_a ccol, float size) {
+void drawBorder(rgb_a bcol, rgb_a ccol, int size) {
     glPushMatrix();
     panViewOrtho();
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
     glDisable(GL_LIGHTING);
@@ -888,20 +888,20 @@ void drawBorder(rgb_a bcol, rgb_a ccol, float size) {
     glEnable(GL_BLEND);
     glBegin(GL_QUADS);
     glColor4f(bcol.r, bcol.g, bcol.b, bcol.a);
-    glVertex3f(0, HEIGHT, -1);
-    glVertex3f(WIDTH, HEIGHT, -1);
+    glVertex3i(0, HEIGHT, -1);
+    glVertex3i(WIDTH, HEIGHT, -1);
 
     glColor4f(ccol.r, ccol.g, ccol.b, ccol.a);
-    glVertex3f(WIDTH, HEIGHT - size, -1);
-    glVertex3f(0, HEIGHT - size, -1);
+    glVertex3i(WIDTH, HEIGHT - size, -1);
+    glVertex3i(0, HEIGHT - size, -1);
 
     glColor4f(ccol.r, ccol.g, ccol.b, ccol.a);
-    glVertex3f(0, size, -1);
-    glVertex3f(WIDTH, size, -1);
+    glVertex3i(0, size, -1);
+    glVertex3i(WIDTH, size, -1);
 
     glColor4f(bcol.r, bcol.g, bcol.b, bcol.a);
-    glVertex3f(WIDTH, 0, -1);
-    glVertex3f(0, 0, -1);
+    glVertex3i(WIDTH, 0, -1);
+    glVertex3i(0, 0, -1);
     glEnd();
     glPopMatrix();
 }
@@ -1040,7 +1040,7 @@ void drawLines(float t, float alpha, int n) {
     glDepthMask(GL_FALSE);
     glPushMatrix();
     panViewPerspective();
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glBegin(GL_LINES);
@@ -1078,7 +1078,7 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
 
     float fogColor[4] = { 0.3f, 0.2f, 0.1f, 0.f };
 
-    panViewPerspectiveFOV(45.f);
+    panViewPerspective(45.f);
     gluLookAt((double)eye.x, (double)eye.y, (double)eye.z, 0, 0, -1, 0, 1, 0);
     // fog stuff
     glFogi(GL_FOG_MODE, GL_LINEAR);
@@ -1095,11 +1095,10 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
     glRotatef(rot.z, 0, 0, 1);
 
     glEnable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glEnable(GL_COLOR_MATERIAL);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
-    glDisable(GL_TEXTURE_2D);
 
     glPushMatrix();
     glColor4fv((float*)&barcolor);
@@ -1150,10 +1149,10 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
 }
 
 void drawCreditsBack(float t) {
-    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(20.f * WIDTH / 640, 20.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(30.f * WIDTH / 640, 30.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(40.f * WIDTH / 640, 40.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(20.f * WIDTH / 640, 20.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(30.f * WIDTH / 640, 30.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(40.f * WIDTH / 640, 40.f * HEIGHT / 480));
+    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
 }
 
 void drawCredits(float t) {
@@ -1191,9 +1190,8 @@ void drawCredits(float t) {
     glEnable(GL_BLEND);
     glLoadIdentity();
     glRotatef(sinf(t) * 45, 0, 0, 1);
-    panViewPerspectiveFOV(45.f);
+    panViewPerspective(45.f);
 
-    glEnable(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_GEN_S);
     glDisable(GL_TEXTURE_GEN_T);
     glDisable(GL_CULL_FACE);
@@ -1294,7 +1292,7 @@ void dPanLandscape(float t, float nstep, float len, float H) {
     glEnd();
     glColor4f(1, 1, 1, 0.2f);
 
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glBegin(GL_LINES);
     for (int i = 0; i < PANLANDSIZE - 1; i++) {
         float x = videostep * i;
@@ -1324,10 +1322,10 @@ void drawPanLandscape(float t) {
     float len = 50;
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
+    GLTexture::disable();
     glFogi(GL_FOG_MODE, GL_LINEAR);
     glFogfv(GL_FOG_COLOR, fogColor);
-    //	glFogf(GL_FOG_DENSITY, 0.01f ); 
+    //	glFogf(GL_FOG_DENSITY, 0.01f );
     glFogf(GL_FOG_START, len / 8);//len/4);
     glFogf(GL_FOG_END, len / 4);
     glEnable(GL_FOG);
@@ -1350,7 +1348,7 @@ void drawPanOverWiss(float t) {
     int stock2 = (int)floorf(t1 * 8);
     float randa[10];
     float t2 = HALFPI * t1;
-    static const float wei[10] = { 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.0 }; // da vicino nessuno e' normale! 
+    static const float wei[10] = { 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.0 }; // da vicino nessuno e' normale!
     for (int i = 0; i < 10; i++) {
         randa[i] = wei[i] * vlattice(stock2, i) + (1 - wei[i]) * vlattice(stock1, i + 50);
     }
@@ -1374,9 +1372,9 @@ void ScenaRewind(int orderr)
     tr = (skGetTime() - timebase[15] - (1.4548f * orderr)) / 1.4548f * durata;
     float tr2 = (orderr + 1) * 1.4548f * speed - mytime;
 
-    CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 0.5 * WIDTH, 400 * HEIGHT / 480, (50 - 15 * (1 - 1.f / (1.1f + sinf(tr * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
+    CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 0.5f * WIDTH, 0.8333333f * HEIGHT, (50 - 15 * (1 - 1.f / (1.1f + sinf(tr * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
 
-    panViewPerspectiveFOV(45);
+    panViewPerspective(45);
     drawLines(tr, 0.5, 30);
     glDisable(GL_FOG);
 
@@ -1462,17 +1460,17 @@ void ScenaRewind(int orderr)
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_2D);
+            GLTexture::disable();
         } else {
             float t2 = HALFPI * t1;
             drawWissEffect({ 0.f, 0.f, -18.f + (stock2 - 52.f) }, { tr * 30.f, sinf(t2) * 30.f, 0.f }, { 1.f, 1.f, 1.f, 0.8f }, { 0.3f, 0.2f, 0.1f, fabsf(sinf(t2 * 5)) / 4.f }, true);
             glColor4f(1, 0.9f, 0.8f, (stock2 - 52.f) * 0.125f);
             panViewOrtho();
             glBegin(GL_QUADS);
-            glVertex2f(0, 0);
-            glVertex2f(WIDTH, 0);
-            glVertex2f(WIDTH, HEIGHT);
-            glVertex2f(0, HEIGHT);
+            glVertex2i(0, 0);
+            glVertex2i(WIDTH, 0);
+            glVertex2i(WIDTH, HEIGHT);
+            glVertex2i(0, HEIGHT);
             glEnd();
         }
     }
@@ -1484,29 +1482,15 @@ void ScenaRewind(int orderr)
     //fade
     if (orderr == 6) {
         glDisable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_GEN_S);
-        glEnable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_TEXTURE_GEN_S);
-        glDisable(GL_TEXTURE_GEN_T);
-
         glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
         glEnable(GL_BLEND);
         panViewOrtho();
-        scritte->use();
-        glEnable(GL_TEXTURE_GEN_S);
-        glEnable(GL_TEXTURE_GEN_T);
-        glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        glColor3f(1, 1, 1);
-        glDisable(GL_TEXTURE_GEN_S);
-        glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
 
     //tubo peloso
     if (orderr == 7) {
-        panViewPerspectiveFOV(45);
+        panViewPerspective(45);
         drawTubo(6, tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
     }
 
@@ -1520,7 +1504,7 @@ void ScenaRewind(int orderr)
 
     //tubo peloso
     if (orderr == 9) {
-        panViewPerspectiveFOV(45);
+        panViewPerspective(45);
         drawTubo(10, tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
     }
 
@@ -1543,7 +1527,7 @@ void ScenaRewind(int orderr)
     if (orderr == 12) {
         drawSfondo({ sinf(tr) * 90.f, 0.f, sinf(tr * 2.f) * 45.f }, { 0.5, 0.5, 1.0, 1 });
         glDisable(GL_CULL_FACE);
-        panViewPerspectiveFOV(190.f - ((tr / durata) * 70.f));
+        panViewPerspective(190.f - ((tr / durata) * 70.f));
         drawToroide(orderr, tr, mytime);
         float val = sinf(mytime) * 2.5f;
         glPushMatrix();
@@ -1558,7 +1542,7 @@ void ScenaRewind(int orderr)
     if (orderr >= 13) {
         drawSfondo({ sinf(tr) * 90.f, 0.f, sinf(tr * 2.f) * 45.f }, { 0.5, 0.5, 1.0, 1 });
         glDisable(GL_CULL_FACE);
-        panViewPerspectiveFOV(110.f - ((tr / durata) * 70.f));
+        panViewPerspective(110.f - ((tr / durata) * 70.f));
         drawToroide(orderr, tr, mytime);
         float val = sinf(mytime) * 2.5f;
         glPushMatrix();
@@ -1586,7 +1570,7 @@ void Scena(float mytime, int order) {
         //matrices they set, in this part no matrices ops should be done!!
         //attenzione alla merda che fanno le altre scene NON USARLE PER ORA!
         //drawSfondo(order,t);
-    //      panViewPerspectiveFOV(180.f - (skGetTime() * 15.f));
+    //      panViewPerspective(180.f - (skGetTime() * 15.f));
         drawToroide(order, t, mytime);
         float val = sinf(mytime) * 2.5f;
         glPushMatrix();
@@ -1613,12 +1597,12 @@ void Scena(float mytime, int order) {
     }
 
     if (order == 1) {
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
         drawBlend({ 1.f, 1.f, 1.f, 1.f - (t / 2) }, 0, 0, WIDTH, HEIGHT, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, nullptr);
     }
 
-    if (order < 4) { //(order == 0) && 
-        panViewPerspectiveFOV(180.f - (skGetTime() * 15.f));
+    if (order < 4) { //(order == 0) &&
+        panViewPerspective(180.f - (skGetTime() * 15.f));
         drawToroide(order, t, mytime);
         float val = sinf(mytime) * 2.5f;
         glPushMatrix();
@@ -1639,19 +1623,19 @@ void Scena(float mytime, int order) {
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            CoolPrint1(*FontArial, 50, t, 0.f, 1.5f, 8.f, 10.f, 0.375*WIDTH, 0.21875*HEIGHT, 0.09375*WIDTH, 0.6f, -0.2f, "reality is that which");
-            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 8.f, 10.f, 0.625*WIDTH, 0.78125*HEIGHT, 0.09375*WIDTH, 0.6f, -0.2f, "doesn't go away");
-            CoolPrint1(*FontArial, 50, 10 - t, -1.f, 1.f, 5.f, 7.f, 0.5*WIDTH, 0.5*HEIGHT, 0.06250*WIDTH, 0.6f, 0.2f, "when you stop believing in it");
+            CoolPrint1(*FontArial, 50, t, 0.f, 1.5f, 8.f, 10.f, 0.375f*WIDTH, 0.21875f*HEIGHT, 0.09375f*WIDTH, 0.6f, -0.2f, "reality is that which");
+            CoolPrint1(*FontArial, 50, t, 1.5f, 3.f, 8.f, 10.f, 0.625f*WIDTH, 0.78125f*HEIGHT, 0.09375f*WIDTH, 0.6f, -0.2f, "doesn't go away");
+            CoolPrint1(*FontArial, 50, 10 - t, -1.f, 1.f, 5.f, 7.f, 0.5f*WIDTH, 0.5f*HEIGHT, 0.06250f*WIDTH, 0.6f, 0.2f, "when you stop believing in it");
             //        CoolPrint1(*FontArial, 50,    t, 6.f, 8.f, 9.f, 10.f, 480, 400, 60, 0.6f, -0.2f, "Philip K. Dick");
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_2D);
+            GLTexture::disable();
         }
     }
 
 
     if (order == 2) { // && ((0.4f - (mytime / 100.f)) > 0))
-        panViewPerspectiveFOV(180.f - (mytime * 15.f));
+        panViewPerspective(180.f - (mytime * 15.f));
         drawToroide(order, t, mytime);
         drawTexture(frame, 1.f, 1.f, true, t, 80, { 1.f, 1.f, 1.f, fabsf(sinf(t * 1.3f)) }, true);
         drawTexture(frame, 1.1f, 1.f, false, t, 80, { 1.f, 1.f, 1.f, fabsf(sinf(t * 1.2f)) }, true);
@@ -1672,7 +1656,7 @@ void Scena(float mytime, int order) {
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
         drawLines(t, 0.3f, 10);
     }
 
@@ -1699,13 +1683,13 @@ void Scena(float mytime, int order) {
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
         drawLines(t, 0.3f, 10);
     }
 
     if ((order == 4) || (order == 6)) {
         drawSfondo({ sinf(t) * 90.f, 0, sinf(t * 2) * 45.f }, { 0.5f, 0.5f, 1.f, 1.f });
-        panViewPerspectiveFOV(45);
+        panViewPerspective(45);
         drawTubo(order, t, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5f, 0.25f, 0.0625f, 0.5f });
         donerendertotexture = false;
 
@@ -1727,12 +1711,12 @@ void Scena(float mytime, int order) {
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
 
     if (order == 7) {
         if ((t * 1.6f) < 1.f) {
-            panViewPerspectiveFOV(45);
+            panViewPerspective(45);
             drawTubo(order, mytime, { 0.9f, 0.9f, 0.9f, 0.1f - (t * 2) }, { 0.5f - (t * 2), 0.25f - (t * 2), 0.0625f - (t * 2), 0.5f - (t * 4) });
 
             drawBlend({ 1.f, 1.f, 1.f, 1.f - (t * 2.f) }, 0, (int)-(t * 150.6f), WIDTH, (int)(HEIGHT + (t * 150.6f)), GL_SRC_ALPHA, GL_ONE, frame2);
@@ -1742,12 +1726,6 @@ void Scena(float mytime, int order) {
     }
 
     if (order == 8) {
-        glEnable(GL_TEXTURE_GEN_S);
-        glEnable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_TEXTURE_GEN_S);
-        glDisable(GL_TEXTURE_GEN_T);
-
         glColor4f(1.f, 1.f, 1.f, 0.6f);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         glEnable(GL_BLEND);
@@ -1762,7 +1740,7 @@ void Scena(float mytime, int order) {
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
 
     if (order == 9) {
@@ -1782,17 +1760,17 @@ void Scena(float mytime, int order) {
             CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.5f, 6.5f, 0.5 * WIDTH, 400 * HEIGHT / 480, (50 - 15 * (1 - 1.f / (1.1f + sinf(t * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_2D);
+            GLTexture::disable();
         } else {
             float t2 = HALFPI * t1;
             drawWissEffect({ 0.f, 0.f, -18.f + (stock2 - 52.f) }, { t * 30.f, sinf(t2) * 30.f, 0.f }, { 1.f, 1.f, 1.f, 0.8f }, { 0.3f, 0.2f, 0.1f, fabsf(sinf(t2 * 5)) / 4.f }, true);
             glColor4f(1, 0.9f, 0.8f, (stock2 - 52) * 0.125f);
             panViewOrtho();
             glBegin(GL_QUADS);
-            glVertex2f(0, 0);
-            glVertex2f(WIDTH, 0);
-            glVertex2f(WIDTH, HEIGHT);
-            glVertex2f(0, HEIGHT);
+            glVertex2i(0, 0);
+            glVertex2i(WIDTH, 0);
+            glVertex2i(WIDTH, HEIGHT);
+            glVertex2i(0, HEIGHT);
             glEnd();
         }
 
@@ -1811,12 +1789,12 @@ void Scena(float mytime, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 1.0f, 2.f,  5.8f,   7.f, WIDTH / 2, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look around");
-        CoolPrint1(*FontArial, 50, t, 5.8f, 7.f, 10.6f, 11.6f, WIDTH / 2, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look inside");
+        CoolPrint1(*FontArial, 50, t, 1.0f, 2.f,  5.8f,   7.f, 0.5f * WIDTH, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look around");
+        CoolPrint1(*FontArial, 50, t, 5.8f, 7.f, 10.6f, 11.6f, 0.5f * WIDTH, 80 * HEIGHT / 480, (100 + 25 * sinf(t)) * WIDTH / 640, 0.7f, -0.25f * sinf(t), "look inside");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
 
     //peli
@@ -1890,13 +1868,13 @@ void Scena(float mytime, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.6f, 5.8f, 0.5 * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your  d r e a m s ");
-        CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 0.5 * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your nightmares");
-        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 0.5 * WIDTH, 300 * HEIGHT / 480, 120 * WIDTH / 640, 1.f, -0.25f * sinf(t), "REAL?");
+        CoolPrint1(*FontArial, 50, t, 0, 1.f, 5.6f, 5.8f, 0.5f * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your  d r e a m s ");
+        CoolPrint1(*FontArial, 50, t, 5.7f, 5.9f, 11.4f, 11.6f, 0.5f * WIDTH, 100 * HEIGHT / 480, (50 + 5 * sinf(t)) * WIDTH / 640, 0.5f, 0, "to make your nightmares");
+        CoolPrint1(*FontArial, 50, t, 1.f, 2.f, 11.4f, 11.6f, 0.5f * WIDTH, 300 * HEIGHT / 480, 120 * WIDTH / 640, 1.f, -0.25f * sinf(t), "REAL?");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
 
     }
 
@@ -1930,11 +1908,11 @@ void Scena(float mytime, int order) {
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-        CoolPrint1(*FontArial, 50, t, 0, 1, 10.5f, 11.5f, 370 * WIDTH / 640, 120 * HEIGHT / 480, 70 * WIDTH / 640, 0.7f, 0, "Join us!");
+        CoolPrint1(*FontArial, 50, t, 0, 1, 10.5f, 11.5f, 370 * WIDTH / 640, 0.25f * HEIGHT, 70 * WIDTH / 640, 0.7f, 0, "Join us!");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
 
         drawLines(t, 0.3f, 20);
     }
@@ -1966,11 +1944,11 @@ void Scena(float mytime, int order) {
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
 
 
-    //################### PaN stuff 
+    //################### PaN stuff
 
     if ((order == 9) || (order == 10) || (order == 15) || (order == 12) || (order == 13)) {
         //flash
@@ -1981,18 +1959,18 @@ void Scena(float mytime, int order) {
         if ((order != 15) || (rsync <= 13)) {
             glClearColor(0, 0, 0, 0.5);
             texture2->use();
-            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
-            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
-            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -0.15625f * WIDTH, -0.15625f * HEIGHT, 1.15625f * WIDTH, 1.15625f * HEIGHT, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.8f, 4.5f, 4.5f, 1.33f * e }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.8f, 4.5f, 1.33f * e }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+            drawBlendBis(rsync, 1, { 4.5f, 4.5f, 4.8f, 1.33f * e }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
         }
         if (order == 9) { // solo sui wisscosi!
             if (sync > 13) { // total in sync 14.4, in time 10.471
                 glColor4f(0, 0, 0, (t - 12.5f) / 1.9f); // 10.471
                 glBegin(GL_QUADS);
-                glVertex2f(0, 0);
-                glVertex2f(WIDTH, 0);
-                glVertex2f(WIDTH, HEIGHT);
-                glVertex2f(0, HEIGHT);
+                glVertex2i(0, 0);
+                glVertex2i(WIDTH, 0);
+                glVertex2i(WIDTH, HEIGHT);
+                glVertex2i(0, HEIGHT);
                 glEnd();
             }
         }
@@ -2010,14 +1988,14 @@ void Scena(float mytime, int order) {
         glEnable(GL_TEXTURE_GEN_T);
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        CoolPrint1(*FontArial, 50, t, -0.06f, 0.f, 5.6f, 5.8f, 270 * WIDTH / 640, 120 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "P");
-        CoolPrint1(*FontArial, 50, t, 0.20f, 0.26f, 5.6f, 5.8f, 370 * WIDTH / 640, 120 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "K");
-        CoolPrint1(*FontArial, 50, t, 0.47f, 0.53f, 11.4f, 11.6f, 0.5 * WIDTH, 240 * HEIGHT / 480, 120 * WIDTH / 640, 0.7f, 0, "IS");
-        CoolPrint1(*FontArial, 50, t, 0.73f, 0.79f, 11.4f, 11.6f, 0.5 * WIDTH, 360 * HEIGHT / 480, (120 + 40 * sinf((t - 0.73f) * 3)) * WIDTH / 640, 0.7f, 0, "DEAD");
+        CoolPrint1(*FontArial, 50, t, -0.06f, 0.f, 5.6f, 5.8f, 270 * WIDTH / 640, 0.25f * HEIGHT, 120 * WIDTH / 640, 0.7f, 0, "P");
+        CoolPrint1(*FontArial, 50, t, 0.20f, 0.26f, 5.6f, 5.8f, 370 * WIDTH / 640, 0.25f * HEIGHT, 120 * WIDTH / 640, 0.7f, 0, "K");
+        CoolPrint1(*FontArial, 50, t, 0.47f, 0.53f, 11.4f, 11.6f, 0.5f * WIDTH, 0.5f * HEIGHT, 120 * WIDTH / 640, 0.7f, 0, "IS");
+        CoolPrint1(*FontArial, 50, t, 0.73f, 0.79f, 11.4f, 11.6f, 0.5f * WIDTH, 0.75f * HEIGHT, (120 + 40 * sinf((t - 0.73f) * 3)) * WIDTH / 640, 0.7f, 0, "DEAD");
         glColor3f(1, 1, 1);
         glDisable(GL_TEXTURE_GEN_S);
         glDisable(GL_TEXTURE_GEN_T);
-        glDisable(GL_TEXTURE_2D);
+        GLTexture::disable();
     }
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);//_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -2025,7 +2003,7 @@ void Scena(float mytime, int order) {
     panViewPerspective();
 
     //leave it for last (rIO)
-    drawBorder({ 0.f, 0.f, 0.f, 1.f }, { 0.f, 0.f, 0.f, 0.f }, 80);
+    drawBorder({ 0.f, 0.f, 0.f, 1.f }, { 0.f, 0.f, 0.f, 0.f }, 80 * WIDTH / 640);
 
     glDepthMask(GL_TRUE);
 }
@@ -2073,15 +2051,15 @@ void skDraw() {
             glEnable(GL_TEXTURE_GEN_T);
             glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
             glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-            CoolPrint1(*FontArial,  50, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH,  50 * HEIGHT / 480, 50 * WIDTH / 640, 0.6f, 0.1f, "MekkaSymposium 2002");
-            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 300 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "this spurious reality hasn't been manufactured by");
-            CoolPrint1(*FontArial,  30, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 325 * HEIGHT / 480, 30 * WIDTH / 640, 0.8f, 0.1f, "Runciter Associates");
-            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 350 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "and in any case not in collaboration with");
-            CoolPrint1(*FontArial, 100, curtime, 0.f, 1.f, 6.f, 7.f, 0.5 * WIDTH, 385 * HEIGHT / 480, 80 * WIDTH / 640, 0.8f, 0.1f, "SpinningKids");
+            CoolPrint1(*FontArial,  50, curtime, 0.f, 1.f, 6.f, 7.f, 0.5f * WIDTH,  50 * HEIGHT / 480, 50 * WIDTH / 640, 0.6f, 0.1f, "MekkaSymposium 2002");
+            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5f * WIDTH, 300 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "this spurious reality hasn't been manufactured by");
+            CoolPrint1(*FontArial,  30, curtime, 0.f, 1.f, 6.f, 7.f, 0.5f * WIDTH, 325 * HEIGHT / 480, 30 * WIDTH / 640, 0.8f, 0.1f, "Runciter Associates");
+            CoolPrint1(*FontArial,  10, curtime, 0.f, 1.f, 6.f, 7.f, 0.5f * WIDTH, 350 * HEIGHT / 480, 20 * WIDTH / 640, 0.8f, 0.f, "and in any case not in collaboration with");
+            CoolPrint1(*FontArial, 100, curtime, 0.f, 1.f, 6.f, 7.f, 0.5f * WIDTH, 385 * HEIGHT / 480, 80 * WIDTH / 640, 0.8f, 0.1f, "SpinningKids");
             glColor3f(1, 1, 1);
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
-            glDisable(GL_TEXTURE_2D);
+            GLTexture::disable();
             drawLines(curtime, 0.1f, 100);
             //    return;
         } else {
@@ -2173,7 +2151,7 @@ void skInitDemoStuff()
 
     //inizializzo i valori di defautl del particle system
     //e le relative textures
-        
+
     //inizializzo lo sfondo
     m_glqMyQuadratic = gluNewQuadric();
     gluQuadricNormals(m_glqMyQuadratic, GLU_SMOOTH);
