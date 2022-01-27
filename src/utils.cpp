@@ -13,14 +13,9 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include <GL/glx.h>
-#endif
-
-#if !defined(WIN32)
 #include "glf.h"
-#include "linuxresources/arial_black.h"
-//#include "linuxresources/arial1.h"
-#include "linuxresources/Dxn_2.h"
-#include "linuxinclude/minifmod.h"
+#include "linux/arial_black.h"
+#include "linux/Dxn_2.h"
 #endif
 #include "Globals.h"
 #include "minifmod/minifmod.h"
@@ -290,7 +285,6 @@ GLFont* skLoadFont(const char* fontname) {
     glfInit();
     glfSetMemoryLoad();
     static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE(arial_black_glf);
-    //static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE(arial1_glf);
     return new GLFont(&glf_memfile);
 #endif
 }

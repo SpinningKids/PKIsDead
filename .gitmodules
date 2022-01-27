@@ -1,4 +1,4 @@
-[submodule "minifmod"]
-	path = minifmod
+[submodule "extern/minifmod"]
+	path = extern/minifmod
 	url = https://github.com/spinningkids/minifmod
-	branch = origin/minifmod++
+	branch = minifmod++

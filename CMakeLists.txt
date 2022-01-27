@@ -13,13 +13,13 @@ project (${TARGET_NAME})
 #endif()
 
 # Include sub-projects.
-add_subdirectory ("minifmod/libs/minifmod")
+add_subdirectory ("extern")
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
 set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 
-set(RES_DIR ${CMAKE_CURRENT_LIST_DIR}/res)
+set(RES_DIR ${CMAKE_CURRENT_LIST_DIR}/resources)
 
 set(PRIVATE_HEADER_FILES
   ${SRC_DIR}/asmmath2.h
