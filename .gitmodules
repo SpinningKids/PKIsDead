@@ -1,4 +1,4 @@
 [submodule "minifmod"]
 	path = minifmod
 	url = https://github.com/spinningkids/minifmod
-	branch = minifmod++
+	branch = origin/minifmod++

@@ -191,17 +191,11 @@ static float      timer_lastup;
 static float      timer_fps;
 
 /* Timing Functions */
-extern "C" {
-    HWAVEOUT FSOUND_WaveOutHandle;
-}
 
 static float skTimerFrame() {
     if (isMusicEnabled)
     {
-        MMTIME mmtime;
-        mmtime.wType = TIME_MS;
-        waveOutGetPosition(FSOUND_WaveOutHandle, &mmtime, sizeof(mmtime));
-        timer_time = FMUSIC_GetTime() / 1000.0f;
+        timer_time = FSOUND_TimeFromSamples();
     } else {
 #ifdef WIN32
         __int64 a;
@@ -493,10 +487,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
 
         ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
         FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
-        //if (FSOUND_Init(SAMPLERATE, 0)) {
+        if (FSOUND_Init(SAMPLERATE, 0)) {
             fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
             isMusicEnabled = (fmodule != nullptr);
-        //}
+        }
 
         skInitDemoStuff();
         if (isMusicEnabled) {
