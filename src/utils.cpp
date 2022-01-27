@@ -199,10 +199,9 @@ static float skTimerFrame() {
     if (isMusicEnabled)
     {
         MMTIME mmtime;
-        mmtime.wType = TIME_SAMPLES;
+        mmtime.wType = TIME_MS;
         waveOutGetPosition(FSOUND_WaveOutHandle, &mmtime, sizeof(mmtime));
-        //timer_time = mmtime.u.ticks / (float)SAMPLERATE;
-        timer_time = mmtime.u.ms / 1000.0f;
+        timer_time = FMUSIC_GetTime() / 1000.0f;
     } else {
 #ifdef WIN32
         __int64 a;
