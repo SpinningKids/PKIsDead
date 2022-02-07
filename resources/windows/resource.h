@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by Script1.rc
+// Used by resource.rc
 //
 #define IDI_SPINNINGKID                 101
 #define IDR_RC_MUSIC                    102

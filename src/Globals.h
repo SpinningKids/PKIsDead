@@ -1,7 +1,7 @@
 
 inline int WIDTH = 640;
 inline int HEIGHT = 480;
-inline unsigned char BITSPERPIXEL = 32;
+inline int BITSPERPIXEL = 32;
 constexpr char WINDOW_TITLE[] = "PK Is Dead";
 constexpr int SAMPLERATE = 96000;
 
