@@ -60,8 +60,9 @@ float vnoise(const float(&x)[N]) {
     table_type ix[N];
     float fx[N];
     for (size_t i = 0; i < N; i++) {
-        ix[i] = (table_type)floorf(x[i]);
-        fx[i] = x[i] - ix[i];
+        float fl = floorf(x[i]);
+        ix[i] = (table_type)fl;
+        fx[i] = x[i] - fl;
     }
     return details::vnoise2(N, 0, ix, fx);
 }
