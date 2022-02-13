@@ -1162,10 +1162,17 @@ void drawCredits(float t) {
 
     drawCreditsBack(t);
 
-    //scritte->use();
-    glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
     glDisable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
+
+    glDisable(GL_CULL_FACE);
+    scritte->use();
+    glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
     CoolPrint1(*FontArial, 20, sync, 0.f,  1.f,  3.f,  4.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 230.f * WIDTH / 640, 0.6f, 0.2f, "rio");
     CoolPrint1(*FontArial, 20, sync, 3.f,  4.f,  6.f,  7.f, 0.34375f * WIDTH, (sync * 30 + 45) * HEIGHT / 480, 200.f * WIDTH / 640, 0.6f, 0.f, "pan");
