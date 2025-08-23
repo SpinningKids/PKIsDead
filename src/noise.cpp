@@ -8,6 +8,7 @@
 
 #include "noise.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cmath>
 
@@ -32,7 +33,7 @@ namespace {
     bool valueTabInit(int seed) {
         pan_srandom(seed);
         for (size_t i = 0; i < details::tableSize; i++) {
-            details::permutation_table[i] = i;
+            details::permutation_table[i] = static_cast<unsigned short>(i);
         }
         for (size_t i = 0; i < 16 * details::tableSize; i++) {
             const table_type i1 = pan_random() & details::tableMask;

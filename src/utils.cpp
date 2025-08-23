@@ -243,7 +243,7 @@ unique_ptr<GLTexture> skLoadTexture(int resid, int logsize) {
     static HDC displaydc = CreateDC("DISPLAY", nullptr, nullptr, nullptr);
     auto ret = make_unique<GLTexture>(logsize);
     int txsize = ret->getSize();
-    HBITMAP h = (HBITMAP)LoadImage(g_hinstance, (const char*)resid, IMAGE_BITMAP, txsize, txsize, LR_CREATEDIBSECTION);
+    HBITMAP h = (HBITMAP)LoadImage(g_hinstance, MAKEINTRESOURCE(resid), IMAGE_BITMAP, txsize, txsize, LR_CREATEDIBSECTION);
     DIBSECTION ds;
     GetObject(h, sizeof(ds), &ds);
     BITMAPINFOHEADER a = {
@@ -444,7 +444,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
             if (size_t current_bits = dmScreenSettings.dmBitsPerPel * dmScreenSettings.dmPelsHeight * dmScreenSettings.dmPelsWidth; selected_bits < current_bits) {
                 WIDTH = dmScreenSettings.dmPelsWidth;
                 HEIGHT = dmScreenSettings.dmPelsHeight;
-                BITSPERPIXEL = dmScreenSettings.dmBitsPerPel;
+                BITSPERPIXEL = (BYTE)dmScreenSettings.dmBitsPerPel;
                 selected_bits = current_bits;
                 selected_num = num;
             }
@@ -467,7 +467,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
     }
     if (HWND hWND = CreateWindowEx(windowExtendedStyle, WINDOW_CLASS_NAME, WINDOW_TITLE, windowStyle, 0, 0, WIDTH, HEIGHT, HWND_DESKTOP, nullptr, hinstance, nullptr)) {
         hDC = GetDC(hWND);
-        PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, PFD_TYPE_RGBA, BITSPERPIXEL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 16, 1, 0, PFD_MAIN_PLANE, 0, 0, 0, 0 }; // but his is even longer....
+        PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1,  PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,  PFD_TYPE_RGBA, BITSPERPIXEL,  0,  0,  0,  0,  0, 0, 1, 0, 0, 0, 0, 0, 0, 16, 1, 0, PFD_MAIN_PLANE, 0, 0, 0, 0 }; // but his is even longer....
         unsigned int iPixelFormat = ChoosePixelFormat(hDC, &pfd);
 
         // make that match the device context's current pixel format

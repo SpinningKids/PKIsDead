@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <cmath>
 
 using table_type = uint16_t;
 
