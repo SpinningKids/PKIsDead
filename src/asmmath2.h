@@ -2,6 +2,7 @@
 #ifndef ASMMATH2_H_
 #define ASMMATH2_H_
 
+#include <cmath>
 #include <memory>
 
 struct Vector3 {
@@ -142,11 +143,11 @@ struct Vector3 {
         return sqrtf(LengthSquare());
     }
 
-    constexpr void Normalize() {
+    void Normalize() {
         *this /= Length();
     }
 
-    constexpr Vector3 Normalized() const {
+    Vector3 Normalized() const {
         return (*this) / Length();
     }
 

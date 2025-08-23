@@ -10,7 +10,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #endif /* WIN32 */
-#include <gl/GL.h>
+#include <GL/gl.h>
 #include <cassert>
 #include "asmmath2.h"
 
@@ -28,7 +28,7 @@ static Vector3		g_pos;
 
 // subd = 40, radius = 2
 int initSphereObject(int subd, float radius) {
-    int i = 0, j = 0, offset = 0;
+    int offset = 0;
 
     assert(subd);
 

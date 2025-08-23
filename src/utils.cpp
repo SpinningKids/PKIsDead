@@ -6,12 +6,12 @@
 #include <Windows.h>
 #include <mmsystem.h>
 #include "windows/resource.h"
-#include <gl/GL.h>
-#include <gl/GLU.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
-#include "SDL.h"
-#include <gl/GL.h>
-#include <gl/GLU.h>
+#include <SDL/SDL.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glx.h>
 #include "glf.h"
 #include "linux/arial_black.h"
@@ -59,9 +59,9 @@ void* memopen(const char* name) {
     return nullptr;
 #else
     MEMFILE* memfile = new MEMFILE{
-        sizeof(dixiesmod),
+        (int)sizeof(dixiesmod),
         0,
-        dixiesmod,
+        (void*)dixiesmod,
     };
     return memfile;
 #endif
@@ -237,54 +237,13 @@ void skStopMusic() {
     }
 }
 
-// textureload
-
-unique_ptr<GLTexture> skLoadTexture(int resid, int logsize) {
-    static HDC displaydc = CreateDC("DISPLAY", nullptr, nullptr, nullptr);
-    auto ret = make_unique<GLTexture>(logsize);
-    int txsize = ret->getSize();
-    HBITMAP h = (HBITMAP)LoadImage(g_hinstance, MAKEINTRESOURCE(resid), IMAGE_BITMAP, txsize, txsize, LR_CREATEDIBSECTION);
-    DIBSECTION ds;
-    GetObject(h, sizeof(ds), &ds);
-    BITMAPINFOHEADER a = {
-        sizeof(BITMAPINFOHEADER),
-        txsize,
-        -txsize,
-        1,
-        32,
-        BI_RGB,
-        (DWORD)(4 * txsize * txsize),
-        0,
-        0,
-        0,
-        0
-    };
-    unsigned char* texture = new unsigned char[a.biSizeImage];
-    GetDIBits(displaydc, h, 0, txsize, texture, (BITMAPINFO*)&a, DIB_RGB_COLORS);
-    GLfloat* tex = ret->getImage();
-    const float un255 = 1.0f / 255.0f;
-    int topsize = txsize * 3 / 4;
-    for (int i = 0; i < txsize * topsize; i++) {
-        tex[i * 4] = tex[i * 4 + 1] = tex[i * 4 + 2] = texture[i * 4] * un255;
-        tex[i * 4 + 3] = 1.0f;
-    }
-    for (int i = txsize * topsize; i < txsize * txsize; i++) {
-        tex[i * 4] = tex[i * 4 + 1] = tex[i * 4 + 2] = 1.0f;
-        tex[i * 4 + 3] = 1.0f - texture[i * 4] * un255;
-    }
-    ret->update();
-    delete[] texture;
-    DeleteObject(h);
-    return ret;
-}
-
 GLFont* skLoadFont(const char* fontname) {
 #ifdef WIN32
     return new GLFont(hDC, fontname);
 #else
     glfInit();
     glfSetMemoryLoad();
-    static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE(arial_black_glf);
+    static GLF_MEMFILE glf_memfile = GLF_INIT_MEMFILE((void*)arial_black_glf);
     return new GLFont(&glf_memfile);
 #endif
 }
@@ -394,12 +353,12 @@ int main(int argc, char* argv[]) {
     }
     if (isMusicEnabled) {
         FMUSIC_FreeSong(fmodule);
-        FSOUND_Close();
+        //FSOUND_Close();
     }
     SDL_Quit();
 }
 #else
-int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow) {
+int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpcmdline, int /* ncmdshow */) {
     hiddenpart = (strcmp(lpcmdline, "/PK") == 0) || (_stricmp(lpcmdline, "/g") == 0);
     g_hinstance = hinstance;
     HDC l_hDC = GetDC(GetDesktopWindow());
@@ -422,7 +381,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
     if (!RegisterClassEx(&winclass)) {
         return 0;
     }
-    DWORD windowStyle, windowExtendedStyle;
+    DWORD windowStyle{ WS_OVERLAPPEDWINDOW }, windowExtendedStyle{ WS_EX_APPWINDOW };
 
     DEVMODE previous_mode{};
 
@@ -456,12 +415,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
         if (fullscreen) {
             ShowCursor(false);
             windowStyle = WS_POPUP;
-            windowExtendedStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+            windowExtendedStyle |= WS_EX_TOPMOST;
         }
     }
     if (!fullscreen) {
-        windowStyle = WS_OVERLAPPEDWINDOW;
-        windowExtendedStyle = WS_EX_APPWINDOW;
         RECT windowRect = { 0, 0, WIDTH, HEIGHT };
         AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
     }
@@ -519,7 +476,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
     skUnloadDemoStuff();
 
     ExitProcess(0);
-    return 0;
+//    return 0;
 }
 #endif
 

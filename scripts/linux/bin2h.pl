@@ -14,7 +14,7 @@ open OUTF, '>' . ($ARGV[1] || (($ARGV[0] !~ /\.h/i ? ($ARGV[0] =~ s/\..*?$//, sh
 
 binmode INF;
 
-print OUTF "static unsigned char sumsymbol[] = {";
+print OUTF "constexpr unsigned char sumsymbol[] = {";
 while ($n = read(INF, $string, BYTES)) {
         die "error while reading infile\n" if $n == undef;
         print OUTF ($notfirst++ ? ',' : ''), "\n\t", join(',', map { sprintf "0x%02X", $_ } unpack("C*", $string));

@@ -10,8 +10,10 @@
 
 #include "AsmMath4.h"
 
-#include <stdio.h>
 #include <algorithm>
+#include <cmath>
+#include <cstdarg>
+#include <cstdio>
 
 void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd, float en, float x, float y, float gs, float ratio, float tracking, const char* fmt, ...) {
     if (t < st - 0.5f) return;
@@ -29,13 +31,11 @@ void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd
         return;
     va_start(ap, fmt);
 #ifdef WIN32
-    vsprintf_s(text, fmt, ap);
+    int l = vsprintf_s(text, fmt, ap);
 #else
-    vsnprintf(text, fmt, ap);
+    int l = vsnprintf(text, 256, fmt, ap);
 #endif
     va_end(ap);
-
-    size_t l = strlen(text);
 
     float don = 0.5f * on / l;
     float doff = 0.5f * (en - fd) / l;
@@ -62,7 +62,7 @@ void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd
         glScalef(gs, -gs, 1);
         float t1 = t + don;
         float t2 = t - fd + doff;
-        for (unsigned int j = 0; j < l; j++) {
+        for (int j = 0; j < l; j++) {
             float tim;
             t1 -= don;
             t2 -= doff;

@@ -37,11 +37,8 @@ GLFont::GLFont(HDC hDC, const char* s) {
     DeleteObject(font);
 }
 #else
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <GL/glx.h>
+#include <cstdlib>
+#include <cstdio>
 #include "glf.h"
 
 GLFont::GLFont(GLF_MEMFILE* font) {

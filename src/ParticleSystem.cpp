@@ -8,7 +8,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #endif /* WIN32 */
-#include <gl/GL.h>
+#include <GL/gl.h>
 
 #include "AsmMath4.h"
 #include <algorithm>

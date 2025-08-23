@@ -12,11 +12,10 @@
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
-#include <gl/GL.h>
 #else
-#include <gl/GL.h>
 #include "glf.h"
 #endif
+#include <GL/gl.h>
 
 class GLFont {
     GLYPHMETRICSFLOAT gmf[96];

@@ -10,18 +10,11 @@ constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
-#include <gl/GL.h>
-#include <gl/GLU.h>
-
-#include "AsmMath4.h"
-#else
-#include <stdlib.h>
+#endif
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <unistd.h>
-#endif
 
-#include <string.h>
+#include "AsmMath4.h"
 #include "Globals.h"
 #include "GLFont.h"
 #include "GLTexture.h"
@@ -71,7 +64,7 @@ GLTexture* toro;
 GLTexture* cubo;
 GLTexture *texture1;
 GLTexture *texture2;
-GLTexture* tex;
+GLTexture* tex1;
 GLTexture* tex2;
 GLTexture* scritte;
 
@@ -433,8 +426,7 @@ uv_coord TwirlTexCoords(int x, int y, float value) {
 // phi : starting of segments angle (along section circle)
 //phi2 : ending of segments angle
 //wobbleval : value for deformation
-//deform : enables the deformation
-void dTorus(float time, float r0, float r1, int n, bool deform) {
+void dTorus(float time, float r0, float r1, int n) {
     uv_coord t;
 
 
@@ -675,7 +667,7 @@ void drawNuts(float t) {
 }
 
 //draws the Tube scene
-void drawTubo(int order, float t, rgb_a coltubo, rgb_a colpeli) {
+void drawTubo(float t, rgb_a coltubo, rgb_a colpeli) {
     toro->use();
 
     glDepthMask(GL_TRUE);
@@ -762,14 +754,14 @@ void drawToroide(int order, float t, float mytime) {
     glTranslatef(0, 0, -10);
     glRotatef(sinf(t * 1.2f) * 140.f, 1.f, 0.f, 0.f);
     glRotatef(sinf(t * 1.7f) * 60.f, 0.f, 0.f, 1.f);
-    dTorus(mytime, 2.f, 0.6f, 64, true);
+    dTorus(mytime, 2.f, 0.6f, 64);
     glTranslatef(0.f, 0.f, 0.01f);
     if (order < 2)
         glColor4f(1.f, 1.f, 1.f, 0.1f);
     else
         glColor4f(1.f, 1.f, 1.f, (0.5f * (0.2f - t)));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    dTorus(mytime, 2.f, 0.6f, 64, true);
+    dTorus(mytime, 2.f, 0.6f, 64);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glPopMatrix();
@@ -1323,7 +1315,7 @@ void dPanLandscape(float t, float nstep, float len, float H) {
 }
 
 void drawPanLandscape(float t) {
-    static float fogColor[4] = { 0, 0, 0, 0 };
+    static constexpr float fogColor[4] = { 0, 0, 0, 0 };
     panViewPerspective();
 
     float len = 50;
@@ -1355,7 +1347,7 @@ void drawPanOverWiss(float t) {
     int stock2 = (int)floorf(t1 * 8);
     float randa[10];
     float t2 = HALFPI * t1;
-    static const float wei[10] = { 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.0 }; // da vicino nessuno e' normale!
+    static constexpr float wei[10] = { 0, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.0 }; // da vicino nessuno e' normale!
     for (int i = 0; i < 10; i++) {
         randa[i] = wei[i] * vlattice(stock2, i) + (1 - wei[i]) * vlattice(stock1, i + 50);
     }
@@ -1427,7 +1419,7 @@ void ScenaRewind(int orderr)
         donerendertotexture = false;
 
         panViewPerspective();
-        drawTexture(tex, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
+        drawTexture(tex1, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
 
         drawTexture(frame2, 1, 1, true, 0.5f, 12, { 1.f, 1.f, 1.f, 0.8f }, true);
         drawTexture(frame2, 1, 1, true, 0.6f, 15, { 1.f, 1.f, 1.f, 0.8f }, true);
@@ -1498,7 +1490,7 @@ void ScenaRewind(int orderr)
     //tubo peloso
     if (orderr == 7) {
         panViewPerspective(45);
-        drawTubo(6, tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
+        drawTubo(tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
     }
 
     //palline
@@ -1512,7 +1504,7 @@ void ScenaRewind(int orderr)
     //tubo peloso
     if (orderr == 9) {
         panViewPerspective(45);
-        drawTubo(10, tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
+        drawTubo(tr, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
     }
 
     //palline
@@ -1595,7 +1587,7 @@ void Scena(float mytime, int order) {
         //matrices they set, in this part no matrices ops should be done!!
         //attenzione alla merda che fanno le altre scene NON USARLE PER ORA!
         //drawSfondo(order,t);
-        drawTubo(order, timebase[7] - timebase[6], { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
+        drawTubo(timebase[7] - timebase[6], { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5, 0.25, 0.0625, 0.5f });
         DoRenderToTexture(frame2);
     }
 
@@ -1697,7 +1689,7 @@ void Scena(float mytime, int order) {
     if ((order == 4) || (order == 6)) {
         drawSfondo({ sinf(t) * 90.f, 0, sinf(t * 2) * 45.f }, { 0.5f, 0.5f, 1.f, 1.f });
         panViewPerspective(45);
-        drawTubo(order, t, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5f, 0.25f, 0.0625f, 0.5f });
+        drawTubo(t, { 0.9f, 0.9f, 0.9f, 0.1f }, { 0.5f, 0.25f, 0.0625f, 0.5f });
         donerendertotexture = false;
 
         glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
@@ -1724,7 +1716,7 @@ void Scena(float mytime, int order) {
     if (order == 7) {
         if ((t * 1.6f) < 1.f) {
             panViewPerspective(45);
-            drawTubo(order, mytime, { 0.9f, 0.9f, 0.9f, 0.1f - (t * 2) }, { 0.5f - (t * 2), 0.25f - (t * 2), 0.0625f - (t * 2), 0.5f - (t * 4) });
+            drawTubo(mytime, { 0.9f, 0.9f, 0.9f, 0.1f - (t * 2) }, { 0.5f - (t * 2), 0.25f - (t * 2), 0.0625f - (t * 2), 0.5f - (t * 4) });
 
             drawBlend({ 1.f, 1.f, 1.f, 1.f - (t * 2.f) }, 0, (int)-(t * 150.6f), WIDTH, (int)(HEIGHT + (t * 150.6f)), GL_SRC_ALPHA, GL_ONE, frame2);
             drawBlend({ 1.f, 1.f, 1.f, 1.f - (t * 2.f) }, 0, (int)-(t * 150.6f), WIDTH, (int)(HEIGHT + (t * 150.6f)), GL_SRC_ALPHA, GL_ONE, frame2);
@@ -1818,7 +1810,7 @@ void Scena(float mytime, int order) {
 
         panViewPerspective();
 
-        drawTexture(tex, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
+        drawTexture(tex1, 1, 1, true, mytime / 2, 12, { 0.7f, 0.7f, 0.7f, 0.8f }, false);
 
 
         drawTexture(frame2, 1, 1, true, 0.5f, 12, { 1.f, 1.f, 1.f, 0.8f }, true);
@@ -2016,7 +2008,7 @@ void Scena(float mytime, int order) {
 }
 
 void skDraw() {
-    static int maxscene = (sizeof(timebase) / sizeof(float));
+    static constexpr int maxscene = std::size(timebase) - 1;
     const float t = skGetTime();
 
     //  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -2038,11 +2030,11 @@ void skDraw() {
         //ARATEMP
         //t+=117.785;
         //
-        if ((scene < maxscene) && (t > timebase[scene + 1]))
+        if ((scene < maxscene) && (t > timebase[scene+1]))
             scene++;
         if (scene == maxscene) {
             skStopMusic();
-            static float closetime = skGetTime();
+            static const float closetime = skGetTime();
             float curtime = skGetTime() - closetime;
             if (curtime > 7) {
             	skQuitDemo();
@@ -2178,7 +2170,7 @@ void skInitDemoStuff()
     cubo = perlin(5, 16, 0.2f, 0.3f, 2.2f, true);
     texture1 = perlin(8, 3000, 0.3f, 0.5, 1.8f, false);
     texture2 = perlin(8, 300, 0.1f, 0.97f, 3, false);
-    tex = perlin(3, 1, 0.4f, 0.5f, 2, true);
+    tex1 = perlin(3, 1, 0.4f, 0.5f, 2, true);
     tex2 = perlin(8, 132, 0.3f, 0.7f, 2, true);
     scritte = perlin(7, 100, 0.6f, 0.5f, 1.3f, true);// usare per le scritte
 

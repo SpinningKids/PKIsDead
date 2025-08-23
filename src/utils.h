@@ -21,7 +21,6 @@ void panViewPerspective(double fov = 45.0, double znear = 0.1, double zfar = 600
 void skStopMusic();
 bool skHiddenPart();
 void skQuitDemo();
-std::unique_ptr<GLTexture> skLoadTexture(int resid, int logsize);
 GLFont* skLoadFont(const char* fontname);
 
 extern void skDraw();

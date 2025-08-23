@@ -20,6 +20,8 @@
 #ifndef GLF_H
 #define GLF_H
 
+#include <GL/gl.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

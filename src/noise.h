@@ -28,7 +28,7 @@ namespace details {
     float valueFunc(table_type i);
     inline unsigned short permutation_table[tableSize];
 
-    constexpr table_type permutation(table_type index) {
+    inline table_type permutation(table_type index) {
         if constexpr (tableMask == std::numeric_limits<table_type>::max())
         {
             return permutation_table[index];
@@ -41,7 +41,7 @@ namespace details {
 
     template<size_t N>
     uint16_t index(const table_type(&idx)[N]) {
-        int new_index = 0;
+        table_type new_index = 0;
         for (int i = 0; i < N; i++) {
             new_index = permutation(new_index + idx[i]);
         }

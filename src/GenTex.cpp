@@ -8,7 +8,7 @@
 #include "noise.h"
 #include <cmath>
 
-GLTexture* perlin(int logsize, float freq, float amp, float base, float k, bool wrap) {
+GLTexture* perlin(int logsize, float freq, float amp, float base, float decay, bool wrap) {
     GLTexture* prln = new GLTexture(logsize);
     int size = prln->getSize();
     float* tex = prln->getImage();
@@ -21,9 +21,9 @@ GLTexture* perlin(int logsize, float freq, float amp, float base, float k, bool 
         for (int j = 0; j < fillsize; j++) {
             float col = vnoise(m * i, m * j) * amp + base;
             col = (col < 0) ? 0 : (col > 1) ? 1 : col;
-            tex[(((i << logsize) + j) << 2) + 0] = powf(col, 1.f / k);
+            tex[(((i << logsize) + j) << 2) + 0] = powf(col, 1.f / decay);
             tex[(((i << logsize) + j) << 2) + 1] = col;
-            tex[(((i << logsize) + j) << 2) + 2] = powf(col, k);
+            tex[(((i << logsize) + j) << 2) + 2] = powf(col, decay);
             tex[(((i << logsize) + j) << 2) + 3] = 1;
         }
     }
