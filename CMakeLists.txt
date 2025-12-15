@@ -11,15 +11,15 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   string(REGEX REPLACE "\\/O(.+/s)" "/Ol1 " CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
   string(REGEX REPLACE "\\/EH(.+/s)" "/EHS-" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
   string(REGEX REPLACE "\\/GR(.*/s)" "/GR-" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-	add_compile_options(
-		"$<$<CONFIG:RELEASE>:/FAs>"
-		"$<$<CONFIG:RELEASE>:/GL>"
-		"$<$<CONFIG:RELEASE>:/GS->"
-	)
-	if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-		add_compile_options("/d2noftol3")
-	endif()
-	add_link_options("/MAP:out.map")
+  add_compile_options(
+    "$<$<CONFIG:RELEASE>:/FAs>"
+    "$<$<CONFIG:RELEASE>:/GL>"
+    "$<$<CONFIG:RELEASE>:/GS->"
+  )
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    add_compile_options("/d2noftol3")
+  endif()
+  add_link_options("/MAP:out.map")
 endif()
 
 # Include sub-projects.
@@ -71,8 +71,7 @@ set(RES_FILES
 add_executable(${TARGET_NAME} WIN32 ${PRIVATE_HEADER_FILES} ${SRC_FILES} ${RES_FILES})
 target_include_directories(${TARGET_NAME} PRIVATE ${RES_DIR})
 target_link_libraries(${TARGET_NAME} PUBLIC minifmod OpenGL::GL OpenGL::GLU)
-if(WIN32)
-  #target_compile_options(${TARGET_NAME} PRIVATE "/W4")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(${TARGET_NAME} PRIVATE "/WX")
 endif()
 set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 20)

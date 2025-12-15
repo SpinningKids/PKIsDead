@@ -5,7 +5,9 @@
 #include "ParticleSystem.h"
 
 #ifdef WIN32
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <Windows.h>
 #endif /* WIN32 */
 #include <GL/gl.h>

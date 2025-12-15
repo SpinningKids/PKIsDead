@@ -71,7 +71,7 @@ GLTexture* scritte;
 GLuint logo;
 
 //solo per provare...
-constexpr float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f}; // 121 fu 119.240};
+constexpr float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f, 121}; // 121 fu 119.240};
 
 constexpr int twirlstable[]{ 7, 1, 6, 2, 8, 1, 7, 1 };
 

@@ -36,6 +36,7 @@ void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd
     int l = vsnprintf(text, 256, fmt, ap);
 #endif
     va_end(ap);
+    if (l < 0) return;
 
     float don = 0.5f * on / l;
     float doff = 0.5f * (en - fd) / l;
@@ -45,7 +46,7 @@ void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd
 
     float width = 0;
     float height = 0;
-    for (size_t i = 0; i < l; i++) {
+    for (size_t i = 0; i < static_cast<size_t>(l); i++) {
         width += font.getWidth(text[i], tracking);
         height = std::max(height, font.getHeight(text[i]));
     }

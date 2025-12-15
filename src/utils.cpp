@@ -2,7 +2,9 @@
 #include "utils.h"
 
 #ifdef WIN32
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <Windows.h>
 #include <mmsystem.h>
 #include "windows/resource.h"
@@ -18,11 +20,11 @@
 #include "linux/Dxn_2.h"
 #endif
 #include "Globals.h"
-#include "minifmod/minifmod.h"
+#include <minifmod/minifmod.h>
+#include <utility>
 
 constexpr int ORIGINAL_WIDTH = 640;
 constexpr int ORIGINAL_HEIGHT = 480;
-bool isMusicEnabled = false;
 bool hiddenpart = false;
 
 using namespace std;
@@ -35,13 +37,17 @@ constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
 int done = 0;
 #endif /* WIN32 */
 
-FMUSIC_MODULE* fmodule;
+PlayerState* player_state = nullptr;
+
+bool isMusicEnabled() {
+    return !!player_state;
+}
 
 // Music Related
 
 struct MEMFILE {
-    int length;
-    int pos;
+    size_t length;
+    size_t pos;
     void* data;
 };
 
@@ -50,7 +56,7 @@ void* memopen(const char* name) {
     HRSRC rec = FindResourceEx(GetModuleHandle(nullptr), "RC_RTDATA", name, 0);
     if (rec) {
         MEMFILE* memfile = new MEMFILE{
-            (int)SizeofResource(nullptr, rec),
+            SizeofResource(nullptr, rec),
             0,
             LockResource(LoadResource(nullptr, rec)),
         };
@@ -77,7 +83,7 @@ void memclose(void* handle) {
     delete memfile;
 }
 
-int memread(void* buffer, int size, void* handle) {
+size_t memread(void* buffer, size_t size, void* handle) {
     MEMFILE* memfile = (MEMFILE*)handle;
 
     if (memfile->pos + size >= memfile->length) {
@@ -89,7 +95,7 @@ int memread(void* buffer, int size, void* handle) {
     return size;
 }
 
-void memseek(void* handle, int pos, int mode) {
+void memseek(void* handle, long pos, int mode) {
     MEMFILE* memfile = (MEMFILE*)handle;
 
     if (mode == SEEK_SET) {
@@ -104,7 +110,7 @@ void memseek(void* handle, int pos, int mode) {
     }
 }
 
-int memtell(void* handle) {
+long memtell(void* handle) {
     MEMFILE* memfile = (MEMFILE*)handle;
     return memfile->pos;
 }
@@ -188,9 +194,9 @@ static float      timer_fps;
 /* Timing Functions */
 
 static float skTimerFrame() {
-    if (isMusicEnabled)
+    if (isMusicEnabled())
     {
-        timer_time = FSOUND_TimeFromSamples();
+        timer_time = FMUSIC_GetTime() / 1000.f;
     } else {
 #ifdef WIN32
         __int64 a;
@@ -229,9 +235,8 @@ float skGetFPS() {
 }
 
 void skStopMusic() {
-    if (isMusicEnabled) {
-        FMUSIC_FreeSong(fmodule);
-        isMusicEnabled = false;
+    if (isMusicEnabled()) {
+        FMUSIC_FreeSong(FMUSIC_StopSong(std::exchange(player_state, nullptr)));
         skInitTimer();
         skTimerFrame();
     }
@@ -322,14 +327,14 @@ int main(int argc, char* argv[]) {
 
     done = 0;
     FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
+    Module* module = nullptr;
     if (FSOUND_Init(SAMPLERATE, 0)) {
-        fmodule = FMUSIC_LoadSong("cippa", nullptr);
-        isMusicEnabled = (fmodule != nullptr);
+        module = FMUSIC_LoadSong("cippa", nullptr);
     }
 
     skInitDemoStuff();
-    if (isMusicEnabled) {
-        FMUSIC_PlaySong(fmodule);
+    if (module) {
+        player_state = FMUSIC_PlaySong(module);
     }
     skInitTimer();
     while (!done) {
@@ -351,8 +356,8 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    if (isMusicEnabled) {
-        FMUSIC_FreeSong(fmodule);
+    if (isMusicEnabled()) {
+        FMUSIC_FreeSong(FMUSIC_StopSong(std::exchange(player_state, nullptr)));
         //FSOUND_Close();
     }
     SDL_Quit();
@@ -438,14 +443,14 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpc
 
         ShowWindow(hWND, SW_NORMAL);								// Make The Window Visible
         FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
+        Module* module = nullptr;
         if (FSOUND_Init(SAMPLERATE, 0)) {
-            fmodule = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
-            isMusicEnabled = (fmodule != nullptr);
+            module = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
         }
 
         skInitDemoStuff();
-        if (isMusicEnabled) {
-            FMUSIC_PlaySong(fmodule);
+        if (module) {
+            player_state = FMUSIC_PlaySong(module);
         }
         skInitTimer();
 
