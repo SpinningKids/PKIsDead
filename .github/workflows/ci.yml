@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows (MSVC, debug + release)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Configure + build (debug)
+        shell: pwsh
+        run: |
+          $root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $root) { throw "Visual Studio with C++ tools not found" }
+          $vcvars = Join-Path $root "VC\Auxiliary\Build\vcvarsall.bat"
+          foreach ($line in (cmd /c "call `"$vcvars`" x64 && set")) {
+              if ($line -match "^([^=]+)=(.*)$") { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
+          }
+          cmake --preset x64-debug
+          cmake --build out/build/x64-debug --parallel
+      - name: Configure + build (release)
+        shell: pwsh
+        run: |
+          $root = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $root) { throw "Visual Studio with C++ tools not found" }
+          $vcvars = Join-Path $root "VC\Auxiliary\Build\vcvarsall.bat"
+          foreach ($line in (cmd /c "call `"$vcvars`" x64 && set")) {
+              if ($line -match "^([^=]+)=(.*)$") { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
+          }
+          cmake --preset x64-release
+          cmake --build out/build/x64-release --parallel
+      - name: Stage demo executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force windows | Out-Null
+          Copy-Item out\build\x64-release\PKIsDead.exe windows\PKIsDead.exe
+      - name: Upload executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows
+          path: windows
+
+  linux:
+    name: Linux (GCC)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libpulse-dev libsdl1.2-dev
+      - name: Configure
+        run: cmake --preset linux-debug
+      - name: Build
+        run: cmake --build out/build/linux-debug --parallel
+      - name: Stage demo executable
+        run: |
+          set -euo pipefail
+          mkdir -p linux
+          cp out/build/linux-debug/PKIsDead linux/PKIsDead
+      - name: Upload executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux
+          path: linux
+
+  mingw:
+    name: MinGW (x64, debug + release)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
+      - name: Configure + build (debug)
+        run: |
+          cmake -B out/build/mingw-debug -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+            -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres \
+            -DCMAKE_BUILD_TYPE=Debug
+          cmake --build out/build/mingw-debug --parallel
+      - name: Configure + build (release)
+        run: |
+          cmake -B out/build/mingw-release -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+            -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build out/build/mingw-release --parallel
+      - name: Stage demo executable
+        run: |
+          set -euo pipefail
+          mkdir -p mingw
+          cp out/build/mingw-release/PKIsDead.exe mingw/PKIsDead.exe
+      - name: Upload executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: mingw
+          path: mingw
