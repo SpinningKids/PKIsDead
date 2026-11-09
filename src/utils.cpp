@@ -1,7 +1,7 @@
 
 #include "utils.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -29,7 +29,7 @@ bool hiddenpart = false;
 
 using namespace std;
 
-#ifdef WIN32
+#ifdef _WIN32
 HDC hDC;
 HINSTANCE g_hinstance;
 constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
@@ -52,7 +52,7 @@ struct MEMFILE {
 };
 
 void* memopen(const char* name) {
-#ifdef WIN32
+#ifdef _WIN32
     HRSRC rec = FindResourceEx(GetModuleHandle(nullptr), "RC_RTDATA", name, 0);
     if (rec) {
         MEMFILE* memfile = new MEMFILE{
@@ -75,7 +75,7 @@ void* memopen(const char* name) {
 
 void memclose(void* handle) {
     MEMFILE* memfile = (MEMFILE*)handle;
-#ifdef WIN32
+#ifdef _WIN32
     if (memfile) {
         UnlockResource((HGLOBAL)(memfile->data));
     }
@@ -118,7 +118,7 @@ long memtell(void* handle) {
 static void skSwapBuffers() {
     glFinish();
     glFlush();
-#ifdef WIN32
+#ifdef _WIN32
     SwapBuffers(hDC);
 #else
     SDL_GL_SwapBuffers();
@@ -127,7 +127,7 @@ static void skSwapBuffers() {
 
 // windows
 
-#ifdef WIN32
+#ifdef _WIN32
 static LRESULT CALLBACK skWinProc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp) {
     switch (msg) {
     case WM_KEYDOWN:
@@ -181,7 +181,7 @@ void panViewPerspective(double fov, double znear, double zfar) {
 
 /* Timing vars */
 static float      timer_time;
-#ifdef WIN32
+#ifdef _WIN32
 static __int64    timer_start;
 static __int64    timer_frq;
 #else
@@ -190,15 +190,25 @@ static constexpr float timer_frq = 1000.f;
 #endif
 static float      timer_lastup;
 static float      timer_fps;
+static int        timer_lastorder;
 
 /* Timing Functions */
 
 static float skTimerFrame() {
     if (isMusicEnabled())
     {
-        timer_time = FMUSIC_GetTime() / 1000.f;
+        // minifmod++ restarts the module from order 0 when it runs out; the
+        // close scene wants silence, so catch that restart and stop the music
+        // right there (skStopMusic keeps the demo clock continuous).
+        const int order = FMUSIC_GetOrder();
+        if (order == 0 && timer_lastorder > 0) {
+            skStopMusic();
+        } else {
+            timer_lastorder = order;
+            timer_time = FMUSIC_GetTime() / 1000.f;
+        }
     } else {
-#ifdef WIN32
+#ifdef _WIN32
         __int64 a;
         QueryPerformanceCounter((LARGE_INTEGER*)&a);
 #else
@@ -216,7 +226,7 @@ static float skTimerFrame() {
 }
 
 void skInitTimer() {
-#ifdef WIN32
+#ifdef _WIN32
     QueryPerformanceCounter((LARGE_INTEGER*)&timer_start);
     QueryPerformanceFrequency((LARGE_INTEGER*)&timer_frq);
 #else
@@ -236,14 +246,16 @@ float skGetFPS() {
 
 void skStopMusic() {
     if (isMusicEnabled()) {
+        const float saved = timer_time; // keep the demo clock continuous across the stop
         FMUSIC_FreeSong(FMUSIC_StopSong(std::exchange(player_state, nullptr)));
         skInitTimer();
+        timer_start = timer_start - static_cast<decltype(timer_start)>(saved * static_cast<float>(timer_frq));
         skTimerFrame();
     }
 }
 
 GLFont* skLoadFont(const char* fontname) {
-#ifdef WIN32
+#ifdef _WIN32
     return new GLFont(hDC, fontname);
 #else
     glfInit();
@@ -257,7 +269,7 @@ bool skHiddenPart() {
     return hiddenpart;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 /*
  * Switches:
  *
@@ -366,6 +378,7 @@ int main(int argc, char* argv[]) {
 int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpcmdline, int /* ncmdshow */) {
     hiddenpart = (strcmp(lpcmdline, "/PK") == 0) || (_stricmp(lpcmdline, "/g") == 0);
     g_hinstance = hinstance;
+    SetProcessDPIAware(); // ask for physical pixels, not DPI-virtualized ones (same fix as aNewGene)
     HDC l_hDC = GetDC(GetDesktopWindow());
 
     WNDCLASSEX winclass{
@@ -424,8 +437,19 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpc
         }
     }
     if (!fullscreen) {
-        RECT windowRect = { 0, 0, WIDTH, HEIGHT };
-        AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
+        if constexpr (FULLSCREEN) {
+            // the mode switch was refused: stay in the current desktop mode and cover
+            // it whole and borderless, rather than a framed window sized from the
+            // largest enum mode (same fix as aNewGene c9bc504)
+            windowStyle = WS_POPUP;
+            windowExtendedStyle = WS_EX_APPWINDOW;
+            WIDTH = previous_mode.dmPelsWidth;
+            HEIGHT = previous_mode.dmPelsHeight;
+            BITSPERPIXEL = (BYTE)previous_mode.dmBitsPerPel;
+        } else {
+            RECT windowRect = { 0, 0, WIDTH, HEIGHT };
+            AdjustWindowRectEx(&windowRect, windowStyle, 0, windowExtendedStyle);
+        }
     }
     if (HWND hWND = CreateWindowEx(windowExtendedStyle, WINDOW_CLASS_NAME, WINDOW_TITLE, windowStyle, 0, 0, WIDTH, HEIGHT, HWND_DESKTOP, nullptr, hinstance, nullptr)) {
         hDC = GetDC(hWND);
@@ -486,7 +510,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpc
 #endif
 
 void skQuitDemo() {
-#ifdef WIN32
+#ifdef _WIN32
     PostQuitMessage(0);
 #else
     done = 1;
