@@ -8,7 +8,7 @@
 
 #ifdef _WIN32
 #define NOMINMAX
-#include <Windows.h>
+#include <windows.h>
 #endif /* WIN32 */
 #include <GL/gl.h>
 #include <cassert>

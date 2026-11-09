@@ -5,7 +5,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <Windows.h>
+#include <windows.h>
 #include <mmsystem.h>
 #include "windows/resource.h"
 #include <GL/gl.h>

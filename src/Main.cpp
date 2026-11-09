@@ -9,7 +9,7 @@ constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
 //TEMP cleanme
 #ifdef _WIN32
 #define NOMINMAX
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <GL/gl.h>
 #include <GL/glu.h>
