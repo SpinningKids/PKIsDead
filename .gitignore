@@ -12,3 +12,6 @@ _deps
 /.vs
 /out
 *.bak
+/.idea/
+/extern/.idea/
+/.vscode/
