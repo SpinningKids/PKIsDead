@@ -6,7 +6,10 @@
  ************************************/
 
 #include "GLTexture.h"
-#ifdef WIN32
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <Windows.h>
 #endif
 #include <GL/gl.h>
@@ -17,7 +20,8 @@ GLTexture::GLTexture(int logsize) : mem_(new GLfloat[4 * (1 << logsize) * (1 << 
 
 GLTexture::~GLTexture() {
     delete[] mem_;
-    glDeleteTextures(1, &txt_);
+    if (txt_)
+        glDeleteTextures(1, &txt_);
 }
 
 void GLTexture::update() {
@@ -46,4 +50,3 @@ void GLTexture::use() const {
 void GLTexture::disable() {
     glDisable(GL_TEXTURE_2D);
 }
-
