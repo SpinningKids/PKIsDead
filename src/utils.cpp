@@ -7,7 +7,6 @@
 #endif
 #include <windows.h>
 #include <mmsystem.h>
-#include "windows/resource.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
 #else
@@ -17,8 +16,8 @@
 #include <GL/glx.h>
 #include "glf.h"
 #include "linux/arial_black.h"
-#include "linux/Dxn_2.h"
 #endif
+#include "embedded/dxn_2.h"
 #include "Globals.h"
 #include <minifmod/minifmod.h>
 #include <utility>
@@ -48,29 +47,17 @@ bool isMusicEnabled() {
 struct MEMFILE {
     size_t length;
     size_t pos;
-    void* data;
+    const void* data;
 };
 
 void* memopen(const char* name) {
-#ifdef _WIN32
-    HRSRC rec = FindResourceEx(GetModuleHandle(nullptr), "RC_RTDATA", name, 0);
-    if (rec) {
-        MEMFILE* memfile = new MEMFILE{
-            SizeofResource(nullptr, rec),
-            0,
-            LockResource(LoadResource(nullptr, rec)),
-        };
-        return memfile;
-    }
-    return nullptr;
-#else
+    (void)name;
     MEMFILE* memfile = new MEMFILE{
-        (int)sizeof(dixiesmod),
+        sizeof(dixiesmod),
         0,
-        (void*)dixiesmod,
+        dixiesmod,
     };
     return memfile;
-#endif
 }
 
 void memclose(void* handle) {
@@ -469,7 +456,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE /* hprevinstance */, LPSTR lpc
         FSOUND_File_SetCallbacks(memopen, memclose, memread, memseek, memtell);
         Module* module = nullptr;
         if (FSOUND_Init(SAMPLERATE, 0)) {
-            module = FMUSIC_LoadSong(MAKEINTRESOURCE(IDR_RC_MUSIC), nullptr);
+            module = FMUSIC_LoadSong("cippa", nullptr);
         }
 
         skInitDemoStuff();

@@ -3,7 +3,6 @@
 // Used by resource.rc
 //
 #define IDI_SPINNINGKID                 101
-#define IDR_RC_MUSIC                    102
 
 // Next default values for new objects
 //
