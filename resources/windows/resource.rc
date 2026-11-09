@@ -37,7 +37,7 @@ IDI_SPINNINGKID         ICON    DISCARDABLE     "SK.ICO"
 // RC_RTDATA
 //
 
-IDR_RC_MUSIC            RC_RTDATA DISCARDABLE   "..\\Dxn_2.xm"
+IDR_RC_MUSIC            RC_RTDATA DISCARDABLE   "../Dxn_2.xm"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
