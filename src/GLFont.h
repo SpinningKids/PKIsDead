@@ -9,7 +9,7 @@
 #ifndef GLFONT_H_
 #define GLFONT_H_
 
-#ifdef WIN32
+#ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
 #else
@@ -21,7 +21,7 @@ class GLFont {
     GLYPHMETRICSFLOAT gmf[96];
     GLuint base;
 public:
-#ifdef WIN32
+#ifdef _WIN32
     GLFont(HDC hDC, const char* s);
 #else
     GLFont(GLF_MEMFILE* font);

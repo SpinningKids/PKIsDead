@@ -30,7 +30,7 @@ void CoolPrint1(GLFont const& font, int n, float t, float st, float on, float fd
     if (fmt == nullptr)
         return;
     va_start(ap, fmt);
-#ifdef WIN32
+#ifdef _WIN32
     int l = vsprintf_s(text, fmt, ap);
 #else
     int l = vsnprintf(text, 256, fmt, ap);

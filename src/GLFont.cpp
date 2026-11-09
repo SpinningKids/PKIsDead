@@ -8,7 +8,7 @@
 
 #include "GLFont.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 GLFont::GLFont(HDC hDC, const char* s) {
     HFONT	font = CreateFont(12,							// Height Of Font
         0,								// Width Of Font

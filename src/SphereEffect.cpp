@@ -6,7 +6,7 @@
 
 #include "SphereEffect.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
 #endif /* WIN32 */
