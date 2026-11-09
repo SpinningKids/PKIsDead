@@ -7,7 +7,7 @@ constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
 /* Standard includes										*/
 /*##########################################################*/
 //TEMP cleanme
-#ifdef WIN32
+#ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
 #endif
@@ -25,6 +25,10 @@ constexpr char WINDOW_CLASS_NAME[] = "SKCLASS";
 #include "SphereEffect.h"
 #include "PKLogo.h"
 #include "utils.h"
+
+#include <algorithm>
+#include <cassert>
+#include <iterator>
 
 /*##########################################################*/
 /* Sound Player includes									*/
@@ -71,7 +75,24 @@ GLTexture* scritte;
 GLuint logo;
 
 //solo per provare...
-constexpr float timebase[19] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f, 121}; // 121 fu 119.240};
+// Scene start times, in seconds. Size is deduced so an initializer-list change
+// can never silently zero-pad the tail again (PKIsDead#8); the static_assert
+// documents the expected length. 121 is scene data, not a sentinel.
+constexpr float timebase[] = {0.f, 10.705f, 11.632f, 14.54f, 17.084f, 23.273f, 28.734f, 34.7f, 35.821f, 36.348f, 47.987f, 58.458f, 72.715f, 84.340f, 95.961f, 107.617f, 117.785f, 119.240f, 121}; // 121 fu 119.240};
+static_assert(std::size(timebase) == 19, "scene table changed size - review all indexed reads");
+
+// Bounds-checked lookup for dynamic scene indices (debug: assert, release: clamp).
+constexpr float tb(int i) {
+    assert(i >= 0 && i < static_cast<int>(std::size(timebase)));
+    constexpr int last = static_cast<int>(std::size(timebase)) - 1;
+    return timebase[i < 0 ? 0 : (i > last ? last : i)];
+}
+
+// Beat period of the tune, as used by the music-synced scenes. The two
+// literals differ by ~0.005%; they are kept as-is because unifying them is a
+// playback behavior change - decision tracked in PKIsDead#8.
+constexpr float beatShort = 1.4548f;   // landscape / eye sequences
+constexpr float beatLong = 1.454875f;  // blend / glow pulses
 
 constexpr int twirlstable[]{ 7, 1, 6, 2, 8, 1, 7, 1 };
 
@@ -1141,14 +1162,14 @@ void drawBugs(float t, rgb_a barcolor, Vector3 pos, Vector3 rot, Vector3 size, f
 }
 
 void drawCreditsBack(float t) {
-    drawBlendBis(t / 1.454875f * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(20.f * WIDTH / 640, 20.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(30.f * WIDTH / 640, 30.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(40.f * WIDTH / 640, 40.f * HEIGHT / 480));
-    drawBlendBis(t / 1.454875f * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
+    drawBlendBis(t / beatLong * 4       , 8, { 1.f, 1.f, 1.f, 0.250000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(20.f * WIDTH / 640, 20.f * HEIGHT / 480));
+    drawBlendBis(t / beatLong * 4 - 0.2f, 4, { 1.f, 1.f, 1.f, 0.125000f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(30.f * WIDTH / 640, 30.f * HEIGHT / 480));
+    drawBlendBis(t / beatLong * 4 - 0.4f, 2, { 1.f, 1.f, 1.f, 0.062500f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(40.f * WIDTH / 640, 40.f * HEIGHT / 480));
+    drawBlendBis(t / beatLong * 4 - 0.8f, 1, { 1.f, 1.f, 1.f, 0.003125f }, -5 * WIDTH / 32, -5 * HEIGHT / 32, 37 * WIDTH / 32, 37 * HEIGHT / 32, 20, std::min(50.f * WIDTH / 640, 50.f * HEIGHT / 480));
 }
 
 void drawCredits(float t) {
-    float sync = t / 1.454875f * 2 - 0.5f;
+    float sync = t / beatLong * 2 - 0.5f;
     //  float e = exp(6*(rsync-sync));
     texture1->use();
 
@@ -1341,7 +1362,7 @@ void drawPanLandscape(float t) {
 }
 
 void drawPanOverWiss(float t) {
-    float t1 = t / 1.454875f;
+    float t1 = t / beatLong;
 
     int stock1 = (int)floorf(t1);
     int stock2 = (int)floorf(t1 * 8);
@@ -1361,15 +1382,16 @@ void drawPanOverWiss(float t) {
 
 void ScenaRewind(int orderr)
 {
-    float speed = 8.f;
-    float mytime = (skGetTime() - timebase[15]) * speed;
+    // The landscape scene runs its own clock 8x faster than wall time.
+    constexpr float landscapeSpeedup = 8.f;
+    float mytime = (skGetTime() - timebase[15]) * landscapeSpeedup;
     float tr;
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    float durata = (timebase[15 - orderr] - timebase[14 - orderr]);
-    tr = (skGetTime() - timebase[15] - (1.4548f * orderr)) / 1.4548f * durata;
-    float tr2 = (orderr + 1) * 1.4548f * speed - mytime;
+    float durata = (tb(15 - orderr) - tb(14 - orderr));
+    tr = (skGetTime() - timebase[15] - (beatShort * orderr)) / beatShort * durata;
+    float tr2 = (orderr + 1) * beatShort * landscapeSpeedup - mytime;
 
     CoolPrint1(*FontArial, 50, tr, 0, 1.f, 5.5f, 6.5f, 0.5f * WIDTH, 0.8333333f * HEIGHT, (50 - 15 * (1 - 1.f / (1.1f + sinf(tr * 0.8f)))) * WIDTH / 640, 0.6f, 0, "from a close sight nobody is normal");
 
@@ -1379,7 +1401,7 @@ void ScenaRewind(int orderr)
 
     //coso energetico
     if (orderr == 0) {
-        int pxx = std::max(0, (int)floor(tr / 1.4548f));
+        int pxx = std::max(0, (int)floor(tr / beatShort));
         int val = (pxx < 8) ? twirlstable[pxx] : 1;
 
         glDisable(GL_FOG);
@@ -1445,7 +1467,7 @@ void ScenaRewind(int orderr)
     //roba wiss
     if (orderr == 4) {
         drawLines(tr, 0.1f, 50);
-        float t1 = tr / 1.454875f;
+        float t1 = tr / beatLong;
 
         int stock2 = (int)floorf(t1 * 8);
 
@@ -1554,7 +1576,7 @@ void ScenaRewind(int orderr)
 }
 
 void Scena(float mytime, int order) {
-    float t = mytime - timebase[order];
+    float t = mytime - tb(order);
 
     //static GLTexture* frame =  perlin(8, 132, 0.3f, 0.7f, true);
 
@@ -1744,7 +1766,7 @@ void Scena(float mytime, int order) {
 
     if (order == 9) {
         drawLines(t, 0.1f, 50);
-        float t1 = t / 1.454875f;
+        float t1 = t / beatLong;
 
         int stock2 = (int)floorf(t1 * 8);
 
@@ -1837,7 +1859,7 @@ void Scena(float mytime, int order) {
 
     //flusso energetico lamadonna
     if (order == 13) {
-        int pxx = std::max(0, (int)floor(t / 1.4548f));
+        int pxx = std::max(0, (int)floor(t / beatShort));
         int val = (pxx < 8) ? twirlstable[pxx] : 1;
 
         glDisable(GL_FOG);
@@ -1882,13 +1904,13 @@ void Scena(float mytime, int order) {
     //bugs
     if (order == 14) {
         Vector3 occhio;
-        if (t < (1.4548f * 4)) {
+        if (t < (beatShort * 4)) {
             occhio = Vector3{};
-        } else if ((t >= (1.4548f * 4)) && (t < (1.4548f * 5))) {
-            float ang = ((t - (1.4548f * 4)) / 1.4548f) * PI;
-            occhio = Vector3{ -sinf(ang) * 15.f, (t - (1.4548f * 4.f)) * 4.f, -(t - (1.4548f * 4.f)) * 15.f };
-        } else if (t >= (1.4548f * 5.f)) {
-            occhio = Vector3{ 0, 1.4548f * 4.f, -1.4548f * 15.f };
+        } else if ((t >= (beatShort * 4)) && (t < (beatShort * 5))) {
+            float ang = ((t - (beatShort * 4)) / beatShort) * PI;
+            occhio = Vector3{ -sinf(ang) * 15.f, (t - (beatShort * 4.f)) * 4.f, -(t - (beatShort * 4.f)) * 15.f };
+        } else if (t >= (beatShort * 5.f)) {
+            occhio = Vector3{ 0, beatShort * 4.f, -beatShort * 15.f };
         }
 
         glEnable(GL_LIGHT0);
@@ -1918,7 +1940,7 @@ void Scena(float mytime, int order) {
 
     if (order == 15) {
         glClearColor(0.f, 0.f, 0.f, 0.5f);
-        float sync = t / 1.454875f * 2 - 0.5f;
+        float sync = t / beatLong * 2 - 0.5f;
         float rsync = (sync > 0) ? floorf(sync) : -0.5f;
         //    float e = exp(6*(rsync-sync));
         ScenaRewind((int)rsync);
@@ -1951,7 +1973,7 @@ void Scena(float mytime, int order) {
 
     if ((order == 9) || (order == 10) || (order == 15) || (order == 12) || (order == 13)) {
         //flash
-        float sync = t / 1.454875f * 2 - 0.5f;
+        float sync = t / beatLong * 2 - 0.5f;
         float rsync = (sync > 0) ? floorf(sync) : -0.5f;
         float e = expf(6 * (rsync - sync));
 
